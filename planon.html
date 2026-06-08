@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LFmall 기획전 온톨로지 분석 툴 v2</title>
+<style>
+  :root{
+    --bg:#eef1f6; --card:#fff; --line:#e1e5ee; --ink:#161b26; --sub:#69728a;
+    --brand:#6d28d9; --brand2:#2563eb; --chip:#f1ecfe; --chipink:#5b21b6;
+    --shadow:0 1px 3px rgba(30,35,60,.06),0 6px 24px rgba(30,35,60,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink);font-size:14px;-webkit-font-smoothing:antialiased}
+  header{background:linear-gradient(110deg,#4c1d95,#6d28d9 55%,#2563eb);color:#fff;padding:20px 26px;box-shadow:0 2px 14px rgba(76,29,149,.25)}
+  header h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.4px}
+  header p{margin:5px 0 0;font-size:12.5px;opacity:.92}
+  .wrap{max-width:1320px;margin:0 auto;padding:22px;display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start;height:calc(100vh - 78px)}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+  aside.panel{padding:18px;height:100%;overflow-y:auto}
+  main{height:100%;min-height:0}
+  main .panel{padding:18px;height:100%;display:flex;flex-direction:column;overflow:hidden}
+  main .panel .toolbar,main .panel .modeNote{flex:0 0 auto}
+  #list{flex:1 1 auto;overflow-y:auto;padding-right:4px}
+  /* 스크롤바 */
+  aside.panel::-webkit-scrollbar,#list::-webkit-scrollbar{width:8px}
+  aside.panel::-webkit-scrollbar-thumb,#list::-webkit-scrollbar-thumb{background:#cdd2df;border-radius:8px}
+  aside.panel::-webkit-scrollbar-thumb:hover,#list::-webkit-scrollbar-thumb:hover{background:#aeb5c6}
+  h2.sec{margin:0 0 14px;font-size:14.5px;font-weight:800;display:flex;align-items:center;gap:7px}
+  h2.sec .tag{font-size:10px;background:var(--chip);color:var(--chipink);padding:3px 8px;border-radius:20px;font-weight:800;letter-spacing:.3px}
+  .searchbox{display:flex;gap:7px;margin-bottom:10px}
+  .searchbox input{flex:1;padding:11px 13px;border:1.5px solid var(--line);border-radius:11px;font-size:13px;transition:.15s}
+  .searchbox input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(109,40,217,.12)}
+  .btn{cursor:pointer;border:none;border-radius:11px;padding:11px 15px;font-size:13px;font-weight:800;color:#fff;background:var(--brand);transition:.12s}
+  .btn:hover{filter:brightness(1.06)}
+  .btn.sec{background:#eef0f6;color:#41475a}
+  .btn.sm{padding:7px 11px;font-size:11.5px;border-radius:9px}
+  .hint{font-size:11px;color:var(--sub);line-height:1.7;margin-top:2px}
+  .ex{display:inline-block;background:#f3f1fb;border:1px solid #e7e2f8;border-radius:7px;padding:3px 8px;margin:3px 4px 0 0;cursor:pointer;font-size:11px;color:#5b21b6;transition:.12s}
+  .ex:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .divider{border:none;border-top:1px solid var(--line);margin:16px 0}
+  .axis{margin-bottom:15px}
+  .axis .alabel{font-size:11px;font-weight:800;color:#8a91a6;margin-bottom:8px;letter-spacing:.5px;display:flex;align-items:center;gap:6px}
+  .axis .alabel .dot{width:8px;height:8px;border-radius:3px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{cursor:pointer;border:1.5px solid var(--line);background:#fbfcfe;border-radius:9px;padding:6px 11px;font-size:12px;color:#3c4254;transition:.12s;user-select:none;font-weight:600}
+  .chip:hover{border-color:#c4b5fd}
+  .chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+  .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+  .count{font-size:13px;color:var(--sub);font-weight:600}
+  .count b{color:var(--brand);font-size:18px;margin:0 2px}
+  select.sortsel{padding:9px 11px;border:1.5px solid var(--line);border-radius:10px;font-size:12.5px;font-weight:600;color:#41475a;background:#fff;cursor:pointer}
+  .modeNote{font-size:12px;background:#f3f1fb;border:1px solid #e7e2f8;color:#5b21b6;font-weight:600;padding:9px 13px;border-radius:11px;margin-bottom:14px;display:none}
+  .modeNote.show{display:block}
+  .modeNote .x{cursor:pointer;text-decoration:underline;font-weight:800}
+
+  /* ===== CARD ===== */
+  .card{display:grid;grid-template-columns:120px 1fr;gap:16px;border:1px solid var(--line);border-radius:15px;padding:14px;margin-bottom:14px;background:#fff;transition:.15s}
+  .card:hover{box-shadow:0 6px 26px rgba(60,55,120,.12);border-color:#d8d3ee;transform:translateY(-1px)}
+  .thumb{width:120px;height:150px;border-radius:11px;overflow:hidden;position:relative;background:#f1f0f7;flex-shrink:0;cursor:pointer;display:block;text-decoration:none}
+  .thumb:hover img{transform:scale(1.06)}
+  .thumb img{transition:transform .25s}
+  .thumb .goto{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(0deg,rgba(0,0,0,.7),transparent);color:#fff;font-size:10px;font-weight:700;text-align:center;padding:12px 4px 5px;opacity:0;transition:.18s}
+  .thumb:hover .goto{opacity:1}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .thumb .fallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;color:#fff;font-weight:800;font-size:13px;padding:8px;line-height:1.4}
+  .thumb .idtag{position:absolute;left:7px;top:7px;background:rgba(0,0,0,.62);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:.3px}
+  .body{min-width:0}
+  .crow{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .nm{font-size:16px;font-weight:800;letter-spacing:-.3px;line-height:1.3}
+  .nm a{color:var(--ink);text-decoration:none}
+  .nm a:hover{color:var(--brand)}
+  .meta{font-size:11.5px;color:var(--sub);margin-top:4px}
+  .sim{font-size:11px;font-weight:800;color:#fff;border-radius:20px;padding:5px 11px;white-space:nowrap;align-self:flex-start}
+  .summary{font-size:12px;color:#525a70;line-height:1.6;margin:9px 0 11px}
+
+  /* discount block */
+  .discWrap{display:flex;align-items:center;gap:12px;margin:10px 0 11px;flex-wrap:wrap}
+  .discBadge{font-size:12px;font-weight:800;color:#fff;border-radius:10px;padding:7px 13px;display:flex;align-items:baseline;gap:5px;box-shadow:0 2px 8px rgba(220,40,40,.18)}
+  .discBadge .lab{font-size:9.5px;font-weight:700;opacity:.85;letter-spacing:.5px}
+  .discBadge .rng{font-size:15px;letter-spacing:-.3px}
+  .discTrack{flex:1;min-width:150px}
+  .discTrack .tl{font-size:10px;color:#9097a8;display:flex;justify-content:space-between;margin-bottom:4px}
+  .gbar{height:9px;border-radius:6px;background:linear-gradient(90deg,#16a34a 0%,#84cc16 30%,#eab308 55%,#f97316 78%,#dc2626 100%);position:relative}
+  .gbar .seg{position:absolute;top:-2px;height:13px;border-radius:5px;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25);background:rgba(255,255,255,.25)}
+  .gbar .cap{position:absolute;top:-2px;width:3px;height:13px;background:#161b26;border-radius:2px}
+
+  .kpis{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}
+  .kpi{font-size:11px;color:var(--sub)}
+  .kpi b{display:block;font-size:15px;color:var(--ink);font-weight:800;margin-top:2px}
+  .kwline{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+  .kw{font-size:10.5px;padding:3px 8px;border-radius:6px;font-weight:600}
+  .kw.match{outline:2px solid var(--brand);outline-offset:-2px}
+  .kw.theme{background:#f1ecfe;color:#6d28d9}
+  .kw.benefit{background:#fef0e2;color:#c2410c}
+  .kw.product{background:#e6f6ec;color:#15803d}
+  .kw.visual{background:#fdecf4;color:#be185d}
+  .kw.brand{background:#e8f0ff;color:#1d4ed8}
+  /* 시인성 리뷰 */
+  .review{margin-top:12px;background:#faf9fe;border:1px solid #ece8f8;border-radius:12px;padding:12px 13px}
+  .review .rhead{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .review .rtitle{font-size:12px;font-weight:800;color:#5b21b6;display:flex;align-items:center;gap:5px}
+  .stars{font-size:14px;letter-spacing:1px;line-height:1}
+  .stars .s{color:#e2ddef}.stars .f{color:#f59e0b}.stars .h{position:relative;color:#e2ddef}
+  .stars .h::before{content:"★";position:absolute;left:0;width:50%;overflow:hidden;color:#f59e0b}
+  .rscore{font-size:14px;font-weight:800;color:#161b26}
+  .rweight{font-size:10px;color:#9097a8;font-weight:600}
+  .subgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px 16px;margin-top:9px}
+  .srow{display:flex;align-items:center;gap:7px;cursor:help}
+  .srow .slab{font-size:10.5px;color:#5a6276;font-weight:700;width:74px;display:flex;justify-content:space-between}
+  .srow .slab i{font-style:normal;color:#a3a9b8;font-weight:600;font-size:9px}
+  .srow .sbar{flex:1;height:6px;background:#ece9f5;border-radius:5px;overflow:hidden}
+  .srow .sbar i{display:block;height:100%;background:linear-gradient(90deg,#a78bfa,#6d28d9)}
+  .srow .sval{font-size:10.5px;font-weight:800;color:#5b21b6;width:20px;text-align:right}
+  .subscore{font-size:10.5px;color:#7a8198}
+  .subscore b{color:#5b21b6}
+  .rtext{font-size:11.5px;color:#4d5468;line-height:1.65;margin-top:8px}
+  .rpc{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .rpc span{font-size:10.5px;padding:3px 8px;border-radius:6px;font-weight:600}
+  .rpc .pro{background:#e6f6ec;color:#15803d}
+  .rpc .con{background:#fdecec;color:#b91c1c}
+  .relbtn{margin-top:12px}
+  .empty{text-align:center;color:var(--sub);padding:50px 0;font-size:13px}
+  .rubric summary{cursor:pointer;font-size:12px;font-weight:800;color:#5b21b6;list-style:none}
+  .rubric summary::-webkit-details-marker{display:none}
+  .rubric summary::before{content:"▸ ";color:#9097a8}
+  .rubric[open] summary::before{content:"▾ "}
+  .rubricBody{font-size:11px;color:#56607a;line-height:1.65;margin-top:9px}
+  .rubricBody .ra{margin-bottom:7px}
+  .rubricBody .ra b{color:#161b26}
+  .rubricBody .ra i{font-style:normal;color:#6d28d9;font-weight:700}
+  .rubricBody .scale{margin-top:8px;background:#f7f5fd;border-radius:8px;padding:8px 10px;font-size:10.5px}
+  footer{max-width:1320px;margin:0 auto;padding:4px 22px 34px;font-size:11px;color:var(--sub);line-height:1.7}
+  @media(max-width:960px){.wrap{grid-template-columns:1fr;height:auto}aside.panel,main,main .panel{height:auto;overflow:visible}#list{overflow:visible}}
+  @media(max-width:560px){.card{grid-template-columns:1fr}.thumb{width:100%;height:170px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🧬 LFmall 기획전 온톨로지 분석 툴 <span style="font-size:12px;opacity:.8;font-weight:600">v2</span></h1>
+  <p>기획전 속성(DB) + AI 분석 추상 키워드 + 온톨로지 유사도 · 키워드조회 · 자연어검색 · 유사 기획전 연관분석 · ※ 매출/유입은 가상 데이터</p>
+</header>
+
+<div class="wrap">
+  <aside class="panel">
+    <h2 class="sec">🔍 조회 조건 <span class="tag">온톨로지 5축</span></h2>
+    <div class="searchbox">
+      <input id="q" type="text" placeholder="자연어 검색: 여름 상품으로 프로모션 기획전 조회해줘" onkeydown="if(event.key==='Enter')runNL()">
+      <button class="btn" onclick="runNL()">검색</button>
+    </div>
+    <div class="hint">예시 →
+      <span class="ex" onclick="setNL('여름 원데이특가 입점상품')">여름·원데이특가·입점</span>
+      <span class="ex" onclick="setNL('여름 상품으로 프로모션 기획전 조회해줘')">여름 프로모션</span>
+      <span class="ex" onclick="setNL('단일브랜드 패션 신상')">단일브랜드 신상</span>
+      <span class="ex" onclick="setNL('할인율 높은 스포츠 세일')">스포츠 고할인</span>
+    </div>
+    <hr class="divider">
+    <div id="axes"></div>
+    <button class="btn sec sm" onclick="clearAll()" style="width:100%">조건 초기화</button>
+
+    <hr class="divider">
+    <details class="rubric">
+      <summary>👁️ 시인성 평가 기준 보기</summary>
+      <div class="rubricBody" id="rubricBody"></div>
+    </details>
+  </aside>
+
+  <main>
+    <div class="panel">
+      <div class="modeNote" id="modeNote"></div>
+      <div class="toolbar">
+        <div class="count">조회 결과 <b id="cnt">0</b>건</div>
+        <select id="sort" class="sortsel" onchange="render()">
+          <option value="rel">정렬: 관련도순</option>
+          <option value="sales">매출 높은순</option>
+          <option value="disc">할인율 높은순</option>
+          <option value="conv">전환율 높은순</option>
+        </select>
+      </div>
+      <div id="list"></div>
+    </div>
+  </main>
+</div>
+
+<footer>
+  <b>설계 노트</b> · 온톨로지 5축 = 테마/시즌 · 혜택/가격 · 상품구성 · 비주얼/구성형식 · 브랜드.
+  썸네일은 각 기획전 실제 대표 이미지. 할인율 범위는 명시 표기하며, 최대 할인율이 높을수록 배지·게이지가 RED에 가까워집니다.
+  유사도는 축별 가중 자카드. 매출·유입·전환율은 가상 추정치(실 운영 시 STB_ORDER_PROD/STB_PAYMENT 연동).
+</footer>
+
+<script>
+const EVENTS = [
+  {
+    id:109852, name:"[닥스 셔츠] 여름에도 클래식하게",
+    url:"https://m.lfmall.co.kr/app/event/109852",
+    img:"https://img.lfmall.co.kr/file/WAS/display/202605/TRID000015534_%EB%AA%A8%EB%8D%B8%EC%BB%B7%20(1)%5B0%5D.jpg",
+    period:"26.06.01~06.08", discMin:40, discMax:62, prodCnt:33, brandCnt:1,
+    summary:"DAKS 단일브랜드 S/S 신상 셔츠·반팔니트 단독특가. 코너형 구성(SUMMER DEAL/BEST30/26SS NEW). 추가쿠폰 25% + 15만원이상 선착순 장우산 사은품.",
+    sales:1280, visits:9200, convRate:2.1,
+    kw:{theme:["여름","클래식","신상","S/S신상","남성","헤리티지"],
+      benefit:["추가쿠폰","단독특가","사은품증정","선착순혜택"],
+      product:["단일브랜드","자사상품","패션","의류","셔츠/니트","중량(30~50)","단일카테고리"],
+      visual:["코너형구성","텍스트헤드라인","BEST큐레이션"],
+      brand:["DAKS"]}
+  },
+  {
+    id:112139, name:"여름 리빙템 (시원하고 쾌적한)",
+    url:"https://m.lfmall.co.kr/app/event/112139",
+    img:"https://img.lfmall.co.kr/file/WAS/display/202605/top_m_01%5B0%5D.jpg",
+    period:"진행중", discMin:10, discMax:73, prodCnt:140, brandCnt:40,
+    summary:"멀티브랜드 여름 리빙 기획전. 냉감침구·계절가전·주방·생활·가구 큐레이션. 입점상품 다수(SONY/dyson/BALMUDA/AMT/CUCKOO). PLUS쿠폰 최대10% + 24시간 원데이특가(타임딜).",
+    sales:4000, visits:38000, convRate:3.4,
+    kw:{theme:["여름","리빙","냉감/쿨링","시즌특가","무더위"],
+      benefit:["PLUS쿠폰","원데이특가","타임딜","비밀특가","균일가/무배","입점혜택"],
+      product:["멀티브랜드","입점상품","리빙","가전","주방","침구","대량(100+)","멀티카테고리"],
+      visual:["카테고리큐레이션","타임딜배너","멀티배너"],
+      brand:["멀티/입점","SONY","dyson","BALMUDA","CUCKOO","AMT"]}
+  },
+  {
+    id:112180, name:"POTTERY와 함께하는 여름",
+    url:"https://m.lfmall.co.kr/app/event/112180",
+    img:"https://img.lfmall.co.kr/file/WAS/display/202605/%ED%8F%AC%ED%84%B0%EB%A6%AC1.jpg",
+    period:"26.06.01~06.15", discMin:0, discMax:10, prodCnt:60, brandCnt:1,
+    summary:"POTTERY 단일브랜드 여름 신상(Refined Classic). 컴포트 폴로니트·티셔츠·캡. 거의 정가 신상 중심. 일반쿠폰 10% + 장바구니쿠폰 10%(20만↑), 2-Pack 구매 이벤트.",
+    sales:1850, visits:11000, convRate:2.6,
+    kw:{theme:["여름","신상","베이직","Refined Classic","남성"],
+      benefit:["일반쿠폰","장바구니쿠폰","번들/2-Pack","신상프로모션"],
+      product:["단일브랜드","자사상품","패션","의류","컨템포러리","중량(30~50)","단일카테고리"],
+      visual:["컬러베리에이션나열","신상중심구성","텍스트헤드라인"],
+      brand:["POTTERY"]}
+  },
+  {
+    id:112051, name:"스파이더 위크 (여름 스포츠)",
+    url:"https://m.lfmall.co.kr/app/event/112051",
+    img:"https://img.lfmall.co.kr/file/WAS/display/202605/750-1%5B51%5D.jpg",
+    period:"26.06.01~06.08", discMin:37, discMax:76, prodCnt:80, brandCnt:1,
+    summary:"SPYDER 단일브랜드 스포츠 여름 세일(~73%). 러닝·트레이닝·스윔웨어. 카테고리 코너 구성. 중복할인쿠폰 5%.",
+    sales:2400, visits:21000, convRate:2.9,
+    kw:{theme:["여름","스포츠","러닝/트레이닝","액티브","고할인세일"],
+      benefit:["중복쿠폰","시즌세일","고할인(70%+)"],
+      product:["단일브랜드","자사상품","패션","스포츠웨어","대량(50~100)","멀티카테고리"],
+      visual:["카테고리큐레이션","코너형구성","스포츠무드"],
+      brand:["SPYDER"]}
+  },
+  {
+    id:112052, name:"OUTLET WEEKLY BEST",
+    url:"https://m.lfmall.co.kr/app/event/112052",
+    img:"https://img.lfmall.co.kr/file/WAS/display/202605/112052_750x1150.jpg",
+    period:"26.06.01~06.08", discMin:37, discMax:55, prodCnt:200, brandCnt:6,
+    summary:"아울렛 위클리 베스트. 자사 멀티브랜드(DAKS/HAZZYS/MAESTRO/ATHE) 여름 아우터·티셔츠·팬츠·가방·블라우스. SS BEST + FW 역시즌. PLUS쿠폰 5% 중복.",
+    sales:3200, visits:29000, convRate:3.0,
+    kw:{theme:["여름","아울렛","위클리베스트","역시즌","스테디셀러"],
+      benefit:["PLUS쿠폰","아울렛특가","중복쿠폰"],
+      product:["멀티브랜드","자사상품","패션","아우터/의류","잡화/가방","대량(100+)","멀티카테고리"],
+      visual:["베스트큐레이션","카테고리큐레이션","멀티배너"],
+      brand:["멀티/입점","DAKS","HAZZYS","MAESTRO","ATHE"]}
+  }
+];
+
+/* ===== AI 고객관점 시인성 평가 (실제 배너 문구 기반) =====
+   4개 세부 축(각 1~5점) → 가중평균으로 종합 별점 산출.
+   척도: 5 매우 우수 / 4 우수 / 3 보통 / 2 미흡 / 1 부족 */
+const REV_AXES = [
+  {key:"clarity", label:"이해도",       w:0.30, desc:"안내문구를 한눈에·즉시 이해할 수 있는가 (가독성·용어 난이도·정보 구조)"},
+  {key:"benefit", label:"혜택 명확성",  w:0.30, desc:"할인·쿠폰·사은품의 조건/대상/금액이 오해 없이 분명한가"},
+  {key:"fit",     label:"적합성",       w:0.20, desc:"문구·톤이 기획전 성격(시즌·상품·타깃)과 부합하는가"},
+  {key:"impact",  label:"시각적 임팩트", w:0.20, desc:"첫 화면에서 주목도·시선 유도가 충분한가 (헤드라인 강도·노이즈)"}
+];
+/* 점수 산정 기준(루브릭): 각 축 5점=문구만으로 추가 설명 불필요 / 4=대체로 명확,
+   사소한 보완점 / 3=일부 모호하거나 빠진 정보 / 2=핵심 정보 누락·혼동 유발 / 1=오인 위험 */
+const REVIEWS = {
+  109852:{scores:{clarity:5, benefit:4.5, fit:4.5, impact:4},
+    text:"\"여름에도 클래식하게\", \"S/S 신상 단독 특가\"처럼 한눈에 무슨 행사인지 들어오는 헤드라인이 좋았어요. 'SUMMER DEAL·BEST30·26SS NEW'로 코너 이름이 명확해 원하는 걸 바로 찾을 수 있었고, '추가쿠폰 25%'와 '15만원 이상 선착순 30명 장우산 증정'도 조건이 분명했습니다. 다만 사은품 발송일(6/10 개별발송)이 작게 적혀 있어 놓치기 쉬웠어요.",
+    pros:"행사 성격·코너명 직관적, 혜택 조건 명확", cons:"사은품 수령 안내가 눈에 덜 띔"},
+  112139:{scores:{clarity:3, benefit:3, fit:4, impact:3.5},
+    text:"여름 리빙이라는 주제와 '냉감·쿨링' 키워드는 잘 와닿았고 '최대 10% 쿠폰', '24시간 특가'로 급할인 느낌도 충분했어요. 다만 상품이 너무 많은데 페이지 곳곳에 '로딩중'이 떠서 답답했고, '비밀특가'는 정확히 뭐가 싸다는 건지 한 번에 이해되지 않았습니다. 카테고리(침구·가전·주방)는 잘 나뉘어 탐색은 편했어요.",
+    pros:"테마·할인 임팩트 강함, 카테고리 큐레이션 우수", cons:"'로딩중' 노출·정보 과다, '비밀특가' 문구 모호"},
+  112180:{scores:{clarity:2.5, benefit:2.5, fit:3.5, impact:4},
+    text:"\"기본에 충실한 옷이 만드는 선명한 차이\", \"Refined Classic\" 같은 문구는 브랜드 무드는 살지만 '그래서 뭐가 혜택이지?'가 바로 안 보였어요. 가격도 대부분 정가라 특가 기대를 하고 들어온 고객은 갸웃할 수 있습니다. 반면 '2장 이상 구매 시 10% 추가'는 조건이 명확해 좋았고, 컬러 베리에이션이 깔끔하게 나열돼 신상 구경엔 편했어요.",
+    pros:"브랜드 톤 일관, 2-Pack 조건 명확", cons:"감성 카피 위주로 혜택 인지 약함, 할인 기대와 괴리"},
+  112051:{scores:{clarity:4.5, benefit:3.5, fit:4, impact:4.5},
+    text:"\"스파이더 위크 ~73%\"가 첫 화면에서 강하게 박혀 세일 폭이 즉시 이해됐어요. '러닝·트레이닝·스윔웨어까지'로 무엇을 파는 행사인지도 분명했고요. 카테고리 탭이 세분화돼 원하는 종목을 찾기 쉬웠습니다. 다만 '중복할인쿠폰 5%'가 ~73%에 비해 상대적으로 작아 임팩트는 덜했어요.",
+    pros:"할인율·타깃 종목 직관적, 카테고리 탐색 편리", cons:"메인 세일 대비 쿠폰 혜택 존재감 약함"},
+  112052:{scores:{clarity:4, benefit:3, fit:3.5, impact:3.5},
+    text:"\"WEEKLY BEST·한 주를 빛낸 베스트 아이템\"으로 '잘 나가는 걸 모았다'는 메시지는 잘 전달됐어요. 'SS BEST / FW 역시즌 BEST' 구분도 합리적이었고요. 다만 어떤 기준의 베스트인지(판매량? MD추천?)가 안 적혀 신뢰가 살짝 아쉬웠고, '5% 중복쿠폰'만으로는 아울렛치고 할인 메리트가 약하게 느껴졌습니다.",
+    pros:"베스트 컨셉 전달 명확, 시즌 구분 합리적", cons:"'베스트' 선정 기준 불명확, 쿠폰 혜택 다소 약함"}
+};
+function reviewOverall(rv){return REV_AXES.reduce((s,a)=>s+rv.scores[a.key]*a.w,0);}
+
+const SYN = {
+  "여름":["여름","썸머","summer","하절기","무더위","냉감","쿨링"],
+  "원데이특가":["원데이특가","원데이","타임딜","24시간특가","타임특가","하루특가"],
+  "입점상품":["입점상품","입점","멀티브랜드","입점브랜드","외부브랜드"],
+  "프로모션":["프로모션","기획전","행사","이벤트","세일","특가"],
+  "단일브랜드":["단일브랜드","단독브랜드","원브랜드","브랜드전"],
+  "신상":["신상","신상품","새상품","new","26ss","s/s신상"],
+  "패션":["패션","의류","옷","어패럴"],
+  "스포츠":["스포츠","액티브","러닝","트레이닝","운동"],
+  "리빙":["리빙","리빙템","홈","생활","침구","가전","주방","가구"],
+  "할인":["할인","세일","특가","디스카운트","고할인"],
+  "쿠폰":["쿠폰","할인쿠폰","plus쿠폰","장바구니쿠폰","중복쿠폰"],
+  "사은품":["사은품","증정","gift","선물","경품"],
+  "아울렛":["아울렛","outlet","역시즌","이월"],
+  "베스트":["베스트","best","인기","위클리베스트"]
+};
+
+const AXES = [
+  {key:"theme",   label:"테마 / 시즌",       color:"#6d28d9"},
+  {key:"benefit", label:"혜택 / 가격",       color:"#c2410c"},
+  {key:"product", label:"상품 구성",         color:"#15803d"},
+  {key:"visual",  label:"비주얼 / 구성형식", color:"#be185d"},
+  {key:"brand",   label:"브랜드",            color:"#1d4ed8"}
+];
+const AXIS_WEIGHT = {theme:1.4, benefit:1.2, product:1.1, visual:0.8, brand:0.9};
+
+let selected={}, mode="filter", relBase=null;
+
+/* 할인율 → 컬러 (낮을수록 초록, 높을수록 RED) */
+function discColor(d){ // d:0~80+
+  const t=Math.min(1, d/75);
+  const hue=Math.round(140 - t*140);      // 140(green)→0(red)
+  const sat=70+Math.round(t*18);
+  const lig=46-Math.round(t*6);
+  return `hsl(${hue},${sat}%,${lig}%)`;
+}
+
+function buildAxisChips(){
+  AXES.forEach(a=>selected[a.key]=new Set());
+  document.getElementById('axes').innerHTML = AXES.map(a=>{
+    const vals=[...new Set(EVENTS.flatMap(e=>e.kw[a.key]))].sort((x,y)=>x.localeCompare(y,'ko'));
+    return `<div class="axis"><div class="alabel"><span class="dot" style="background:${a.color}"></span>${a.label}</div>
+      <div class="chips">`+vals.map(v=>`<span class="chip" data-ax="${a.key}" data-v="${v}" onclick="toggleChip(this)">${v}</span>`).join('')+`</div></div>`;
+  }).join('');
+}
+function toggleChip(el){
+  const ax=el.dataset.ax,v=el.dataset.v;
+  if(selected[ax].has(v)){selected[ax].delete(v);el.classList.remove('on');}
+  else{selected[ax].add(v);el.classList.add('on');}
+  mode="filter";relBase=null;document.getElementById('q').value="";render();
+}
+function clearAll(){
+  AXES.forEach(a=>selected[a.key].clear());
+  document.querySelectorAll('.chip.on').forEach(c=>c.classList.remove('on'));
+  document.getElementById('q').value="";mode="filter";relBase=null;render();
+}
+function allKw(e){return AXES.flatMap(a=>e.kw[a.key]);}
+function filterScore(e){
+  let total=0,matched=0;
+  for(const a of AXES)for(const v of selected[a.key]){total++;if(e.kw[a.key].includes(v))matched++;}
+  if(total===0)return{keep:true,score:0,hits:new Set()};
+  const hits=new Set();
+  AXES.forEach(a=>selected[a.key].forEach(v=>{if(e.kw[a.key].includes(v))hits.add(v);}));
+  return{keep:matched>0,score:matched/total,hits};
+}
+function nlScore(e,query){
+  const q=query.toLowerCase().replace(/[^가-힣a-z0-9% ]/g,' ');
+  const toks=q.split(/\s+/).filter(Boolean);
+  const evKw=allKw(e).map(k=>k.toLowerCase());
+  const hits=new Set();let score=0;
+  toks.forEach(t=>{
+    let g=[t];for(const k in SYN){if(SYN[k].some(s=>s.includes(t)||t.includes(s)))g=g.concat(SYN[k]);}
+    g=[...new Set(g)];let mt=false;
+    evKw.forEach((k,i)=>{if(g.some(x=>k.includes(x)||x.includes(k))){mt=true;hits.add(allKw(e)[i]);}});
+    const text=(e.name+e.summary).toLowerCase();if(g.some(x=>text.includes(x)))mt=true;
+    if(mt)score++;
+  });
+  return{keep:score>0,score:score/Math.max(toks.length,1),hits};
+}
+function rangeOverlap(a1,a2,b1,b2){const lo=Math.max(a1,b1),hi=Math.min(a2,b2);const ov=Math.max(0,hi-lo);const span=Math.max(a2,b2)-Math.min(a1,b1);return span?ov/span:0;}
+function similarity(a,b){
+  let num=0,den=0;
+  for(const ax of AXES){const A=new Set(a.kw[ax.key]),B=new Set(b.kw[ax.key]);
+    const inter=[...A].filter(x=>B.has(x)).length;const uni=new Set([...A,...B]).size;
+    const j=uni?inter/uni:0;num+=AXIS_WEIGHT[ax.key]*j;den+=AXIS_WEIGHT[ax.key];}
+  const dO=rangeOverlap(a.discMin,a.discMax,b.discMin,b.discMax);
+  const sc=1-Math.abs(Math.log10(a.prodCnt+1)-Math.log10(b.prodCnt+1))/2;
+  return Math.max(0,Math.min(1,num/den*0.8+dO*0.12+Math.max(0,sc)*0.08));
+}
+function stars(r){
+  let h='';
+  for(let i=1;i<=5;i++){
+    if(r>=i)h+='<span class="f">★</span>';
+    else if(r>=i-0.5)h+='<span class="h">★</span>';
+    else h+='<span class="s">★</span>';
+  }
+  return h;
+}
+function sharedKw(a,b){const s=new Set();AXES.forEach(ax=>a.kw[ax.key].forEach(v=>{if(b.kw[ax.key].includes(v))s.add(v);}));return s;}
+
+function setNL(t){document.getElementById('q').value=t;runNL();}
+function runNL(){
+  const q=document.getElementById('q').value.trim();
+  if(!q){mode="filter";render();return;}
+  document.querySelectorAll('.chip.on').forEach(c=>c.classList.remove('on'));
+  AXES.forEach(a=>selected[a.key].clear());
+  mode="nl";relBase=null;render();
+}
+function showRelated(id){
+  relBase=EVENTS.find(e=>e.id===id);mode="related";
+  document.getElementById('q').value="";
+  document.querySelectorAll('.chip.on').forEach(c=>c.classList.remove('on'));
+  window.scrollTo({top:0,behavior:'smooth'});render();
+}
+
+function render(){
+  const list=document.getElementById('list'),note=document.getElementById('modeNote'),sort=document.getElementById('sort').value;
+  let rows=[];
+  if(mode==="related"&&relBase){
+    note.className="modeNote show";
+    note.innerHTML=`🧬 <b>${relBase.name}</b> 와 온톨로지 유사도 높은 기획전 (연관분석) — <span class="x" onclick="clearAll()">필터로 돌아가기</span>`;
+    rows=EVENTS.filter(e=>e.id!==relBase.id).map(e=>({e,score:similarity(relBase,e),hits:sharedKw(relBase,e)}));
+    rows.sort((a,b)=>b.score-a.score);
+  }else if(mode==="nl"){
+    const q=document.getElementById('q').value.trim();
+    note.className="modeNote show";
+    note.innerHTML=`🗣️ 자연어 검색: "<b>${q}</b>" — 키워드 의미 매칭 — <span class="x" onclick="clearAll()">초기화</span>`;
+    rows=EVENTS.map(e=>{const s=nlScore(e,q);return{e,score:s.score,hits:s.hits,keep:s.keep};}).filter(r=>r.keep);
+    rows.sort((a,b)=>b.score-a.score);
+  }else{
+    note.className="modeNote";
+    rows=EVENTS.map(e=>{const s=filterScore(e);return{e,score:s.score,hits:s.hits,keep:s.keep};}).filter(r=>r.keep);
+    rows.sort((a,b)=>b.score-a.score);
+  }
+  if(sort==="sales")rows.sort((a,b)=>b.e.sales-a.e.sales);
+  if(sort==="disc")rows.sort((a,b)=>b.e.discMax-a.e.discMax);
+  if(sort==="conv")rows.sort((a,b)=>b.e.convRate-a.e.convRate);
+  document.getElementById('cnt').textContent=rows.length;
+  if(!rows.length){list.innerHTML=`<div class="empty">조건에 맞는 기획전이 없습니다. 키워드를 줄여보세요.</div>`;return;}
+  list.innerHTML=rows.map(r=>card(r.e,r.score,r.hits||new Set())).join('');
+}
+
+function card(e,score,hits){
+  const pct=Math.round(score*100);
+  const simBg = pct>=70?'#16a34a':pct>=45?'#d97706':'#9aa3b2';
+  const simLabel=(mode==="related")?`유사도 ${pct}%`:(mode==="nl"?`관련도 ${pct}%`:`적합도 ${pct}%`);
+  const c=discColor(e.discMax);
+  // 게이지: discMin~discMax 구간 표시(0~80 스케일)
+  const sc=v=>Math.min(100,v/80*100);
+  const segL=sc(e.discMin), segW=Math.max(4,sc(e.discMax)-sc(e.discMin));
+  const kwHtml=AXES.map(a=>e.kw[a.key].map(v=>`<span class="kw ${a.key}${hits.has(v)?' match':''}">${v}</span>`).join('')).join('');
+  const rv=REVIEWS[e.id];
+  let reviewHtml='';
+  if(rv){
+    const ov=reviewOverall(rv);
+    const subs=REV_AXES.map(a=>{
+      const v=rv.scores[a.key];
+      return `<div class="srow" title="${a.desc}">
+        <span class="slab">${a.label}<i>${Math.round(a.w*100)}%</i></span>
+        <span class="sbar"><i style="width:${v/5*100}%"></i></span>
+        <span class="sval">${v.toFixed(1)}</span></div>`;
+    }).join('');
+    reviewHtml=`
+    <div class="review">
+      <div class="rhead">
+        <span class="rtitle">👁️ 시인성 평가</span>
+        <span class="stars">${stars(ov)}</span>
+        <span class="rscore">${ov.toFixed(1)}</span>
+        <span class="rweight">가중평균 · 5점 만점</span>
+      </div>
+      <div class="subgrid">${subs}</div>
+      <div class="rtext">${rv.text}</div>
+      <div class="rpc"><span class="pro">👍 ${rv.pros}</span><span class="con">👎 ${rv.cons}</span></div>
+    </div>`;
+  }
+  return `
+  <div class="card">
+    <a class="thumb" href="${e.url}" target="_blank" rel="noopener" title="새 탭에서 기획전 열기">
+      <span class="idtag">#${e.id}</span>
+      <img src="${e.img}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="fallback" style="background:linear-gradient(135deg,${e.kw.theme.includes('아울렛')?'#475569,#1e293b':e.kw.theme.includes('스포츠')?'#0ea5e9,#1d4ed8':e.kw.product.includes('멀티브랜드')?'#f59e0b,#dc2626':'#7c3aed,#4c1d95'})">${e.name}</div>
+      <span class="goto">기획전 열기 ↗</span>
+    </a>
+    <div class="body">
+      <div class="crow">
+        <div>
+          <div class="nm"><a href="${e.url}" target="_blank">${e.name}</a></div>
+          <div class="meta">${e.period} · 상품 ${e.prodCnt}개 · 브랜드 ${e.brandCnt}개</div>
+        </div>
+        <span class="sim" style="background:${simBg}">${simLabel}</span>
+      </div>
+      <div class="summary">${e.summary}</div>
+      <div class="discWrap">
+        <div class="discBadge" style="background:${c}">
+          <span class="lab">할인율</span><span class="rng">${e.discMin}~${e.discMax}%</span>
+        </div>
+        <div class="discTrack">
+          <div class="tl"><span>0%</span><span>40%</span><span>80%+</span></div>
+          <div class="gbar">
+            <div class="seg" style="left:${segL}%;width:${segW}%"></div>
+            <div class="cap" style="left:${sc(e.discMax)}%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="kpis">
+        <div class="kpi">가상매출<b>${e.sales.toLocaleString()}만원</b></div>
+        <div class="kpi">유입수<b>${e.visits.toLocaleString()}</b></div>
+        <div class="kpi">전환율<b>${e.convRate}%</b></div>
+      </div>
+      <div class="kwline">${kwHtml}</div>
+      ${reviewHtml}
+      <div class="relbtn"><button class="btn sm" onclick="showRelated(${e.id})">🧬 이와 유사한 기획전 찾기</button></div>
+    </div>
+  </div>`;
+}
+
+function buildRubric(){
+  const axHtml=REV_AXES.map(a=>`<div class="ra"><b>${a.label}</b> <i>(${Math.round(a.w*100)}%)</i> — ${a.desc}</div>`).join('');
+  document.getElementById('rubricBody').innerHTML=axHtml+
+    `<div class="scale"><b>점수 척도</b><br>5 문구만으로 추가설명 불필요 · 4 대체로 명확(사소한 보완) · 3 일부 모호/정보 누락 · 2 핵심정보 누락·혼동 · 1 오인 위험<br><br>
+     <b>종합 별점</b> = 네 축의 가중평균 (이해도·혜택 명확성 각 30%, 적합성·시각적 임팩트 각 20%)</div>`;
+}
+buildAxisChips();buildRubric();render();
+</script>
+</body>
+</html>
