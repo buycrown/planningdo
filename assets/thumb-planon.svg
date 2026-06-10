@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" role="img" aria-label="기획전 온톨로지 분석 툴 preview">
+  <defs>
+    <linearGradient id="ph" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#6d28d9"/><stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="300" fill="#f4f3fb"/>
+  <!-- header -->
+  <rect width="480" height="52" fill="url(#ph)"/>
+  <text x="20" y="26" font-family="Segoe UI, sans-serif" font-size="14" font-weight="800" fill="#fff">🚀 LFmall 기획전 온톨로지 분석 툴 <tspan font-size="9" fill="#d8ccff">v2</tspan></text>
+  <text x="20" y="42" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#cdbcff">기획전 속성(DB) + AI 분석 추상 키워드 + 온톨로지 유사도 · 키워드조회 · 자연어검색</text>
+  <!-- filter panel -->
+  <rect x="16" y="66" width="150" height="220" rx="10" fill="#fff" stroke="#e7e3f5"/>
+  <text x="28" y="86" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#4c2e9c">🔍 조회 조건</text>
+  <rect x="28" y="94" width="126" height="20" rx="6" fill="#f3f0fc"/>
+  <text x="36" y="108" font-family="Segoe UI, sans-serif" font-size="8" fill="#9d93bf">자연어 검색...</text>
+  <g font-family="Segoe UI, sans-serif" font-size="8">
+    <rect x="28" y="124" width="44" height="16" rx="8" fill="#ede8fb"/><text x="36" y="135" fill="#6d28d9">여름</text>
+    <rect x="76" y="124" width="52" height="16" rx="8" fill="#ede8fb"/><text x="84" y="135" fill="#6d28d9">클래식</text>
+    <rect x="28" y="146" width="50" height="16" rx="8" fill="#ede8fb"/><text x="36" y="157" fill="#6d28d9">단독특가</text>
+    <rect x="82" y="146" width="46" height="16" rx="8" fill="#ede8fb"/><text x="90" y="157" fill="#6d28d9">사은품</text>
+    <rect x="28" y="168" width="40" height="16" rx="8" fill="#ede8fb"/><text x="36" y="179" fill="#6d28d9">신상</text>
+    <rect x="72" y="168" width="56" height="16" rx="8" fill="#ede8fb"/><text x="80" y="179" fill="#6d28d9">선착순</text>
+    <rect x="28" y="190" width="56" height="16" rx="8" fill="#ede8fb"/><text x="36" y="201" fill="#6d28d9">원데이특가</text>
+    <rect x="28" y="212" width="48" height="16" rx="8" fill="#ede8fb"/><text x="36" y="223" fill="#6d28d9">PLUS쿠폰</text>
+  </g>
+  <rect x="28" y="252" width="80" height="22" rx="6" fill="#7c3aed"/>
+  <text x="56" y="267" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#fff">검색</text>
+  <!-- result card -->
+  <rect x="178" y="66" width="286" height="105" rx="10" fill="#fff" stroke="#e7e3f5"/>
+  <rect x="190" y="78" width="60" height="80" rx="8" fill="#dcd3f3"/>
+  <text x="198" y="120" font-family="Segoe UI, sans-serif" font-size="9" fill="#7c3aed">#109852</text>
+  <text x="262" y="92" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#2b2440">[닥스 셔츠] 여름에도 클래식하게</text>
+  <text x="262" y="108" font-family="Segoe UI, sans-serif" font-size="8" fill="#8b84a3">26.06.01~06.08 · 상품 33개 · 브랜드 1개</text>
+  <rect x="262" y="118" width="70" height="20" rx="5" fill="#ea580c"/>
+  <text x="270" y="132" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#fff">할인율 40~62%</text>
+  <rect x="340" y="124" width="112" height="6" rx="3" fill="#e7e3f5"/>
+  <rect x="340" y="124" width="78" height="6" rx="3" fill="#f97316"/>
+  <g font-family="Segoe UI, sans-serif" font-size="7.5" fill="#fff">
+    <rect x="262" y="146" width="30" height="14" rx="7" fill="#a78bfa"/><text x="269" y="156">여름</text>
+    <rect x="296" y="146" width="36" height="14" rx="7" fill="#a78bfa"/><text x="303" y="156">클래식</text>
+    <rect x="336" y="146" width="32" height="14" rx="7" fill="#a78bfa"/><text x="343" y="156">신상</text>
+    <rect x="372" y="146" width="40" height="14" rx="7" fill="#a78bfa"/><text x="379" y="156">추가쿠폰</text>
+  </g>
+  <!-- result card 2 -->
+  <rect x="178" y="180" width="286" height="106" rx="10" fill="#fff" stroke="#e7e3f5"/>
+  <rect x="190" y="192" width="60" height="80" rx="8" fill="#d3ecf3"/>
+  <text x="262" y="206" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#2b2440">여름 리빙템 (시원하고 쾌적한)</text>
+  <text x="262" y="222" font-family="Segoe UI, sans-serif" font-size="8" fill="#8b84a3">진행중 · 상품 140개 · 브랜드 40개</text>
+  <rect x="262" y="232" width="70" height="20" rx="5" fill="#dc2626"/>
+  <text x="270" y="246" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#fff">할인율 10~73%</text>
+  <rect x="340" y="238" width="112" height="6" rx="3" fill="#e7e3f5"/>
+  <rect x="340" y="238" width="98" height="6" rx="3" fill="#ef4444"/>
+  <text x="262" y="272" font-family="Segoe UI, sans-serif" font-size="8" fill="#8b84a3">가상매출 4,000만원 · 유입수 38,000 · 전환율 3.4%</text>
+</svg>

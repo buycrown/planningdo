@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Harry developer avatar">
+  <defs>
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff5ea3"/>
+      <stop offset="40%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1b2333"/>
+      <stop offset="100%" stop-color="#0e1320"/>
+    </linearGradient>
+    <linearGradient id="hoodie" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2f3b54"/>
+      <stop offset="100%" stop-color="#222b3f"/>
+    </linearGradient>
+    <clipPath id="clip"><circle cx="100" cy="100" r="92"/></clipPath>
+  </defs>
+
+  <!-- glowing ring -->
+  <circle cx="100" cy="100" r="96" fill="none" stroke="url(#ringGrad)" stroke-width="6"/>
+  <g clip-path="url(#clip)">
+    <rect x="0" y="0" width="200" height="200" fill="url(#bgGrad)"/>
+    <!-- faint code brackets in background -->
+    <text x="26" y="58" font-family="monospace" font-size="20" fill="#5b6b8c" opacity="0.35">&lt;/&gt;</text>
+    <text x="150" y="150" font-family="monospace" font-size="18" fill="#5b6b8c" opacity="0.30">{ }</text>
+
+    <!-- shoulders / hoodie -->
+    <path d="M40 200 C44 158 66 142 100 142 C134 142 156 158 160 200 Z" fill="url(#hoodie)"/>
+    <path d="M84 146 L100 170 L116 146 Z" fill="#1a2334"/>
+    <rect x="97" y="150" width="6" height="50" rx="3" fill="#3a4760"/>
+
+    <!-- neck -->
+    <rect x="88" y="120" width="24" height="28" rx="10" fill="#e8b58f"/>
+    <!-- head -->
+    <ellipse cx="100" cy="98" rx="40" ry="44" fill="#f2c39c"/>
+    <!-- ears -->
+    <circle cx="60" cy="100" r="8" fill="#eab183"/>
+    <circle cx="140" cy="100" r="8" fill="#eab183"/>
+
+    <!-- hair -->
+    <path d="M58 92 C56 58 78 44 100 44 C124 44 146 60 142 94 C140 80 132 70 120 68 C124 76 124 82 122 86 C112 70 90 66 78 74 C70 79 64 86 62 96 C61 95 59 94 58 92 Z" fill="#2b2117"/>
+    <path d="M62 96 C66 78 80 70 96 70 C84 74 74 84 70 98 Z" fill="#1f180f"/>
+
+    <!-- eyebrows -->
+    <rect x="74" y="86" width="20" height="4" rx="2" fill="#3b2c1d"/>
+    <rect x="106" y="86" width="20" height="4" rx="2" fill="#3b2c1d"/>
+
+    <!-- glasses -->
+    <g fill="none" stroke="#0f1626" stroke-width="3.5">
+      <rect x="70" y="92" width="26" height="22" rx="7"/>
+      <rect x="104" y="92" width="26" height="22" rx="7"/>
+      <path d="M96 100 L104 100"/>
+      <path d="M70 99 L62 97"/>
+      <path d="M130 99 L138 97"/>
+    </g>
+    <rect x="72" y="94" width="22" height="18" rx="6" fill="#7dd3fc" opacity="0.18"/>
+    <rect x="106" y="94" width="22" height="18" rx="6" fill="#7dd3fc" opacity="0.18"/>
+
+    <!-- eyes -->
+    <circle cx="83" cy="103" r="3.2" fill="#241a12"/>
+    <circle cx="117" cy="103" r="3.2" fill="#241a12"/>
+
+    <!-- nose -->
+    <path d="M100 106 L96 116 L103 116" fill="none" stroke="#d79b6e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- smile -->
+    <path d="M86 124 Q100 134 114 124" fill="none" stroke="#b9764c" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" role="img" aria-label="LFmall Open API docs preview">
+  <rect width="480" height="300" fill="#f7f8fb"/>
+  <!-- sidebar -->
+  <rect width="150" height="300" fill="#ffffff"/>
+  <line x1="150" y1="0" x2="150" y2="300" stroke="#eceef3"/>
+  <text x="18" y="34" font-family="Segoe UI, sans-serif" font-size="15" font-weight="700" fill="#1f2533">LFmall <tspan fill="#ff7a18">Open API</tspan></text>
+  <text x="18" y="50" font-family="Segoe UI, sans-serif" font-size="9" fill="#9aa3b2">Version 6.9</text>
+  <rect x="14" y="62" width="122" height="20" rx="6" fill="#f1f3f7"/>
+  <text x="22" y="76" font-family="Segoe UI, sans-serif" font-size="9" fill="#aab2c0">메뉴 검색...</text>
+  <rect x="8" y="92" width="134" height="22" rx="5" fill="#fff4ec"/>
+  <rect x="8" y="92" width="3" height="22" fill="#ff7a18"/>
+  <text x="20" y="107" font-family="Segoe UI, sans-serif" font-size="10" font-weight="600" fill="#ff7a18">개요</text>
+  <g font-family="Segoe UI, sans-serif" font-size="9.5" fill="#5b6473">
+    <text x="20" y="132">1. 상품정보</text>
+    <text x="20" y="152">2. 상품정보조회</text>
+    <text x="20" y="172">3. 브랜드목록</text>
+    <text x="20" y="192">4. 품목목록</text>
+    <text x="20" y="212">5. 주문처리</text>
+    <text x="20" y="232">6. 배송상태변경</text>
+    <text x="20" y="252">7. 코드조회</text>
+    <text x="20" y="272">8. 상품Q&amp;A조회</text>
+  </g>
+  <!-- main -->
+  <text x="172" y="40" font-family="Segoe UI, sans-serif" font-size="20" font-weight="800" fill="#1f2533">LFmall Open API</text>
+  <text x="172" y="58" font-family="Segoe UI, sans-serif" font-size="10" fill="#8b94a3">LF mall 외부 연동 API 명세서 V6.9</text>
+  <!-- card 1 -->
+  <rect x="172" y="74" width="286" height="92" rx="10" fill="#ffffff" stroke="#eceef3"/>
+  <text x="186" y="96" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#2b3242">1. 도메인 목록</text>
+  <g font-family="monospace" font-size="9">
+    <text x="186" y="116" fill="#8b94a3">개발</text><rect x="240" y="107" width="150" height="13" rx="3" fill="#f1f3f7"/><text x="248" y="116" fill="#5b6473">dev01-b2b.lfmall.co.kr</text>
+    <text x="186" y="136" fill="#8b94a3">운영</text><rect x="240" y="127" width="120" height="13" rx="3" fill="#f1f3f7"/><text x="248" y="136" fill="#5b6473">b2b.lfmall.co.kr</text>
+  </g>
+  <rect x="186" y="146" width="258" height="14" rx="4" fill="#fff7e6"/>
+  <!-- card 2 -->
+  <rect x="172" y="178" width="286" height="64" rx="10" fill="#ffffff" stroke="#eceef3"/>
+  <text x="186" y="200" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#2b3242">3. 인증 정보 (API KEY 발급 없음)</text>
+  <text x="186" y="220" font-family="Segoe UI, sans-serif" font-size="9" fill="#8b94a3">인증ID</text>
+  <text x="240" y="220" font-family="Segoe UI, sans-serif" font-size="9" fill="#5b6473">입점업체 ID</text>
+  <text x="186" y="234" font-family="Segoe UI, sans-serif" font-size="9" fill="#8b94a3">인증키</text>
+  <text x="240" y="234" font-family="Segoe UI, sans-serif" font-size="9" fill="#5b6473">입점업체 비밀번호</text>
+  <!-- card 3 -->
+  <rect x="172" y="254" width="286" height="36" rx="10" fill="#ffffff" stroke="#eceef3"/>
+  <text x="186" y="276" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#2b3242">기본 규칙 · XML · UTF-8</text>
+</svg>

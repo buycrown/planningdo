@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" role="img" aria-label="토스페이 라스트클릭 쿠폰 기획안 preview">
+  <defs>
+    <linearGradient id="th" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1f6bff"/><stop offset="1" stop-color="#0050e6"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="300" fill="#eef1f6"/>
+  <!-- hero -->
+  <rect x="20" y="16" width="440" height="118" rx="14" fill="url(#th)"/>
+  <circle cx="430" cy="40" r="40" fill="#ffffff" opacity="0.06"/>
+  <circle cx="400" cy="120" r="26" fill="#ffffff" opacity="0.06"/>
+  <rect x="40" y="32" width="150" height="18" rx="9" fill="#ffffff" opacity="0.18"/>
+  <text x="50" y="45" font-family="Segoe UI, sans-serif" font-size="8" fill="#eaf1ff">LFmall × 토스페이 · 마케팅실 요청 과제</text>
+  <text x="40" y="78" font-family="Segoe UI, sans-serif" font-size="19" font-weight="800" fill="#fff">토스페이 라스트클릭 기반 쿠폰 적용 로직 신설</text>
+  <text x="40" y="98" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#d4e2ff">프로모션 URL 경유 유입 고객에게만 쿠폰 혜택 적용 · traceID·MID 분기 구조</text>
+  <g font-family="Segoe UI, sans-serif" font-size="8">
+    <text x="40" y="120" fill="#aac4ff">작성자</text><text x="40" y="130" font-weight="700" fill="#fff">서비스기획팀 / Harry</text>
+    <text x="150" y="120" fill="#aac4ff">버전</text><text x="150" y="130" font-weight="700" fill="#fff">v1.0 / 2026-05-21</text>
+    <text x="280" y="120" fill="#aac4ff">관련 제휴</text><text x="280" y="130" font-weight="700" fill="#fff">Toss App · LFmall App/Web</text>
+  </g>
+  <!-- toc card -->
+  <rect x="20" y="146" width="440" height="78" rx="12" fill="#fff" stroke="#e2e6ee"/>
+  <text x="36" y="166" font-family="Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#6b7280">목차</text>
+  <g font-family="Segoe UI, sans-serif" font-size="9">
+    <text x="36" y="188" fill="#1f6bff" font-weight="700">01</text><text x="58" y="188" fill="#3b4250">개요</text>
+    <text x="120" y="188" fill="#1f6bff" font-weight="700">02</text><text x="142" y="188" fill="#3b4250">목적</text>
+    <text x="204" y="188" fill="#1f6bff" font-weight="700">03</text><text x="226" y="188" fill="#3b4250">기존 환경 (AS-IS)</text>
+    <text x="360" y="188" fill="#1f6bff" font-weight="700">04</text><text x="382" y="188" fill="#3b4250">타사 분석</text>
+    <text x="36" y="210" fill="#1f6bff" font-weight="700">05</text><text x="58" y="210" fill="#3b4250">개선 방향 (TO-BE)</text>
+    <text x="204" y="210" fill="#1f6bff" font-weight="700">06</text><text x="226" y="210" fill="#3b4250">개발 가이드</text>
+    <text x="360" y="210" fill="#1f6bff" font-weight="700">07</text><text x="382" y="210" fill="#3b4250">기대효과</text>
+  </g>
+  <!-- body card -->
+  <rect x="20" y="236" width="440" height="52" rx="12" fill="#fff" stroke="#e2e6ee"/>
+  <circle cx="40" cy="258" r="9" fill="#1f6bff"/><text x="40" y="261" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="8" font-weight="700" fill="#fff">01</text>
+  <text x="58" y="262" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#1f2533">개요</text>
+  <rect x="36" y="272" width="408" height="6" rx="3" fill="#eef1f6"/>
+</svg>
