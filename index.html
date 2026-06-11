@@ -50,9 +50,11 @@
 
   /* ---------- top bar ---------- */
   .topbar{display:flex;align-items:center;justify-content:space-between;padding:26px 0 10px;}
-  .brand{display:flex;align-items:center;gap:14px;}
-  .brand .ava{width:54px;height:54px;border-radius:50%;flex:0 0 auto;
-    box-shadow:0 0 0 1px #2a3350,0 8px 26px #00000066;}
+  .brand{display:flex;align-items:center;gap:18px;}
+  .brand .ava{width:92px;height:92px;border-radius:50%;flex:0 0 auto;padding:3px;box-sizing:border-box;
+    background:linear-gradient(135deg,#ff5ea3,#c026d3,#7c3aed,#38bdf8);display:block;
+    box-shadow:0 0 0 1px #2a3350,0 10px 30px #00000077,0 0 26px #7c3aed55;}
+  .brand .ava img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;}
   .brand .who .kicker{font-size:11px;letter-spacing:3px;color:var(--accent2);font-weight:700;text-transform:uppercase;}
   .brand .who .name{font-size:20px;font-weight:800;letter-spacing:.3px;
     background:linear-gradient(90deg,#fff,#cbd5ff);-webkit-background-clip:text;background-clip:text;color:transparent;}
@@ -63,15 +65,8 @@
   .toplinks .dot{width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;margin-right:7px;
     box-shadow:0 0 8px #22c55e;vertical-align:middle;}
 
-  /* ---------- hero heading ---------- */
-  .hero{padding:30px 0 8px;}
-  .hero h1{font-size:clamp(30px,5vw,46px);font-weight:800;line-height:1.1;letter-spacing:-.5px;}
-  .hero h1 .accent{background:linear-gradient(100deg,var(--accent3),var(--accent),var(--accent2));
-    -webkit-background-clip:text;background-clip:text;color:transparent;}
-  .hero p{margin-top:14px;color:var(--text-dim);font-size:15px;max-width:640px;line-height:1.6;}
-
   /* ---------- controls ---------- */
-  .controls{display:flex;gap:14px;align-items:center;margin:30px 0 18px;flex-wrap:wrap;}
+  .controls{display:flex;gap:14px;align-items:center;margin:24px 0 18px;flex-wrap:wrap;}
   .filters{display:flex;gap:8px;flex-wrap:wrap;}
   .chip{font-size:13px;color:var(--text-dim);border:1px solid var(--border);background:#0e1424;
     padding:9px 16px;border-radius:999px;cursor:pointer;transition:.16s;display:flex;align-items:center;gap:7px;}
@@ -149,7 +144,7 @@
   <!-- ===== TOP BAR ===== -->
   <header class="topbar">
     <div class="brand">
-      <img class="ava" src="assets/avatar.svg" alt="Harry avatar">
+      <span class="ava"><img src="assets/avatar.png" alt="Harry avatar"></span>
       <div class="who">
         <div class="kicker">Harry's Lab</div>
         <div class="name">buycrown.cloud</div>
@@ -160,13 +155,6 @@
       <a href="https://wiki.lfcorp.com" target="_blank" rel="noopener">사내 위키 ↗</a>
     </nav>
   </header>
-
-  <!-- ===== HERO ===== -->
-  <section class="hero">
-    <h1>프로젝트 &amp; <span class="accent">프로토타입</span></h1>
-    <p>이커머스 서비스기획자 Harry의 연구소입니다. 여기서 진행한 모든 작업은
-       하나의 웹페이지로 만들어 이 곳에 게시됩니다. 아래 카드를 눌러 각 프로젝트로 이동하세요.</p>
-  </section>
 
   <!-- ===== CONTROLS ===== -->
   <div class="controls">
