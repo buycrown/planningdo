@@ -79,7 +79,7 @@
   .condRow{border:1px solid var(--line2);background:#1a2130;border-radius:10px;padding:10px;margin-bottom:8px;position:relative}
   .condRow .rowtop{display:flex;align-items:center;gap:7px;margin-bottom:8px}
   .condRow .fname{font-size:12px;font-weight:800;color:#fff;flex:1}
-  .condRow .fgrp{font-size:9.5px;color:var(--muted);border:1px solid var(--line2);border-radius:5px;padding:1px 6px;font-weight:700}
+  .condRow .fgrp{font-size:9.5px;border:1px solid var(--line2);border-radius:5px;padding:2px 7px;font-weight:800;white-space:nowrap;letter-spacing:-.2px}
   .condRow .del{cursor:pointer;color:#7e8aa3;font-size:15px;line-height:1;border:none;background:none;padding:2px 4px}
   .condRow .del:hover{color:var(--bad)}
   .condRow select,.condRow input[type=number]{background:var(--card);border:1.5px solid var(--line2);color:var(--ink);border-radius:8px;padding:7px 9px;font-size:12px}
@@ -453,7 +453,8 @@ const FACETS = {
   prodCnt:        {grp:2, label:"상품수(prodCnt)", type:"range", min:0, max:200, step:5, unit:"개"},
   // ③ 결과/성과
   sales:          {grp:3, label:"가상매출(sales)", type:"range", min:0, max:4000, step:50, unit:"만원"},
-  convRate:       {grp:3, label:"전환율(convRate)", type:"range", min:0, max:5, step:0.1, unit:"%"}
+  convRate:       {grp:3, label:"전환율(convRate)", type:"range", min:0, max:5, step:0.1, unit:"%"},
+  rpv:            {grp:3, label:"RPV·방문당매출(rpv)", type:"range", min:0, max:2000, step:50, unit:"원", derived:e=>Math.round(rpv(e))}
 };
 const GROUPS = [
   {id:1, label:"① 주어 속성 (무엇에 관한 행사)", color:"#a78bfa"},
@@ -480,7 +481,7 @@ function evalCond(e, c){
     if(isNaN(lo)||isNaN(hi)) return true;
     return e.discMax>=lo && e.discMin<=hi;
   }
-  const val = Number(e[c.field]);
+  const val = f.derived ? Number(f.derived(e)) : Number(e[c.field]);
   if(isNaN(val)) return false;
   const lo=Number(c.lo), hi=Number(c.hi);
   switch(c.op){
@@ -661,7 +662,8 @@ function renderConditions(){
   }
   host.innerHTML = conditions.map((c,i)=>{
     const f=FACETS[c.field];
-    const grpLbl = ["","①주어","②방식","③성과"][f.grp];
+    const grpLbl = ["","① 주어속성","② 방식속성","③ 결과·성과"][f.grp];
+    const g=GROUPS.find(x=>x.id===f.grp); const gc=g?g.color:"#8893a8";
     let inner="";
     if(f.type==="enum"){
       const opts = f.bool ? ["true","false"] : enumValues(c.field);
@@ -719,9 +721,9 @@ function renderConditions(){
       inner = `<div class="ctrlRow">${opSel}</div>${rangeBody}`;
     }
     const conn = i>0 ? `<div class="rowConn">${logic}</div>` : "";
-    return conn + `<div class="condRow">
+    return conn + `<div class="condRow" style="border-left:4px solid ${gc};background:linear-gradient(90deg,${gc}22,#1a2130 46%)">
       <div class="rowtop">
-        <span class="fgrp">${grpLbl}</span>
+        <span class="fgrp" style="background:${gc};color:#0b1020;border-color:${gc}">${grpLbl}</span>
         <span class="fname">${f.label}</span>
         <button class="del" title="삭제" onclick="delCondition(${c.id})">✕</button>
       </div>
