@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LFmall 기획전 온톨로지 분석 툴 v3</title>
+<style>
+  :root{
+    --bg:#0f1420; --surface:#161c2b; --card:#1b2230; --line:#2a3346; --line2:#374159;
+    --ink:#e8ecf4; --sub:#9aa6be; --muted:#6c7892;
+    --accent:#3b82f6; --accent2:#60a5fa; --accentDim:#1e3a5f;
+    --good:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+    --pageBg:#0b0f18;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 28px rgba(0,0,0,.32);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--pageBg);color:var(--ink);font-size:14px;-webkit-font-smoothing:antialiased}
+  header{background:linear-gradient(180deg,#161c2b,#11161f);color:#fff;padding:16px 26px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  header .ht h1{margin:0;font-size:19px;font-weight:800;letter-spacing:-.4px}
+  header .ht h1 .v{font-size:11px;color:var(--accent2);font-weight:700;margin-left:6px;border:1px solid var(--accentDim);background:rgba(59,130,246,.12);padding:1px 7px;border-radius:20px}
+  header .ht p{margin:5px 0 0;font-size:12px;color:var(--sub)}
+  header .summaryBar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--sub)}
+  header .summaryBar .pill{background:var(--accentDim);color:var(--accent2);border:1px solid #2c4d76;border-radius:20px;padding:4px 11px;font-weight:700;font-size:11.5px}
+  header .summaryBar .res{font-weight:800;color:#fff}
+  header .summaryBar .res b{color:var(--accent2);font-size:17px;margin:0 3px}
+
+  .wrap{max-width:1480px;margin:0 auto;padding:18px 22px 0;display:grid;grid-template-columns:380px 1fr;gap:18px;align-items:start;height:calc(100vh - 74px)}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+  aside.panel{padding:16px;height:100%;overflow-y:auto}
+  main{height:100%;min-height:0;display:flex;flex-direction:column}
+  main .panel{padding:16px;flex:1 1 auto;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+  main .panel .toolbar,main .panel .modeNote{flex:0 0 auto}
+  #list{flex:1 1 auto;overflow-y:auto;padding-right:4px}
+  aside.panel::-webkit-scrollbar,#list::-webkit-scrollbar{width:8px}
+  aside.panel::-webkit-scrollbar-thumb,#list::-webkit-scrollbar-thumb{background:#374159;border-radius:8px}
+  aside.panel::-webkit-scrollbar-thumb:hover,#list::-webkit-scrollbar-thumb:hover{background:#4b5772}
+
+  h2.sec{margin:0 0 12px;font-size:13.5px;font-weight:800;display:flex;align-items:center;gap:7px;color:#fff}
+  h2.sec .tag{font-size:10px;background:var(--accentDim);color:var(--accent2);padding:3px 8px;border-radius:20px;font-weight:800;letter-spacing:.3px;border:1px solid #2c4d76}
+
+  /* 자연어 검색 */
+  .searchbox{display:flex;gap:7px;margin-bottom:9px}
+  .searchbox input{flex:1;padding:10px 12px;border:1.5px solid var(--line2);border-radius:10px;font-size:13px;background:var(--card);color:var(--ink);transition:.15s}
+  .searchbox input::placeholder{color:var(--muted)}
+  .searchbox input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.18)}
+  .btn{cursor:pointer;border:none;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:800;color:#fff;background:var(--accent);transition:.12s}
+  .btn:hover{filter:brightness(1.1)}
+  .btn:active{transform:translateY(1px)}
+  .btn.sec{background:#222b3c;color:#c2cbe0;border:1px solid var(--line2)}
+  .btn.sm{padding:6px 10px;font-size:11.5px;border-radius:8px}
+  .btn.danger{background:#3a2330;color:#fca5a5;border:1px solid #5a2e3e}
+  .hint{font-size:11px;color:var(--sub);line-height:1.7;margin-top:2px}
+  .ex{display:inline-block;background:#222b3c;border:1px solid var(--line2);border-radius:7px;padding:3px 8px;margin:3px 4px 0 0;cursor:pointer;font-size:11px;color:var(--accent2);transition:.12s}
+  .ex:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .divider{border:none;border-top:1px solid var(--line);margin:14px 0}
+
+  /* 아코디언 3계층 */
+  .acc{border:1px solid var(--line);border-radius:11px;margin-bottom:9px;overflow:hidden;background:var(--card)}
+  .acc>.head{cursor:pointer;padding:11px 13px;display:flex;align-items:center;gap:9px;font-weight:800;font-size:12.5px;user-select:none;background:#1f2738}
+  .acc>.head .dot{width:9px;height:9px;border-radius:3px;flex:0 0 auto}
+  .acc>.head .arr{margin-left:auto;color:var(--muted);transition:.18s;font-size:11px}
+  .acc.open>.head .arr{transform:rotate(90deg)}
+  .acc>.body{display:none;padding:11px 13px;border-top:1px solid var(--line)}
+  .acc.open>.body{display:block}
+  .facetList{display:flex;flex-direction:column;gap:6px}
+  .facetBtn{cursor:pointer;border:1px solid var(--line2);background:#1a2130;border-radius:8px;padding:8px 10px;font-size:12px;color:#c8d1e4;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:.12s}
+  .facetBtn:hover{border-color:var(--accent);color:#fff}
+  .facetBtn .ft{font-size:9.5px;color:var(--muted);border:1px solid var(--line2);border-radius:5px;padding:1px 6px;font-weight:700}
+  .facetBtn .ft.range{color:#fbbf24;border-color:#5a4a1e}
+  .facetBtn .ft.enum{color:#7dd3fc;border-color:#1e4258}
+
+  /* 조건 행 */
+  .condArea{margin-top:6px}
+  .logicTop{display:flex;align-items:center;gap:9px;margin-bottom:9px;flex-wrap:wrap}
+  .logicTop .lbl{font-size:11px;color:var(--sub);font-weight:700}
+  .toggleLogic{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden}
+  .toggleLogic button{border:none;background:#1a2130;color:var(--sub);padding:6px 13px;font-size:11.5px;font-weight:800;cursor:pointer;transition:.12s}
+  .toggleLogic button.on{background:var(--accent);color:#fff}
+  .condRow{border:1px solid var(--line2);background:#1a2130;border-radius:10px;padding:10px;margin-bottom:8px;position:relative}
+  .condRow .rowtop{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+  .condRow .fname{font-size:12px;font-weight:800;color:#fff;flex:1}
+  .condRow .fgrp{font-size:9.5px;color:var(--muted);border:1px solid var(--line2);border-radius:5px;padding:1px 6px;font-weight:700}
+  .condRow .del{cursor:pointer;color:#7e8aa3;font-size:15px;line-height:1;border:none;background:none;padding:2px 4px}
+  .condRow .del:hover{color:var(--bad)}
+  .condRow select,.condRow input[type=number]{background:var(--card);border:1.5px solid var(--line2);color:var(--ink);border-radius:8px;padding:7px 9px;font-size:12px}
+  .condRow select:focus,.condRow input:focus{outline:none;border-color:var(--accent)}
+  .ctrlRow{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .opSel{width:auto;font-weight:700}
+  .enumVals{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+  .enumChip{cursor:pointer;border:1.5px solid var(--line2);background:var(--card);border-radius:7px;padding:5px 9px;font-size:11px;color:#c2cbe0;transition:.12s;user-select:none;font-weight:600}
+  .enumChip:hover{border-color:var(--accent2)}
+  .enumChip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .rangeWrap{margin-top:8px}
+  .rangeWrap .rlabels{display:flex;justify-content:space-between;font-size:11px;color:var(--sub);margin-bottom:4px}
+  .rangeWrap .rlabels b{color:var(--accent2)}
+  .dual{position:relative;height:30px}
+  .dual input[type=range]{position:absolute;left:0;width:100%;margin:0;-webkit-appearance:none;appearance:none;background:none;pointer-events:none;height:30px}
+  .dual input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid #fff;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.5);margin-top:-6px}
+  .dual input[type=range]::-moz-range-thumb{pointer-events:auto;width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid #fff;cursor:pointer}
+  .dual .track{position:absolute;top:13px;left:0;right:0;height:5px;background:var(--line2);border-radius:5px}
+  .dual .fill{position:absolute;top:13px;height:5px;background:var(--accent);border-radius:5px}
+  .numIn{display:flex;align-items:center;gap:6px;margin-top:6px}
+  .numIn input{width:74px}
+  .numIn span{font-size:11px;color:var(--sub)}
+  .rowConn{font-size:10px;font-weight:800;color:var(--accent2);text-align:center;margin:-3px 0 5px;letter-spacing:.5px}
+
+  .emptyCond{font-size:11.5px;color:var(--muted);text-align:center;padding:14px 8px;border:1px dashed var(--line2);border-radius:10px}
+
+  /* 프리셋 */
+  .presetRow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  .presetChip{cursor:pointer;border:1px solid var(--line2);background:#1a2130;border-radius:8px;padding:6px 10px;font-size:11.5px;color:#c8d1e4;display:flex;align-items:center;gap:6px;transition:.12s}
+  .presetChip:hover{border-color:var(--accent);color:#fff}
+  .presetChip .pdel{color:#7e8aa3;font-size:12px}
+  .presetChip .pdel:hover{color:var(--bad)}
+
+  /* 결과 영역 */
+  .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px}
+  .count{font-size:13px;color:var(--sub);font-weight:600}
+  .count b{color:var(--accent2);font-size:18px;margin:0 2px}
+  select.sortsel{padding:9px 11px;border:1.5px solid var(--line2);border-radius:10px;font-size:12.5px;font-weight:600;color:#c8d1e4;background:var(--card);cursor:pointer}
+  select.sortsel:focus{outline:none;border-color:var(--accent)}
+  .modeNote{font-size:12px;background:var(--accentDim);border:1px solid #2c4d76;color:var(--accent2);font-weight:600;padding:9px 13px;border-radius:11px;margin-bottom:12px;display:none}
+  .modeNote.show{display:block}
+  .modeNote .x{cursor:pointer;text-decoration:underline;font-weight:800}
+
+  /* ===== CARD ===== */
+  .card{display:grid;grid-template-columns:120px 1fr;gap:16px;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:13px;background:var(--card);transition:.15s}
+  .card:hover{box-shadow:0 6px 26px rgba(0,0,0,.4);border-color:var(--line2);transform:translateY(-1px)}
+  .thumb{width:120px;height:152px;border-radius:11px;overflow:hidden;position:relative;background:#0e1320;flex-shrink:0;cursor:pointer;display:block;text-decoration:none}
+  .thumb:hover img{transform:scale(1.06)}
+  .thumb img{transition:transform .25s;width:100%;height:100%;object-fit:cover;display:block}
+  .thumb .goto{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(0deg,rgba(0,0,0,.78),transparent);color:#fff;font-size:10px;font-weight:700;text-align:center;padding:12px 4px 5px;opacity:0;transition:.18s}
+  .thumb:hover .goto{opacity:1}
+  .thumb .fallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;color:#fff;font-weight:800;font-size:13px;padding:8px;line-height:1.4}
+  .thumb .idtag{position:absolute;left:7px;top:7px;background:rgba(0,0,0,.7);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:.3px}
+  .body{min-width:0}
+  .crow{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .nm{font-size:16px;font-weight:800;letter-spacing:-.3px;line-height:1.3}
+  .nm a{color:#fff;text-decoration:none}
+  .nm a:hover{color:var(--accent2)}
+  .meta{font-size:11.5px;color:var(--sub);margin-top:4px}
+  .sim{font-size:11px;font-weight:800;color:#fff;border-radius:20px;padding:5px 11px;white-space:nowrap;align-self:flex-start}
+
+  /* 신규 배지 */
+  .badges{display:flex;flex-wrap:wrap;gap:5px;margin:9px 0 4px}
+  .bdg{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;border:1px solid var(--line2);background:#1a2130;color:#b9c3d8;display:flex;align-items:center;gap:4px}
+  .bdg.multi{color:#fbbf24;border-color:#5a4a1e;background:rgba(245,158,11,.08)}
+  .bdg.single{color:#7dd3fc;border-color:#1e4258;background:rgba(56,189,248,.08)}
+  .bdg.cur{color:#c4b5fd;border-color:#3b3168;background:rgba(167,139,250,.08)}
+  .bdg.route{color:#86efac;border-color:#1e4a32;background:rgba(34,197,94,.08)}
+  .bdg.cx{color:#fda4af;border-color:#5a2e3e;background:rgba(239,68,68,.07)}
+  .bdg.eff{color:#fff;border-color:#2c4d76;background:var(--accentDim)}
+  .bdg b{font-weight:800}
+
+  .summary{font-size:12px;color:var(--sub);line-height:1.6;margin:9px 0 11px}
+
+  .discWrap{display:flex;align-items:center;gap:12px;margin:10px 0 11px;flex-wrap:wrap}
+  .discBadge{font-size:12px;font-weight:800;color:#fff;border-radius:10px;padding:7px 13px;display:flex;align-items:baseline;gap:5px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+  .discBadge .lab{font-size:9.5px;font-weight:700;opacity:.85;letter-spacing:.5px}
+  .discBadge .rng{font-size:15px;letter-spacing:-.3px}
+  .discTrack{flex:1;min-width:150px}
+  .discTrack .tl{font-size:10px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:4px}
+  .gbar{height:9px;border-radius:6px;background:linear-gradient(90deg,#16a34a 0%,#84cc16 30%,#eab308 55%,#f97316 78%,#dc2626 100%);position:relative}
+  .gbar .seg{position:absolute;top:-2px;height:13px;border-radius:5px;border:2px solid #161c2b;box-shadow:0 1px 4px rgba(0,0,0,.4);background:rgba(255,255,255,.25)}
+  .gbar .cap{position:absolute;top:-2px;width:3px;height:13px;background:#fff;border-radius:2px}
+
+  .kpis{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}
+  .kpi{font-size:11px;color:var(--sub)}
+  .kpi b{display:block;font-size:15px;color:#fff;font-weight:800;margin-top:2px}
+  .kwline{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+  .kw{font-size:10.5px;padding:3px 8px;border-radius:6px;font-weight:600}
+  .kw.match{outline:2px solid var(--accent);outline-offset:-2px}
+  .kw.theme{background:rgba(167,139,250,.13);color:#c4b5fd}
+  .kw.benefit{background:rgba(245,158,11,.13);color:#fcd34d}
+  .kw.product{background:rgba(34,197,94,.13);color:#86efac}
+  .kw.visual{background:rgba(236,72,153,.13);color:#f9a8d4}
+  .kw.brand{background:rgba(59,130,246,.13);color:#93c5fd}
+
+  /* 시인성 리뷰 */
+  .review{margin-top:12px;background:#171d2a;border:1px solid var(--line);border-radius:12px;padding:12px 13px}
+  .review .rhead{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .review .rtitle{font-size:12px;font-weight:800;color:var(--accent2);display:flex;align-items:center;gap:5px}
+  .stars{font-size:14px;letter-spacing:1px;line-height:1}
+  .stars .s{color:#374159}.stars .f{color:#f59e0b}.stars .h{position:relative;color:#374159}
+  .stars .h::before{content:"★";position:absolute;left:0;width:50%;overflow:hidden;color:#f59e0b}
+  .rscore{font-size:14px;font-weight:800;color:#fff}
+  .rweight{font-size:10px;color:var(--muted);font-weight:600}
+  .subgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px 16px;margin-top:9px}
+  .srow{display:flex;align-items:center;gap:7px;cursor:help}
+  .srow .slab{font-size:10.5px;color:#9aa6be;font-weight:700;width:80px;display:flex;justify-content:space-between}
+  .srow .slab i{font-style:normal;color:var(--muted);font-weight:600;font-size:9px}
+  .srow .sbar{flex:1;height:6px;background:#222b3c;border-radius:5px;overflow:hidden}
+  .srow .sbar i{display:block;height:100%;background:linear-gradient(90deg,#60a5fa,#3b82f6)}
+  .srow .sval{font-size:10.5px;font-weight:800;color:var(--accent2);width:24px;text-align:right}
+  .rtext{font-size:11.5px;color:#aeb8cf;line-height:1.65;margin-top:8px}
+  .rpc{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .rpc span{font-size:10.5px;padding:3px 8px;border-radius:6px;font-weight:600}
+  .rpc .pro{background:rgba(34,197,94,.13);color:#86efac}
+  .rpc .con{background:rgba(239,68,68,.13);color:#fca5a5}
+  .cardActions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+  .empty{text-align:center;color:var(--sub);padding:46px 14px;font-size:13px;line-height:1.8}
+  .empty .relax{margin-top:10px}
+
+  /* 비교 도크 */
+  .compDock{position:sticky;bottom:0;background:var(--surface);border:1px solid var(--line);border-top:2px solid var(--accent);border-radius:14px 14px 0 0;box-shadow:0 -6px 28px rgba(0,0,0,.4);margin-top:14px;padding:0;display:none;flex:0 0 auto}
+  .compDock.show{display:block}
+  .compDock .dhead{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--line)}
+  .compDock .dhead .dt{font-size:13px;font-weight:800;color:#fff;display:flex;align-items:center;gap:7px}
+  .compDock .dbody{overflow-x:auto;max-height:300px;overflow-y:auto;padding:4px 10px 10px}
+  table.comp{border-collapse:collapse;width:100%;font-size:11.5px;min-width:480px}
+  table.comp th,table.comp td{padding:7px 9px;text-align:center;border-bottom:1px solid var(--line)}
+  table.comp th.rl{text-align:left;color:var(--sub);font-weight:700;width:130px;position:sticky;left:0;background:var(--surface)}
+  table.comp td.rl{text-align:left;color:var(--sub);font-weight:700;position:sticky;left:0;background:var(--surface)}
+  table.comp thead th{color:#fff;font-weight:800;font-size:11.5px;border-bottom:1.5px solid var(--line2)}
+  table.comp thead th .rm{cursor:pointer;color:#7e8aa3;font-size:12px;margin-left:5px}
+  table.comp thead th .rm:hover{color:var(--bad)}
+  table.comp td.diff{color:var(--accent2);font-weight:800;background:rgba(59,130,246,.08)}
+  table.comp td.best{color:var(--good);font-weight:800}
+
+  footer{max-width:1480px;margin:0 auto;padding:10px 22px 26px;font-size:11px;color:var(--muted);line-height:1.7}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#222b3c;border:1px solid var(--line2);color:#fff;padding:10px 18px;border-radius:10px;font-size:12.5px;font-weight:600;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.2s;z-index:99}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:1080px){.wrap{grid-template-columns:1fr;height:auto}aside.panel,main,main .panel{height:auto;overflow:visible}#list{overflow:visible}}
+  @media(max-width:560px){.card{grid-template-columns:1fr}.thumb{width:100%;height:180px}.subgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="ht">
+    <h1>🧬 LFmall 기획전 온톨로지 분석 툴 <span class="v">v3</span></h1>
+    <p>3계층 속성(주어·방식·성과) · 조건조합 빌더(AND/OR·범위) · 프리셋 · 온톨로지 유사도 · 비교뷰 · ※ 매출/유입은 가상 데이터</p>
+  </div>
+  <div class="summaryBar" id="summaryBar">
+    <span class="pill" id="logicPill">조건 없음</span>
+    <span class="res">결과 <b id="cntTop">0</b>건</span>
+  </div>
+</header>
+
+<div class="wrap">
+  <aside class="panel">
+    <h2 class="sec">🗣️ 자연어 검색 <span class="tag">동의어 매칭</span></h2>
+    <div class="searchbox">
+      <input id="q" type="text" placeholder="예: 단일브랜드 패션 신상 / 스포츠 고할인" onkeydown="if(event.key==='Enter')runNL()">
+      <button class="btn" onclick="runNL()">검색</button>
+    </div>
+    <div class="hint">예시 →
+      <span class="ex" onclick="setNL('여름 원데이특가 입점상품')">여름·원데이·입점</span>
+      <span class="ex" onclick="setNL('단일브랜드 패션 신상')">단일브랜드 신상</span>
+      <span class="ex" onclick="setNL('할인율 높은 스포츠 세일')">스포츠 고할인</span>
+    </div>
+
+    <hr class="divider">
+
+    <h2 class="sec">🧩 조건 조합 빌더 <span class="tag">3계층 facet</span></h2>
+
+    <div class="logicTop">
+      <span class="lbl">조건 결합 방식</span>
+      <span class="toggleLogic" id="logicToggle">
+        <button data-l="AND" class="on" onclick="setLogic('AND')">AND</button>
+        <button data-l="OR" onclick="setLogic('OR')">OR</button>
+      </span>
+      <button class="btn sec sm" onclick="clearConds()" style="margin-left:auto">전체 초기화</button>
+    </div>
+
+    <div id="accGroups"></div>
+
+    <div class="condArea">
+      <div style="font-size:11.5px;color:var(--sub);font-weight:700;margin:10px 0 7px">활성 조건</div>
+      <div id="condList"></div>
+    </div>
+
+    <hr class="divider">
+
+    <h2 class="sec">💾 프리셋 <span class="tag">localStorage</span></h2>
+    <div class="presetRow" id="presetRow"></div>
+    <div style="display:flex;gap:7px">
+      <input id="presetName" type="text" placeholder="현재 조건셋 이름" style="flex:1;padding:8px 10px;border:1.5px solid var(--line2);border-radius:9px;font-size:12px;background:var(--card);color:var(--ink)">
+      <button class="btn sm" onclick="savePreset()">저장</button>
+    </div>
+
+    <hr class="divider">
+    <details>
+      <summary style="cursor:pointer;font-size:12px;font-weight:800;color:var(--accent2)">👁️ 시인성 평가 기준 / 지표 정의</summary>
+      <div class="hint" id="rubricBody" style="margin-top:9px"></div>
+    </details>
+  </aside>
+
+  <main>
+    <div class="panel">
+      <div class="modeNote" id="modeNote"></div>
+      <div class="toolbar">
+        <div class="count">조회 결과 <b id="cnt">0</b>건</div>
+        <select id="sort" class="sortsel" onchange="render()">
+          <option value="eff">정렬: 매출효율 높은순</option>
+          <option value="sales">매출 높은순</option>
+          <option value="disc">할인율 높은순</option>
+          <option value="conv">전환율 높은순</option>
+          <option value="sim">유사도/관련도순</option>
+        </select>
+      </div>
+      <div id="list"></div>
+    </div>
+
+    <div class="compDock" id="compDock">
+      <div class="dhead">
+        <span class="dt">⚖️ 비교뷰 <span style="font-size:11px;color:var(--sub);font-weight:600">facet 행 정렬 · 차이값 강조</span></span>
+        <button class="btn sec sm" onclick="clearCompare()">비교 비우기</button>
+      </div>
+      <div class="dbody" id="compBody"></div>
+    </div>
+  </main>
+</div>
+
+<footer>
+  <b>설계 노트 v3</b> · 3계층 = ①주어속성(무엇에 관한 행사) ②방식속성(운영 방식) ③결과/성과.
+  매출효율 = 가상매출 ÷ 평균할인율(할인 1%p당 매출). 유사도는 온톨로지 가중 자카드 + 접근루트 동일 가중 반영.
+  할인율은 범위 명시, 최대할인율↑일수록 배지·게이지 RED. 매출·유입·전환율·점수는 가상/AI추론 추정치 — 실 운영 시 STB_ORDER_PROD/STB_PAYMENT 연동 및 현업 검증 필요.
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   데이터: 5개 기획전 — v2 키워드/썸네일/리뷰/가상매출 유지 + v3 3계층 정형 필드 추가
+   ========================================================= */
+const EVENTS = [
+  {
+    id:109852, name:"[닥스 셔츠] 여름에도 클래식하게",
+    url:"https://m.lfmall.co.kr/app/event/109852",
+    img:"https://img.lfmall.co.kr/file/WAS/display/202605/TRID000015534_%EB%AA%A8%EB%8D%B8%EC%BB%B7%20(1)%5B0%5D.jpg",
+    period:"26.06.01~06.08", discMin:40, discMax:62, prodCnt:33,
+    summary:"DAKS 단일브랜드 S/S 신상 셔츠·반팔니트 단독특가. 코너형 구성(SUMMER DEAL/BEST30/26SS NEW). 추가쿠폰 25% + 15만원이상 선착순 장우산 사은품.",
+    sales:1280, visits:9200, convRate:2.1,
+    // ① 주어속성
+    event_type:"BRAND_SALE", multi_brand_yn:false, brand_count:1, is_entr_yn:false, main_category:"FASHION",
+    // ② 방식속성
+    coupon_type:"GENERAL", card_benefit_yn:false, access_route:"HOME_BANNER", entry_depth:1,
+    visibility_score:5, complexity_score:3, nav_depth:2, curation_type:"SALES_FOCUS",
+    kw:{theme:["여름","클래식","신상","S/S신상","남성","헤리티지"],
+      benefit:["추가쿠폰","단독특가","사은품증정","선착순혜택"],
+      product:["단일브랜드","자사상품","패션","의류","셔츠/니트","중량(30~50)","단일카테고리"],
+      visual:["코너형구성","텍스트헤드라인","BEST큐레이션"],
+      brand:["DAKS"]}
+  },
+  {
+    id:112139, name:"여름 리빙템 (시원하고 쾌적한)",
+    url:"https://m.lfmall.co.kr/app/event/112139",
+    img:"https://img.lfmall.co.kr/file/WAS/display/202605/top_m_01%5B0%5D.jpg",
+    period:"진행중", discMin:10, discMax:73, prodCnt:140,
+    summary:"멀티브랜드 여름 리빙 기획전. 냉감침구·계절가전·주방·생활·가구 큐레이션. 입점상품 다수(SONY/dyson/BALMUDA/AMT/CUCKOO). PLUS쿠폰 최대10% + 24시간 원데이특가(타임딜).",
+    sales:4000, visits:38000, convRate:3.4,
+    event_type:"CATEGORY", multi_brand_yn:true, brand_count:40, is_entr_yn:true, main_category:"LIVING",
+    coupon_type:"PLUS", card_benefit_yn:false, access_route:"HOME_BANNER", entry_depth:1,
+    visibility_score:3, complexity_score:5, nav_depth:4, curation_type:"CATEGORY",
+    kw:{theme:["여름","리빙","냉감/쿨링","시즌특가","무더위"],
+      benefit:["PLUS쿠폰","원데이특가","타임딜","비밀특가","균일가/무배","입점혜택"],
+      product:["멀티브랜드","입점상품","리빙","가전","주방","침구","대량(100+)","멀티카테고리"],
+      visual:["카테고리큐레이션","타임딜배너","멀티배너"],
+      brand:["멀티/입점","SONY","dyson","BALMUDA","CUCKOO","AMT"]}
+  },
+  {
+    id:112180, name:"POTTERY와 함께하는 여름",
+    url:"https://m.lfmall.co.kr/app/event/112180",
+    img:"https://img.lfmall.co.kr/file/WAS/display/202605/%ED%8F%AC%ED%84%B0%EB%A6%AC1.jpg",
+    period:"26.06.01~06.15", discMin:0, discMax:10, prodCnt:60,
+    summary:"POTTERY 단일브랜드 여름 신상(Refined Classic). 컴포트 폴로니트·티셔츠·캡. 거의 정가 신상 중심. 일반쿠폰 10% + 장바구니쿠폰 10%(20만↑), 2-Pack 구매 이벤트.",
+    sales:1850, visits:11000, convRate:2.6,
+    event_type:"NEW_LAUNCH", multi_brand_yn:false, brand_count:1, is_entr_yn:false, main_category:"FASHION",
+    coupon_type:"CART", card_benefit_yn:false, access_route:"VAR_TAB", entry_depth:2,
+    visibility_score:3, complexity_score:3, nav_depth:3, curation_type:"CONTENT",
+    kw:{theme:["여름","신상","베이직","Refined Classic","남성"],
+      benefit:["일반쿠폰","장바구니쿠폰","번들/2-Pack","신상프로모션"],
+      product:["단일브랜드","자사상품","패션","의류","컨템포러리","중량(30~50)","단일카테고리"],
+      visual:["컬러베리에이션나열","신상중심구성","텍스트헤드라인"],
+      brand:["POTTERY"]}
+  },
+  {
+    id:112051, name:"스파이더 위크 (여름 스포츠)",
+    url:"https://m.lfmall.co.kr/app/event/112051",
+    img:"https://img.lfmall.co.kr/file/WAS/display/202605/750-1%5B51%5D.jpg",
+    period:"26.06.01~06.08", discMin:37, discMax:73, prodCnt:80,
+    summary:"SPYDER 단일브랜드 스포츠 여름 세일(~73%). 러닝·트레이닝·스윔웨어. 카테고리 코너 구성. 중복할인쿠폰 5%.",
+    sales:2400, visits:21000, convRate:2.9,
+    event_type:"BRAND_SALE", multi_brand_yn:false, brand_count:1, is_entr_yn:false, main_category:"SPORTS",
+    coupon_type:"DUP", card_benefit_yn:false, access_route:"VAR_TAB", entry_depth:2,
+    visibility_score:4, complexity_score:2, nav_depth:2, curation_type:"SALES_FOCUS",
+    kw:{theme:["여름","스포츠","러닝/트레이닝","액티브","고할인세일"],
+      benefit:["중복쿠폰","시즌세일","고할인(70%+)"],
+      product:["단일브랜드","자사상품","패션","스포츠웨어","대량(50~100)","멀티카테고리"],
+      visual:["카테고리큐레이션","코너형구성","스포츠무드"],
+      brand:["SPYDER"]}
+  },
+  {
+    id:112052, name:"OUTLET WEEKLY BEST",
+    url:"https://m.lfmall.co.kr/app/event/112052",
+    img:"https://img.lfmall.co.kr/file/WAS/display/202605/112052_750x1150.jpg",
+    period:"26.06.01~06.08", discMin:37, discMax:55, prodCnt:200,
+    summary:"아울렛 위클리 베스트. 자사 멀티브랜드(DAKS/HAZZYS/MAESTRO/ATHE) 여름 아우터·티셔츠·팬츠·가방·블라우스. SS BEST + FW 역시즌. PLUS쿠폰 5% 중복.",
+    sales:3200, visits:29000, convRate:3.0,
+    event_type:"OUTLET", multi_brand_yn:true, brand_count:4, is_entr_yn:false, main_category:"FASHION",
+    coupon_type:"PLUS", card_benefit_yn:false, access_route:"EVENT_ONLY", entry_depth:3,
+    visibility_score:4, complexity_score:2, nav_depth:2, curation_type:"BEST",
+    kw:{theme:["여름","아울렛","위클리베스트","역시즌","스테디셀러"],
+      benefit:["PLUS쿠폰","아울렛특가","중복쿠폰"],
+      product:["멀티브랜드","자사상품","패션","아우터/의류","잡화/가방","대량(100+)","멀티카테고리"],
+      visual:["베스트큐레이션","카테고리큐레이션","멀티배너"],
+      brand:["멀티/입점","DAKS","HAZZYS","MAESTRO","ATHE"]}
+  }
+];
+
+/* 파생 지표: 매출효율 = sales / 평균할인율 (할인 1%p당 매출, 만원) */
+function avgDisc(e){ return (e.discMin + e.discMax) / 2; }
+function salesEff(e){ const d=avgDisc(e); return d>0 ? e.sales/d : e.sales; }
+function rpv(e){ return e.visits>0 ? e.sales*10000/e.visits : 0; } // 유입 1건당 매출(원)
+
+/* =========================================================
+   facet 정의 (3계층) — enum / range
+   ========================================================= */
+const ENUM_LABELS = {
+  event_type:{BRAND_SALE:"브랜드세일",CATEGORY:"카테고리전",NEW_LAUNCH:"신상런칭",OUTLET:"아울렛"},
+  multi_brand_yn:{true:"통합전(멀티)",false:"단일브랜드"},
+  is_entr_yn:{true:"입점O",false:"입점X"},
+  main_category:{FASHION:"패션",SPORTS:"스포츠",LIVING:"리빙"},
+  coupon_type:{GENERAL:"일반",PLUS:"PLUS",DUP:"중복",CART:"장바구니",NONE:"없음"},
+  card_benefit_yn:{true:"페이백O",false:"페이백X"},
+  access_route:{HOME_BANNER:"홈배너",VAR_TAB:"가변탭",EVENT_ONLY:"기획전전용"},
+  curation_type:{CONTENT:"콘텐츠",SEASON_LEAD:"시즌리딩",SALES_FOCUS:"세일즈포커싱",CATEGORY:"카테고리",BEST:"베스트"}
+};
+function enumValues(field){
+  // 데이터 + 라벨 정의 합집합 (정의에만 있는 값도 노출)
+  const fromData = [...new Set(EVENTS.map(e=>String(e[field])))];
+  const fromLbl = Object.keys(ENUM_LABELS[field]||{});
+  return [...new Set([...fromData, ...fromLbl])];
+}
+
+const FACETS = {
+  // ① 주어속성
+  event_type:     {grp:1, label:"행사유형(event_type)", type:"enum"},
+  multi_brand_yn: {grp:1, label:"통합전 여부(multi_brand_yn)", type:"enum", bool:true},
+  is_entr_yn:     {grp:1, label:"입점 여부(is_entr_yn)", type:"enum", bool:true},
+  main_category:  {grp:1, label:"메인카테고리(main_category)", type:"enum"},
+  brand_count:    {grp:1, label:"브랜드 수(brand_count)", type:"range", min:1, max:40, step:1, unit:"개"},
+  // ② 방식속성
+  coupon_type:    {grp:2, label:"쿠폰유형(coupon_type)", type:"enum"},
+  card_benefit_yn:{grp:2, label:"페이백카드(card_benefit_yn)", type:"enum", bool:true},
+  access_route:   {grp:2, label:"접근루트(access_route)", type:"enum"},
+  curation_type:  {grp:2, label:"큐레이션유형(curation_type)", type:"enum"},
+  visibility_score:{grp:2, label:"시인성(visibility_score)", type:"range", min:1, max:5, step:1, unit:"점"},
+  complexity_score:{grp:2, label:"복잡도(complexity_score)", type:"range", min:1, max:5, step:1, unit:"점"},
+  nav_depth:      {grp:2, label:"동선깊이(nav_depth)", type:"range", min:1, max:6, step:1, unit:"단계"},
+  disc:           {grp:2, label:"할인율(disc, min~max)", type:"range", min:0, max:80, step:1, unit:"%", discRange:true},
+  prodCnt:        {grp:2, label:"상품수(prodCnt)", type:"range", min:0, max:200, step:5, unit:"개"},
+  // ③ 결과/성과
+  sales:          {grp:3, label:"가상매출(sales)", type:"range", min:0, max:4000, step:50, unit:"만원"},
+  convRate:       {grp:3, label:"전환율(convRate)", type:"range", min:0, max:5, step:0.1, unit:"%"}
+};
+const GROUPS = [
+  {id:1, label:"① 주어 속성 (무엇에 관한 행사)", color:"#a78bfa"},
+  {id:2, label:"② 방식 속성 (운영 방식)", color:"#38bdf8"},
+  {id:3, label:"③ 결과 / 성과 지표", color:"#22c55e"}
+];
+
+/* =========================================================
+   조건 엔진 — 견고성 (NaN 가드, between/gte/lte/eq/in, AND/OR)
+   ========================================================= */
+function evalCond(e, c){
+  const f = FACETS[c.field];
+  if(!f) return true;
+  if(f.type==="enum"){
+    // c.values: 선택된 문자열 배열 (in 의미). 빈 배열이면 조건 미적용(통과)
+    if(!c.values || c.values.length===0) return true;
+    let v = String(e[c.field]);
+    return c.values.includes(v);
+  }
+  // range
+  if(f.discRange){
+    // 할인율: 기획전 [discMin,discMax]가 사용자 [lo,hi]와 겹치면 매칭
+    const lo=Number(c.lo), hi=Number(c.hi);
+    if(isNaN(lo)||isNaN(hi)) return true;
+    return e.discMax>=lo && e.discMin<=hi;
+  }
+  const val = Number(e[c.field]);
+  if(isNaN(val)) return false;
+  const lo=Number(c.lo), hi=Number(c.hi);
+  switch(c.op){
+    case "between": if(isNaN(lo)||isNaN(hi)) return true; return val>=Math.min(lo,hi) && val<=Math.max(lo,hi);
+    case "gte":     if(isNaN(lo)) return true; return val>=lo;
+    case "lte":     if(isNaN(hi)) return true; return val<=hi;
+    case "eq":      if(isNaN(lo)) return true; { const f=FACETS[c.field]; const tol=(f&&f.step?f.step:1)/2; return Math.abs(val-lo)<tol; }
+    default:        if(isNaN(lo)||isNaN(hi)) return true; return val>=Math.min(lo,hi) && val<=Math.max(lo,hi);
+  }
+}
+function evalEvent(e, conds, logic){
+  const active = conds.filter(c=>{
+    const f=FACETS[c.field];
+    if(!f) return false;
+    if(f.type==="enum") return c.values && c.values.length>0;
+    return true; // range는 항상 활성으로 간주(슬라이더 기본값 존재)
+  });
+  if(active.length===0) return true; // 빈 조건 → 전체 표시
+  if(logic==="OR") return active.some(c=>evalCond(e,c));
+  return active.every(c=>evalCond(e,c)); // AND
+}
+
+/* =========================================================
+   v2 이식: 자연어 동의어 / 온톨로지 유사도 / 시인성 리뷰
+   ========================================================= */
+const SYN = {
+  "여름":["여름","썸머","summer","하절기","무더위","냉감","쿨링"],
+  "원데이특가":["원데이특가","원데이","타임딜","24시간특가","타임특가","하루특가"],
+  "입점상품":["입점상품","입점","멀티브랜드","입점브랜드","외부브랜드","통합전"],
+  "프로모션":["프로모션","기획전","행사","이벤트","세일","특가"],
+  "단일브랜드":["단일브랜드","단독브랜드","원브랜드","브랜드전"],
+  "신상":["신상","신상품","새상품","new","26ss","s/s신상","런칭"],
+  "패션":["패션","의류","옷","어패럴"],
+  "스포츠":["스포츠","액티브","러닝","트레이닝","운동"],
+  "리빙":["리빙","리빙템","홈","생활","침구","가전","주방","가구"],
+  "할인":["할인","세일","특가","디스카운트","고할인"],
+  "쿠폰":["쿠폰","할인쿠폰","plus쿠폰","장바구니쿠폰","중복쿠폰"],
+  "사은품":["사은품","증정","gift","선물","경품"],
+  "아울렛":["아울렛","outlet","역시즌","이월"],
+  "베스트":["베스트","best","인기","위클리베스트"]
+};
+const AXES = [
+  {key:"theme",   label:"테마/시즌",   color:"#a78bfa"},
+  {key:"benefit", label:"혜택/가격",   color:"#fcd34d"},
+  {key:"product", label:"상품구성",    color:"#86efac"},
+  {key:"visual",  label:"비주얼/형식", color:"#f9a8d4"},
+  {key:"brand",   label:"브랜드",      color:"#93c5fd"}
+];
+const AXIS_WEIGHT = {theme:1.4, benefit:1.2, product:1.1, visual:0.8, brand:0.9};
+function allKw(e){return AXES.flatMap(a=>e.kw[a.key]);}
+
+const REV_AXES = [
+  {key:"clarity", label:"이해도",       w:0.30, desc:"안내문구를 한눈에·즉시 이해할 수 있는가"},
+  {key:"benefit", label:"혜택 명확성",  w:0.30, desc:"할인·쿠폰·사은품 조건/대상/금액이 분명한가"},
+  {key:"fit",     label:"적합성",       w:0.20, desc:"문구·톤이 기획전 성격과 부합하는가"},
+  {key:"impact",  label:"시각적임팩트", w:0.20, desc:"첫 화면 주목도·시선 유도가 충분한가"}
+];
+const REVIEWS = {
+  109852:{scores:{clarity:5, benefit:4.5, fit:4.5, impact:4},
+    text:"\"여름에도 클래식하게\", \"S/S 신상 단독 특가\"처럼 한눈에 무슨 행사인지 들어오는 헤드라인이 좋았어요. 'SUMMER DEAL·BEST30·26SS NEW'로 코너 이름이 명확해 원하는 걸 바로 찾을 수 있었고, '추가쿠폰 25%'와 '15만원 이상 선착순 30명 장우산 증정'도 조건이 분명했습니다. 다만 사은품 발송일(6/10 개별발송)이 작게 적혀 있어 놓치기 쉬웠어요.",
+    pros:"행사 성격·코너명 직관적, 혜택 조건 명확", cons:"사은품 수령 안내가 눈에 덜 띔"},
+  112139:{scores:{clarity:3, benefit:3, fit:4, impact:3.5},
+    text:"여름 리빙이라는 주제와 '냉감·쿨링' 키워드는 잘 와닿았고 '최대 10% 쿠폰', '24시간 특가'로 급할인 느낌도 충분했어요. 다만 상품이 너무 많은데 페이지 곳곳에 '로딩중'이 떠서 답답했고, '비밀특가'는 정확히 뭐가 싸다는 건지 한 번에 이해되지 않았습니다. 카테고리(침구·가전·주방)는 잘 나뉘어 탐색은 편했어요.",
+    pros:"테마·할인 임팩트 강함, 카테고리 큐레이션 우수", cons:"'로딩중' 노출·정보 과다, '비밀특가' 문구 모호"},
+  112180:{scores:{clarity:2.5, benefit:2.5, fit:3.5, impact:4},
+    text:"\"기본에 충실한 옷이 만드는 선명한 차이\", \"Refined Classic\" 같은 문구는 브랜드 무드는 살지만 '그래서 뭐가 혜택이지?'가 바로 안 보였어요. 가격도 대부분 정가라 특가 기대를 하고 들어온 고객은 갸웃할 수 있습니다. 반면 '2장 이상 구매 시 10% 추가'는 조건이 명확해 좋았고, 컬러 베리에이션이 깔끔하게 나열돼 신상 구경엔 편했어요.",
+    pros:"브랜드 톤 일관, 2-Pack 조건 명확", cons:"감성 카피 위주로 혜택 인지 약함, 할인 기대와 괴리"},
+  112051:{scores:{clarity:4.5, benefit:3.5, fit:4, impact:4.5},
+    text:"\"스파이더 위크 ~73%\"가 첫 화면에서 강하게 박혀 세일 폭이 즉시 이해됐어요. '러닝·트레이닝·스윔웨어까지'로 무엇을 파는 행사인지도 분명했고요. 카테고리 탭이 세분화돼 원하는 종목을 찾기 쉬웠습니다. 다만 '중복할인쿠폰 5%'가 ~73%에 비해 상대적으로 작아 임팩트는 덜했어요.",
+    pros:"할인율·타깃 종목 직관적, 카테고리 탐색 편리", cons:"메인 세일 대비 쿠폰 혜택 존재감 약함"},
+  112052:{scores:{clarity:4, benefit:3, fit:3.5, impact:3.5},
+    text:"\"WEEKLY BEST·한 주를 빛낸 베스트 아이템\"으로 '잘 나가는 걸 모았다'는 메시지는 잘 전달됐어요. 'SS BEST / FW 역시즌 BEST' 구분도 합리적이었고요. 다만 어떤 기준의 베스트인지(판매량? MD추천?)가 안 적혀 신뢰가 살짝 아쉬웠고, '5% 중복쿠폰'만으로는 아울렛치고 할인 메리트가 약하게 느껴졌습니다.",
+    pros:"베스트 컨셉 전달 명확, 시즌 구분 합리적", cons:"'베스트' 선정 기준 불명확, 쿠폰 혜택 다소 약함"}
+};
+function reviewOverall(rv){return REV_AXES.reduce((s,a)=>s+rv.scores[a.key]*a.w,0);}
+
+function rangeOverlap(a1,a2,b1,b2){const lo=Math.max(a1,b1),hi=Math.min(a2,b2);const ov=Math.max(0,hi-lo);const span=Math.max(a2,b2)-Math.min(a1,b1);return span?ov/span:0;}
+function similarity(a,b){
+  let num=0,den=0;
+  for(const ax of AXES){const A=new Set(a.kw[ax.key]),B=new Set(b.kw[ax.key]);
+    const inter=[...A].filter(x=>B.has(x)).length;const uni=new Set([...A,...B]).size;
+    const j=uni?inter/uni:0;num+=AXIS_WEIGHT[ax.key]*j;den+=AXIS_WEIGHT[ax.key];}
+  const kwSim = num/den;
+  const dO=rangeOverlap(a.discMin,a.discMax,b.discMin,b.discMax);
+  const sc=1-Math.abs(Math.log10(a.prodCnt+1)-Math.log10(b.prodCnt+1))/2;
+  const routeBonus = (a.access_route===b.access_route)?1:0; // 접근루트 동일 가중
+  return Math.max(0,Math.min(1, kwSim*0.70 + dO*0.10 + Math.max(0,sc)*0.08 + routeBonus*0.12));
+}
+function sharedKw(a,b){const s=new Set();AXES.forEach(ax=>a.kw[ax.key].forEach(v=>{if(b.kw[ax.key].includes(v))s.add(v);}));return s;}
+
+function nlScore(e,query){
+  const q=query.toLowerCase().replace(/[^가-힣a-z0-9% ]/g,' ');
+  const toks=q.split(/\s+/).filter(Boolean);
+  const evKw=allKw(e).map(k=>k.toLowerCase());
+  const hits=new Set();let score=0;
+  toks.forEach(t=>{
+    let g=[t];for(const k in SYN){if(SYN[k].some(s=>s.includes(t)||t.includes(s)))g=g.concat(SYN[k]);}
+    g=[...new Set(g)];let mt=false;
+    evKw.forEach((k,i)=>{if(g.some(x=>k.includes(x)||x.includes(k))){mt=true;hits.add(allKw(e)[i]);}});
+    const text=(e.name+e.summary).toLowerCase();if(g.some(x=>text.includes(x)))mt=true;
+    if(mt)score++;
+  });
+  return{keep:score>0,score:score/Math.max(toks.length,1),hits};
+}
+
+/* =========================================================
+   상태
+   ========================================================= */
+let conditions = [];   // {id, field, op, values?, lo?, hi?}
+let logic = "AND";
+let mode = "filter";   // filter | nl | related
+let relBase = null;
+let compareIds = [];   // 비교 담기 (최대 3)
+let condSeq = 1;
+const LS_KEY = "lfmall_v3_presets";
+
+function discColor(d){
+  const t=Math.min(1, d/75);
+  const hue=Math.round(140 - t*140);
+  const sat=70+Math.round(t*18);
+  const lig=46-Math.round(t*6);
+  return `hsl(${hue},${sat}%,${lig}%)`;
+}
+
+/* =========================================================
+   facet 아코디언 빌드
+   ========================================================= */
+function buildAccordions(){
+  const host=document.getElementById('accGroups');
+  host.innerHTML = GROUPS.map((g,gi)=>{
+    const fkeys=Object.keys(FACETS).filter(k=>FACETS[k].grp===g.id);
+    const items=fkeys.map(k=>{
+      const f=FACETS[k];
+      return `<button class="facetBtn" onclick="addCondition('${k}')">
+        <span>${f.label}</span>
+        <span class="ft ${f.type}">${f.type==='enum'?'enum':'range'}</span>
+      </button>`;
+    }).join('');
+    return `<div class="acc ${gi===0?'open':''}" id="acc-${g.id}">
+      <div class="head" onclick="toggleAcc(${g.id})">
+        <span class="dot" style="background:${g.color}"></span>${g.label}
+        <span class="arr">▶</span>
+      </div>
+      <div class="body"><div class="facetList">${items}</div></div>
+    </div>`;
+  }).join('');
+}
+function toggleAcc(id){ document.getElementById('acc-'+id).classList.toggle('open'); }
+
+/* =========================================================
+   조건 추가 / 렌더
+   ========================================================= */
+function addCondition(field){
+  const f=FACETS[field];
+  // 이미 존재하면 중복 추가 방지(같은 facet 1행) — enum/range 공통
+  if(conditions.some(c=>c.field===field)){ toast("이미 추가된 조건입니다"); return; }
+  const c={id:condSeq++, field};
+  if(f.type==="enum"){ c.values=[]; }
+  else { c.op = f.discRange ? "between" : "between"; c.lo=f.min; c.hi=f.max; }
+  conditions.push(c);
+  // 자연어/연관 모드 해제하고 필터 모드로
+  mode="filter"; relBase=null; document.getElementById('q').value="";
+  renderConditions(); render();
+}
+function delCondition(id){ conditions=conditions.filter(c=>c.id!==id); renderConditions(); render(); }
+function clearConds(){ conditions=[]; mode="filter"; relBase=null; document.getElementById('q').value=""; renderConditions(); render(); }
+function setLogic(l){
+  logic=l;
+  document.querySelectorAll('#logicToggle button').forEach(b=>b.classList.toggle('on', b.dataset.l===l));
+  render();
+}
+
+function renderConditions(){
+  const host=document.getElementById('condList');
+  if(conditions.length===0){
+    host.innerHTML=`<div class="emptyCond">좌측 facet을 눌러 조건을 추가하세요.<br>조건이 없으면 전체 ${EVENTS.length}건을 표시합니다.</div>`;
+    return;
+  }
+  host.innerHTML = conditions.map((c,i)=>{
+    const f=FACETS[c.field];
+    const grpLbl = ["","①주어","②방식","③성과"][f.grp];
+    let inner="";
+    if(f.type==="enum"){
+      const opts = f.bool ? ["true","false"] : enumValues(c.field);
+      inner = `<div class="enumVals">` + opts.map(v=>{
+        const lbl = (ENUM_LABELS[c.field] && ENUM_LABELS[c.field][v]) ? ENUM_LABELS[c.field][v] : v;
+        const on = c.values.includes(v);
+        return `<span class="enumChip ${on?'on':''}" onclick="toggleEnum(${c.id},'${v}')">${lbl}</span>`;
+      }).join('') + `</div>
+      <div class="hint" style="margin-top:5px">연산자: 포함(in) · 다중선택 시 OR 매칭</div>`;
+    } else {
+      // range: 연산자 선택 + 듀얼슬라이더 + 숫자입력
+      const ops = f.discRange
+        ? [["between","범위겹침(between)"]]
+        : [["between","범위(between)"],["gte","이상(≥)"],["lte","이하(≤)"],["eq","같음(=)"]];
+      const opSel = `<select class="opSel" onchange="setOp(${c.id},this.value)">`+
+        ops.map(o=>`<option value="${o[0]}" ${c.op===o[0]?'selected':''}>${o[1]}</option>`).join('')+`</select>`;
+      const showHi = (c.op==="between" || c.op==="lte" || f.discRange);
+      const showLo = (c.op==="between" || c.op==="gte" || c.op==="eq" || f.discRange);
+      // 듀얼슬라이더 (between/discRange 일 때 의미있음, 단일 op도 슬라이더로 값 조정)
+      const loPct = ((c.lo-f.min)/(f.max-f.min))*100;
+      const hiPct = ((c.hi-f.min)/(f.max-f.min))*100;
+      let rangeBody;
+      if(c.op==="between"||f.discRange){
+        rangeBody = `
+        <div class="rangeWrap">
+          <div class="rlabels"><span>최소 <b>${fmtNum(c.lo)}${f.unit}</b></span><span>최대 <b>${fmtNum(c.hi)}${f.unit}</b></span></div>
+          <div class="dual">
+            <div class="track"></div>
+            <div class="fill" style="left:${loPct}%;width:${Math.max(0,hiPct-loPct)}%"></div>
+            <input type="range" min="${f.min}" max="${f.max}" step="${f.step}" value="${c.lo}" oninput="setRange(${c.id},'lo',this.value)">
+            <input type="range" min="${f.min}" max="${f.max}" step="${f.step}" value="${c.hi}" oninput="setRange(${c.id},'hi',this.value)">
+          </div>
+          <div class="numIn">
+            <input type="number" min="${f.min}" max="${f.max}" step="${f.step}" value="${c.lo}" oninput="setRange(${c.id},'lo',this.value)"><span>~</span>
+            <input type="number" min="${f.min}" max="${f.max}" step="${f.step}" value="${c.hi}" oninput="setRange(${c.id},'hi',this.value)"><span>${f.unit}</span>
+          </div>
+        </div>`;
+      } else {
+        const key = (c.op==="lte") ? "hi" : "lo";
+        const val = (c.op==="lte") ? c.hi : c.lo;
+        const pct = ((val-f.min)/(f.max-f.min))*100;
+        rangeBody = `
+        <div class="rangeWrap">
+          <div class="rlabels"><span>${c.op==="gte"?"이상":c.op==="lte"?"이하":"값"} <b>${fmtNum(val)}${f.unit}</b></span></div>
+          <div class="dual">
+            <div class="track"></div>
+            <div class="fill" style="left:0;width:${pct}%"></div>
+            <input type="range" min="${f.min}" max="${f.max}" step="${f.step}" value="${val}" oninput="setRange(${c.id},'${key}',this.value)">
+          </div>
+          <div class="numIn">
+            <input type="number" min="${f.min}" max="${f.max}" step="${f.step}" value="${val}" oninput="setRange(${c.id},'${key}',this.value)"><span>${f.unit}</span>
+          </div>
+        </div>`;
+      }
+      inner = `<div class="ctrlRow">${opSel}</div>${rangeBody}`;
+    }
+    const conn = i>0 ? `<div class="rowConn">${logic}</div>` : "";
+    return conn + `<div class="condRow">
+      <div class="rowtop">
+        <span class="fgrp">${grpLbl}</span>
+        <span class="fname">${f.label}</span>
+        <button class="del" title="삭제" onclick="delCondition(${c.id})">✕</button>
+      </div>
+      ${inner}
+    </div>`;
+  }).join('');
+}
+function fmtNum(n){ n=Number(n); return Number.isInteger(n)?n:n.toFixed(1); }
+function toggleEnum(id,v){
+  const c=conditions.find(x=>x.id===id); if(!c)return;
+  const i=c.values.indexOf(v);
+  if(i>=0) c.values.splice(i,1); else c.values.push(v);
+  renderConditions(); render();
+}
+function setOp(id,op){ const c=conditions.find(x=>x.id===id); if(!c)return; c.op=op; renderConditions(); render(); }
+function setRange(id,key,val){
+  const c=conditions.find(x=>x.id===id); if(!c)return;
+  let v=Number(val); if(isNaN(v))return;
+  const f=FACETS[c.field];
+  v=Math.max(f.min,Math.min(f.max,v));
+  c[key]=v;
+  if(c.lo>c.hi){ if(key==="lo") c.hi=c.lo; else c.lo=c.hi; }
+  renderConditions(); render();
+}
+
+/* =========================================================
+   프리셋 (localStorage)
+   ========================================================= */
+function escHtml(s){ return String(s).replace(/[&<>"']/g, m=>(
+  {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function loadPresets(){
+  try{
+    const o=JSON.parse(localStorage.getItem(LS_KEY));
+    if(!o || typeof o!=="object" || Array.isArray(o)){ return {}; }
+    return o;
+  }catch(e){ try{ localStorage.removeItem(LS_KEY); }catch(_){ } return {}; }
+}
+function savePresetsObj(o){ try{ localStorage.setItem(LS_KEY, JSON.stringify(o)); return true; }catch(e){ console.warn('preset save failed', e); return false; } }
+function ensureDefaultPresets(){
+  const p=loadPresets();
+  if(Object.keys(p).length>0) return;
+  p["통합전 패션 검증"] = {
+    logic:"AND",
+    conditions:[
+      {field:"main_category", type:"enum", values:["FASHION"]},
+      {field:"multi_brand_yn", type:"enum", values:["true"]}
+    ]
+  };
+  p["세일즈포커싱 고할인"] = {
+    logic:"AND",
+    conditions:[
+      {field:"curation_type", type:"enum", values:["SALES_FOCUS"]},
+      {field:"disc", type:"range", op:"between", lo:35, hi:80}
+    ]
+  };
+  savePresetsObj(p);
+}
+function renderPresets(){
+  const host=document.getElementById('presetRow');
+  const p=loadPresets();
+  const names=Object.keys(p);
+  if(names.length===0){ host.innerHTML=`<span class="hint">저장된 프리셋이 없습니다.</span>`; return; }
+  host.innerHTML = names.map(n=>`<span class="presetChip" data-name="${escHtml(n)}">
+    <span class="papply" role="button" tabindex="0">📌 ${escHtml(n)}</span>
+    <span class="pdel" role="button" tabindex="0" title="삭제">✕</span>
+  </span>`).join('');
+  host.querySelectorAll('.presetChip').forEach(el=>{
+    const nm = el.dataset.name;
+    const ap = ()=>applyPreset(nm), dp = ()=>deletePreset(nm);
+    const a=el.querySelector('.papply'), d=el.querySelector('.pdel');
+    a.onclick=ap; d.onclick=dp;
+    a.onkeydown=ev=>{ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); ap(); } };
+    d.onkeydown=ev=>{ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); dp(); } };
+  });
+}
+function savePreset(){
+  const name=document.getElementById('presetName').value.trim();
+  if(!name){ toast("프리셋 이름을 입력하세요"); return; }
+  if(conditions.length===0){ toast("저장할 조건이 없습니다"); return; }
+  const p=loadPresets();
+  p[name]={
+    logic,
+    conditions:conditions.map(c=>{
+      const f=FACETS[c.field];
+      if(f.type==="enum") return {field:c.field, type:"enum", values:[...c.values]};
+      return {field:c.field, type:"range", op:c.op, lo:c.lo, hi:c.hi};
+    })
+  };
+  if(!savePresetsObj(p)){ toast("저장 실패: 브라우저 저장공간을 사용할 수 없습니다"); return; }
+  document.getElementById('presetName').value="";
+  renderPresets(); toast(`'${name}' 저장됨`);
+}
+function applyPreset(name){
+  const p=loadPresets()[name]; if(!p)return;
+  if(!Array.isArray(p.conditions)){ toast("프리셋 형식이 올바르지 않습니다"); return; }
+  conditions=[]; condSeq=1;
+  logic=p.logic||"AND";
+  setLogic(logic);
+  p.conditions.forEach(pc=>{
+    const f=FACETS[pc.field]; if(!f)return;
+    const c={id:condSeq++, field:pc.field};
+    if(f.type==="enum"){ c.values = [...(pc.values||[])]; }
+    else { c.op=pc.op||"between"; c.lo=(pc.lo!=null?pc.lo:f.min); c.hi=(pc.hi!=null?pc.hi:f.max); }
+    conditions.push(c);
+  });
+  mode="filter"; relBase=null; document.getElementById('q').value="";
+  renderConditions(); render(); toast(`'${name}' 적용`);
+}
+function deletePreset(name){
+  const p=loadPresets(); delete p[name]; savePresetsObj(p); renderPresets(); toast(`'${name}' 삭제됨`);
+}
+
+/* =========================================================
+   자연어 / 연관
+   ========================================================= */
+function setNL(t){document.getElementById('q').value=t;runNL();}
+function runNL(){
+  const q=document.getElementById('q').value.trim();
+  if(!q){mode="filter";render();return;}
+  mode="nl";relBase=null;render();
+}
+function showRelated(id){
+  relBase=EVENTS.find(e=>e.id===id);mode="related";
+  document.getElementById('q').value="";
+  document.getElementById('list').scrollTo({top:0,behavior:'smooth'});
+  render();
+}
+function backToFilter(){ mode="filter"; relBase=null; document.getElementById('q').value=""; render(); }
+
+/* =========================================================
+   렌더
+   ========================================================= */
+function summaryText(){
+  const active = conditions.filter(c=>{
+    const f=FACETS[c.field]; if(f.type==="enum") return c.values&&c.values.length>0; return true;
+  });
+  if(mode==="nl") return {pill:`자연어: "${document.getElementById('q').value.trim()}"`};
+  if(mode==="related"&&relBase) return {pill:`유사: ${relBase.name}`};
+  if(active.length===0) return {pill:"조건 없음 · 전체"};
+  return {pill:`${active.length}개 조건 (${logic})`};
+}
+
+function render(){
+  const list=document.getElementById('list'),note=document.getElementById('modeNote'),sort=document.getElementById('sort').value;
+  let rows=[];
+  if(mode==="related"&&relBase){
+    note.className="modeNote show";
+    note.innerHTML=`🧬 <b>${escHtml(relBase.name)}</b> 와 온톨로지 유사도 높은 기획전 (접근루트 동일 가중 반영) — <span class="x" onclick="backToFilter()">필터로 돌아가기</span>`;
+    rows=EVENTS.filter(e=>e.id!==relBase.id).map(e=>({e,score:similarity(relBase,e),hits:sharedKw(relBase,e)}));
+    rows.sort((a,b)=>b.score-a.score);
+  }else if(mode==="nl"){
+    const q=document.getElementById('q').value.trim();
+    note.className="modeNote show";
+    note.innerHTML=`🗣️ 자연어 검색: "<b>${escHtml(q)}</b>" — 동의어 의미 매칭 — <span class="x" onclick="backToFilter()">초기화</span>`;
+    rows=EVENTS.map(e=>{const s=nlScore(e,q);return{e,score:s.score,hits:s.hits,keep:s.keep};}).filter(r=>r.keep);
+    rows.sort((a,b)=>b.score-a.score);
+  }else{
+    note.className="modeNote";
+    rows=EVENTS.filter(e=>evalEvent(e,conditions,logic)).map(e=>({e,score:0,hits:new Set()}));
+  }
+
+  // 정렬
+  if(sort==="eff")   rows.sort((a,b)=>salesEff(b.e)-salesEff(a.e));
+  else if(sort==="sales")rows.sort((a,b)=>b.e.sales-a.e.sales);
+  else if(sort==="disc") rows.sort((a,b)=>b.e.discMax-a.e.discMax);
+  else if(sort==="conv") rows.sort((a,b)=>b.e.convRate-a.e.convRate);
+  else if(sort==="sim")  rows.sort((a,b)=>b.score-a.score);
+
+  document.getElementById('cnt').textContent=rows.length;
+  document.getElementById('cntTop').textContent=rows.length;
+  const s=summaryText();
+  document.getElementById('logicPill').textContent=s.pill;
+
+  if(!rows.length){
+    list.innerHTML=`<div class="empty">조건에 맞는 기획전이 없습니다.<br>조건을 완화해 보세요 (값 범위 확대 · 결합방식 OR 전환 · 일부 조건 삭제).
+      <div class="relax"><button class="btn sec sm" onclick="setLogic('OR')">결합방식 OR로 전환</button>
+      <button class="btn sec sm" onclick="clearConds()">조건 초기화</button></div></div>`;
+    return;
+  }
+  list.innerHTML=rows.map(r=>card(r.e,r.score,r.hits||new Set())).join('');
+}
+
+function card(e,score,hits){
+  const pct=Math.round(score*100);
+  const showScore = (mode==="related"||mode==="nl");
+  const simBg = pct>=70?'#16a34a':pct>=45?'#d97706':'#475569';
+  const simLabel=(mode==="related")?`유사도 ${pct}%`:(mode==="nl"?`관련도 ${pct}%`:`매출효율 ${salesEff(e).toFixed(0)}`);
+  const simBg2 = showScore ? simBg : '#1e3a5f';
+  const c=discColor(e.discMax);
+  const sc=v=>Math.min(100,v/80*100);
+  const segL=sc(e.discMin), segW=Math.max(4,sc(e.discMax)-sc(e.discMin));
+  const kwHtml=AXES.map(a=>e.kw[a.key].map(v=>`<span class="kw ${a.key}${hits.has(v)?' match':''}">${v}</span>`).join('')).join('');
+  const rv=REVIEWS[e.id];
+
+  // 신규 배지
+  const multiBdg = e.multi_brand_yn
+    ? `<span class="bdg multi">🏷️ 통합전 <b>${e.brand_count}브랜드</b></span>`
+    : `<span class="bdg single">🏷️ 단일브랜드</span>`;
+  const curBdg = `<span class="bdg cur">🎨 ${ENUM_LABELS.curation_type[e.curation_type]||e.curation_type}</span>`;
+  const routeBdg = `<span class="bdg route">🧭 ${ENUM_LABELS.access_route[e.access_route]||e.access_route}</span>`;
+  const cxBdg = `<span class="bdg cx">⚙️ 복잡도 ${e.complexity_score}/5</span>`;
+  const effBdg = `<span class="bdg eff">📈 매출효율 <b>${salesEff(e).toFixed(0)}</b></span>`;
+  const visBdg = `<span class="bdg">👁️ 시인성 ${e.visibility_score}/5</span>`;
+
+  let reviewHtml='';
+  if(rv){
+    const ov=reviewOverall(rv);
+    const subs=REV_AXES.map(a=>{
+      const v=rv.scores[a.key];
+      return `<div class="srow" title="${a.desc}">
+        <span class="slab">${a.label}<i>${Math.round(a.w*100)}%</i></span>
+        <span class="sbar"><i style="width:${v/5*100}%"></i></span>
+        <span class="sval">${v.toFixed(1)}</span></div>`;
+    }).join('');
+    reviewHtml=`
+    <div class="review">
+      <div class="rhead">
+        <span class="rtitle">👁️ 시인성 평가</span>
+        <span class="stars">${stars(ov)}</span>
+        <span class="rscore">${ov.toFixed(1)}</span>
+        <span class="rweight">가중평균 · 5점 만점</span>
+      </div>
+      <div class="subgrid">${subs}</div>
+      <div class="rtext">${rv.text}</div>
+      <div class="rpc"><span class="pro">👍 ${rv.pros}</span><span class="con">👎 ${rv.cons}</span></div>
+    </div>`;
+  }
+  const inComp = compareIds.includes(e.id);
+  return `
+  <div class="card">
+    <a class="thumb" href="${e.url}" target="_blank" rel="noopener" title="새 탭에서 기획전 열기">
+      <span class="idtag">#${e.id}</span>
+      <img src="${e.img}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="fallback" style="background:linear-gradient(135deg,${e.event_type==='OUTLET'?'#475569,#1e293b':e.main_category==='SPORTS'?'#0ea5e9,#1d4ed8':e.multi_brand_yn?'#f59e0b,#b91c1c':'#7c3aed,#4c1d95'})">${e.name}</div>
+      <span class="goto">기획전 열기 ↗</span>
+    </a>
+    <div class="body">
+      <div class="crow">
+        <div>
+          <div class="nm"><a href="${e.url}" target="_blank">${e.name}</a></div>
+          <div class="meta">${e.period} · 상품 ${e.prodCnt}개 · 브랜드 ${e.brand_count}개 · ${ENUM_LABELS.main_category[e.main_category]} · ${ENUM_LABELS.event_type[e.event_type]}</div>
+        </div>
+        <span class="sim" style="background:${simBg2}">${simLabel}</span>
+      </div>
+      <div class="badges">${multiBdg}${curBdg}${routeBdg}${visBdg}${cxBdg}${effBdg}</div>
+      <div class="summary">${e.summary}</div>
+      <div class="discWrap">
+        <div class="discBadge" style="background:${c}">
+          <span class="lab">할인율</span><span class="rng">${e.discMin}~${e.discMax}%</span>
+        </div>
+        <div class="discTrack">
+          <div class="tl"><span>0%</span><span>40%</span><span>80%+</span></div>
+          <div class="gbar">
+            <div class="seg" style="left:${segL}%;width:${segW}%"></div>
+            <div class="cap" style="left:${sc(e.discMax)}%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="kpis">
+        <div class="kpi">가상매출<b>${e.sales.toLocaleString()}만원</b></div>
+        <div class="kpi">유입수<b>${e.visits.toLocaleString()}</b></div>
+        <div class="kpi">전환율<b>${e.convRate}%</b></div>
+        <div class="kpi">RPV(원)<b>${Math.round(rpv(e)).toLocaleString()}</b></div>
+        <div class="kpi">매출효율<b>${salesEff(e).toFixed(0)}</b></div>
+      </div>
+      <div class="kwline">${kwHtml}</div>
+      ${reviewHtml}
+      <div class="cardActions">
+        <button class="btn sm" onclick="showRelated(${e.id})">🧬 유사 기획전</button>
+        <button class="btn sm ${inComp?'danger':'sec'}" onclick="toggleCompare(${e.id})">${inComp?'✓ 비교 담김':'⚖️ 비교 담기'}</button>
+      </div>
+    </div>
+  </div>`;
+}
+function stars(r){
+  let h='';
+  for(let i=1;i<=5;i++){
+    if(r>=i)h+='<span class="f">★</span>';
+    else if(r>=i-0.5)h+='<span class="h">★</span>';
+    else h+='<span class="s">★</span>';
+  }
+  return h;
+}
+
+/* =========================================================
+   비교 도크
+   ========================================================= */
+function toggleCompare(id){
+  const i=compareIds.indexOf(id);
+  if(i>=0){ compareIds.splice(i,1); }
+  else {
+    if(compareIds.length>=3){ toast("비교는 최대 3개까지 가능합니다"); return; }
+    compareIds.push(id);
+  }
+  render(); renderCompare();
+}
+function clearCompare(){ compareIds=[]; render(); renderCompare(); }
+function renderCompare(){
+  const dock=document.getElementById('compDock'), body=document.getElementById('compBody');
+  if(compareIds.length===0){ dock.classList.remove('show'); return; }
+  dock.classList.add('show');
+  const evs=compareIds.map(id=>EVENTS.find(e=>e.id===id)).filter(Boolean);
+  // 비교 행 정의 (facet 순서)
+  const rows=[
+    ["행사유형", e=>ENUM_LABELS.event_type[e.event_type], false],
+    ["통합전 여부", e=>e.multi_brand_yn?`통합전(${e.brand_count})`:"단일브랜드", true],
+    ["메인카테고리", e=>ENUM_LABELS.main_category[e.main_category], true],
+    ["쿠폰유형", e=>ENUM_LABELS.coupon_type[e.coupon_type], true],
+    ["접근루트", e=>ENUM_LABELS.access_route[e.access_route], true],
+    ["큐레이션", e=>ENUM_LABELS.curation_type[e.curation_type], true],
+    ["시인성", e=>e.visibility_score, true],
+    ["복잡도", e=>e.complexity_score, true],
+    ["동선깊이", e=>e.nav_depth, true],
+    ["할인율(%)", e=>`${e.discMin}~${e.discMax}`, false],
+    ["상품수", e=>e.prodCnt, true],
+    ["가상매출(만원)", e=>e.sales, true, "max"],
+    ["유입수", e=>e.visits, true, "max"],
+    ["전환율(%)", e=>e.convRate, true, "max"],
+    ["RPV(원)", e=>Math.round(rpv(e)), true, "max"],
+    ["매출효율", e=>Math.round(salesEff(e)), true, "max"]
+  ];
+  let html=`<table class="comp"><thead><tr><th class="rl">facet</th>`+
+    evs.map(e=>`<th>#${e.id}<br>${e.name.length>14?e.name.slice(0,13)+'…':e.name}<span class="rm" title="제거" onclick="toggleCompare(${e.id})">✕</span></th>`).join('')+
+    `</tr></thead><tbody>`;
+  rows.forEach(r=>{
+    const [label, fn, hlDiff, bestMode] = r;
+    const vals=evs.map(fn);
+    const distinct = new Set(vals.map(v=>String(v))).size;
+    let bestVal=null;
+    if(bestMode==="max"){ bestVal=Math.max(...vals.map(v=>Number(v))); }
+    html+=`<tr><td class="rl">${label}</td>`+
+      vals.map((v,i)=>{
+        let cls="";
+        if(hlDiff && distinct>1) cls="diff";
+        if(bestMode==="max" && Number(v)===bestVal && distinct>1) cls="best";
+        return `<td class="${cls}">${typeof v==='number'?v.toLocaleString():v}</td>`;
+      }).join('')+`</tr>`;
+  });
+  html+=`</tbody></table>
+    <div class="hint" style="padding:6px 4px 0">파란색=값이 서로 다른 facet · 초록색=성과지표 최댓값. 동일 접근루트 비교 권장(편향 제거).</div>`;
+  body.innerHTML=html;
+}
+
+/* =========================================================
+   루브릭 / 지표 설명
+   ========================================================= */
+function buildRubric(){
+  const ax=REV_AXES.map(a=>`<div style="margin-bottom:4px"><b style="color:var(--ink)">${a.label}</b> <i style="color:var(--accent2);font-style:normal">(${Math.round(a.w*100)}%)</i> — ${a.desc}</div>`).join('');
+  document.getElementById('rubricBody').innerHTML = ax +
+    `<div style="margin-top:8px;background:var(--card);border:1px solid var(--line2);border-radius:8px;padding:9px 11px">
+      <b style="color:var(--ink)">점수 척도</b> · 5 추가설명 불필요 / 4 대체로 명확 / 3 일부 모호 / 2 핵심누락·혼동 / 1 오인위험<br><br>
+      <b style="color:var(--ink)">매출효율</b> = 가상매출 ÷ 평균할인율 (할인 1%p당 매출).<br>
+      <b style="color:var(--ink)">RPV</b> = 가상매출 ÷ 유입수 (유입 1건당 매출).<br>
+      <b style="color:var(--ink)">유사도</b> = 온톨로지 가중 자카드(70%) + 할인겹침(10%) + 상품수근접(8%) + 접근루트동일(12%).<br>
+      <span style="color:var(--bad)">⚠ 매출/유입/전환율·시인성/복잡도 점수는 가상·AI추론 추정치 → 현업/DBA 검증 필요.</span>
+    </div>`;
+}
+
+/* =========================================================
+   toast
+   ========================================================= */
+let toastT=null;
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+/* =========================================================
+   init
+   ========================================================= */
+buildAccordions();
+buildRubric();
+ensureDefaultPresets();
+renderPresets();
+renderConditions();
+render();
+</script>
+</body>
+</html>
