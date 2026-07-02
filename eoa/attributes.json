@@ -1,0 +1,2301 @@
+{
+ "source": "vector_db",
+ "generated_at": "2026-07-01",
+ "axes": {
+  "placement": [
+   {
+    "value": "구좌:메인롤링",
+    "freq": 146,
+    "source": "A"
+   },
+   {
+    "value": "탭:홈 탭",
+    "freq": 119,
+    "source": "A"
+   },
+   {
+    "value": "구좌:주목할 브랜드",
+    "freq": 59,
+    "source": "A"
+   },
+   {
+    "value": "탭:남성 탭",
+    "freq": 38,
+    "source": "A"
+   },
+   {
+    "value": "탭:여성 탭",
+    "freq": 37,
+    "source": "A"
+   },
+   {
+    "value": "구좌:기획전 배너",
+    "freq": 35,
+    "source": "A"
+   },
+   {
+    "value": "탭:HAZZYS",
+    "freq": 27,
+    "source": "A"
+   },
+   {
+    "value": "탭:수입/명품 탭",
+    "freq": 25,
+    "source": "A"
+   },
+   {
+    "value": "탭:(OneSphere) 아울렛-PC",
+    "freq": 24,
+    "source": "A"
+   },
+   {
+    "value": "탭:아울렛 탭",
+    "freq": 23,
+    "source": "A"
+   },
+   {
+    "value": "구좌:기획전 수동",
+    "freq": 23,
+    "source": "A"
+   },
+   {
+    "value": "탭:스포츠 탭",
+    "freq": 21,
+    "source": "A"
+   },
+   {
+    "value": "구좌:가족의 발견",
+    "freq": 19,
+    "source": "A"
+   },
+   {
+    "value": "탭:골프 탭",
+    "freq": 19,
+    "source": "A"
+   },
+   {
+    "value": "구좌:LF 레코멘드",
+    "freq": 15,
+    "source": "A"
+   },
+   {
+    "value": "탭:잡화/슈즈 탭",
+    "freq": 15,
+    "source": "A"
+   },
+   {
+    "value": "구좌:오직, LF몰에서만",
+    "freq": 13,
+    "source": "A"
+   },
+   {
+    "value": "구좌:띠배너",
+    "freq": 11,
+    "source": "A"
+   },
+   {
+    "value": "탭:베네피아 휴가샵",
+    "freq": 11,
+    "source": "A"
+   },
+   {
+    "value": "탭:HAZZYSLADIES",
+    "freq": 10,
+    "source": "A"
+   },
+   {
+    "value": "구좌:Style Drop (자사)",
+    "freq": 9,
+    "source": "A"
+   },
+   {
+    "value": "구좌:수동 기획전",
+    "freq": 9,
+    "source": "A"
+   },
+   {
+    "value": "구좌:마케팅 띠배너 (PC)",
+    "freq": 8,
+    "source": "A"
+   },
+   {
+    "value": "구좌:마케팅 띠배너 (MO)",
+    "freq": 8,
+    "source": "A"
+   },
+   {
+    "value": "탭:기획전/혜택 탭",
+    "freq": 8,
+    "source": "A"
+   },
+   {
+    "value": "탭:HAZZYSMEN",
+    "freq": 8,
+    "source": "A"
+   },
+   {
+    "value": "구좌:브랜드 네비게이션",
+    "freq": 8,
+    "source": "A"
+   },
+   {
+    "value": "구좌:가족의 발견 (스팟)",
+    "freq": 7,
+    "source": "A"
+   },
+   {
+    "value": "탭:가변탭 3 - 아울렛 어워즈",
+    "freq": 6,
+    "source": "A"
+   },
+   {
+    "value": "구좌:마케팅 배너 (PC)",
+    "freq": 6,
+    "source": "A"
+   },
+   {
+    "value": "구좌:돋보기",
+    "freq": 6,
+    "source": "A"
+   },
+   {
+    "value": "구좌:L:able",
+    "freq": 6,
+    "source": "A"
+   },
+   {
+    "value": "구좌:인기 브랜드",
+    "freq": 5,
+    "source": "A"
+   },
+   {
+    "value": "구좌:마케팅 배너 (B)",
+    "freq": 5,
+    "source": "A"
+   },
+   {
+    "value": "구좌:기획전, 쇼룸, VOD배너",
+    "freq": 5,
+    "source": "A"
+   },
+   {
+    "value": "탭:마에스트로",
+    "freq": 5,
+    "source": "A"
+   },
+   {
+    "value": "구좌:신규 브랜드",
+    "freq": 5,
+    "source": "A"
+   },
+   {
+    "value": "구좌:HOT&NEW",
+    "freq": 5,
+    "source": "A"
+   },
+   {
+    "value": "구좌:네비게이션 (MO)",
+    "freq": 5,
+    "source": "A"
+   },
+   {
+    "value": "구좌:키즈페어 베스트브랜드 PC",
+    "freq": 4,
+    "source": "A"
+   },
+   {
+    "value": "구좌:키즈페어 베스트브랜드 MO",
+    "freq": 4,
+    "source": "A"
+   },
+   {
+    "value": "탭:가변탭 1 - L+블랙위크",
+    "freq": 4,
+    "source": "A"
+   },
+   {
+    "value": "구좌:나의 패션 클럽",
+    "freq": 4,
+    "source": "A"
+   },
+   {
+    "value": "구좌:추천 브랜드",
+    "freq": 4,
+    "source": "A"
+   },
+   {
+    "value": "구좌:TREND FIELD",
+    "freq": 4,
+    "source": "A"
+   },
+   {
+    "value": "구좌:프로모션 배너 (스팟)",
+    "freq": 4,
+    "source": "A"
+   },
+   {
+    "value": "탭:HIS HAZZYS",
+    "freq": 4,
+    "source": "A"
+   },
+   {
+    "value": "구좌:기획전(수동)",
+    "freq": 4,
+    "source": "A"
+   },
+   {
+    "value": "구좌:네비게이션 (PC)",
+    "freq": 4,
+    "source": "A"
+   },
+   {
+    "value": "탭:제휴서비스",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "탭:jillstuart new york",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "구좌:금주 트렌드 코치",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "탭:닥스닥스",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "구좌:띠배너 3(월별 루틴)",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "구좌:결제 혜택 3",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "구좌:띠배너 1(시크릿)",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "구좌:네비게이션",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "구좌:기획전 (수동)",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "구좌:영역2",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "탭:JILLSTUARTNEWYORKWOMEN",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "구좌:마케팅 배너 (MO)",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "탭:JILLSTUARTNEWYORKMEN",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "구좌:수동 기획전 세팅",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "탭:ATHEVANESSABRUNOWOMEN",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "탭:빈스",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "구좌:띠배너 2(일별 루틴)",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "탭:DAKSLADIES",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "구좌:띠배너 (용품)",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "구좌:제휴-와이파이",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:제휴-무브",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:제휴-타이어픽",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "탭:선물관 탭",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:MO 마케팅 배너 (B)",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:PC 마케팅 배너 (B)",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:출석체크 배너 (B)",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:첫구매RUN_띠배너",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:결제 혜택 5",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:결제 혜택 4",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:키즈페어 타임특가 pc/mo",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:키즈페어 스페셜 라운지",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:정기배포 테스트 - 2004 3분할",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:오직, LF몰에서만 (MO)",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:오직, LF몰에서만 (PC)",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:LFmall 단독",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:HOT 트렌드",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "탭:티앤지티",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:해외직구",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "탭:HAZZYSPHIZ",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:MO 마케팅 배너 (A)",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:PC 마케팅 배너 (A)",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "탭:vanessabruno",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구좌:노출 기획전",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "탭:HAZZYSACC",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "탭:VANESSA BRUNO WOMEN",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "탭:DAKSMEN",
+    "freq": 1,
+    "source": "A"
+   }
+  ],
+  "theme": [
+   {
+    "value": "여름",
+    "freq": 37,
+    "source": "A"
+   },
+   {
+    "value": "썸머",
+    "freq": 22,
+    "source": "A"
+   },
+   {
+    "value": "휴가",
+    "freq": 16,
+    "source": "A"
+   },
+   {
+    "value": "위크",
+    "freq": 14,
+    "source": "A"
+   },
+   {
+    "value": "시즌오프",
+    "freq": 12,
+    "source": "A"
+   },
+   {
+    "value": "베스트",
+    "freq": 9,
+    "source": "A"
+   },
+   {
+    "value": "봄",
+    "freq": 6,
+    "source": "A"
+   },
+   {
+    "value": "스타일링",
+    "freq": 4,
+    "source": "A"
+   },
+   {
+    "value": "단독",
+    "freq": 4,
+    "source": "A"
+   },
+   {
+    "value": "데이",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "신상",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "코디",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "통합",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "마케팅 프로그램",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "정시즌",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "페어",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "겨울",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "빅세일",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "시즌테마",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "할인형",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "홈",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "리빙",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "설",
+    "freq": 1,
+    "source": "A"
+   }
+  ],
+  "benefit": [
+   {
+    "value": "쿠폰없음",
+    "freq": 310,
+    "source": "A"
+   },
+   {
+    "value": "할인 ~30%",
+    "freq": 121,
+    "source": "A"
+   },
+   {
+    "value": "할인 30~50%",
+    "freq": 109,
+    "source": "A"
+   },
+   {
+    "value": "할인 50%+",
+    "freq": 102,
+    "source": "A"
+   },
+   {
+    "value": "쿠폰있음",
+    "freq": 30,
+    "source": "A"
+   },
+   {
+    "value": "특가",
+    "freq": 9,
+    "source": "A"
+   },
+   {
+    "value": "할인",
+    "freq": 8,
+    "source": "A"
+   },
+   {
+    "value": "세일",
+    "freq": 8,
+    "source": "A"
+   },
+   {
+    "value": "최대",
+    "freq": 5,
+    "source": "A"
+   },
+   {
+    "value": "쿠폰",
+    "freq": 5,
+    "source": "A"
+   },
+   {
+    "value": "없음",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "브랜드데이",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "상품 자동 적용",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "기획전 내 다운로드",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "제휴사 혜택 제공",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "적립",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "무료배송",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "사은품",
+    "freq": 1,
+    "source": "A"
+   }
+  ],
+  "product": [
+   {
+    "value": "대량(80+)",
+    "freq": 309,
+    "source": "A"
+   },
+   {
+    "value": "멀티브랜드",
+    "freq": 208,
+    "source": "A"
+   },
+   {
+    "value": "잡화",
+    "freq": 140,
+    "source": "A"
+   },
+   {
+    "value": "여성의류",
+    "freq": 134,
+    "source": "A"
+   },
+   {
+    "value": "단일브랜드",
+    "freq": 132,
+    "source": "A"
+   },
+   {
+    "value": "남성의류",
+    "freq": 118,
+    "source": "A"
+   },
+   {
+    "value": "크로스 카테고리 복합 브랜드",
+    "freq": 105,
+    "source": "A"
+   },
+   {
+    "value": "슈즈",
+    "freq": 95,
+    "source": "A"
+   },
+   {
+    "value": "단일 카테고리 단일 브랜드",
+    "freq": 95,
+    "source": "A"
+   },
+   {
+    "value": "크로스 카테고리 단일 브랜드",
+    "freq": 91,
+    "source": "A"
+   },
+   {
+    "value": "골프",
+    "freq": 68,
+    "source": "A"
+   },
+   {
+    "value": "스포츠",
+    "freq": 59,
+    "source": "A"
+   },
+   {
+    "value": "키즈",
+    "freq": 50,
+    "source": "A"
+   },
+   {
+    "value": "유니섹스 의류",
+    "freq": 31,
+    "source": "A"
+   },
+   {
+    "value": "통합",
+    "freq": 29,
+    "source": "A"
+   },
+   {
+    "value": "단일 카테고리 복합 브랜드",
+    "freq": 27,
+    "source": "A"
+   },
+   {
+    "value": "중량(30~80)",
+    "freq": 23,
+    "source": "A"
+   },
+   {
+    "value": "명품",
+    "freq": 19,
+    "source": "A"
+   },
+   {
+    "value": "리빙",
+    "freq": 16,
+    "source": "A"
+   },
+   {
+    "value": "소량(<30)",
+    "freq": 8,
+    "source": "A"
+   },
+   {
+    "value": "공통",
+    "freq": 7,
+    "source": "A"
+   },
+   {
+    "value": "뷰티",
+    "freq": 6,
+    "source": "A"
+   },
+   {
+    "value": "판매중개",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "골프/스포츠",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "입점상품",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "잡화/슈즈",
+    "freq": 1,
+    "source": "A"
+   }
+  ],
+  "brand": [
+   {
+    "value": "HAZZYS LADIES",
+    "freq": 92,
+    "source": "A"
+   },
+   {
+    "value": "HAZZYS MEN",
+    "freq": 84,
+    "source": "A"
+   },
+   {
+    "value": "TNGT",
+    "freq": 52,
+    "source": "A"
+   },
+   {
+    "value": "KEEN",
+    "freq": 46,
+    "source": "A"
+   },
+   {
+    "value": "DAKS ACC",
+    "freq": 34,
+    "source": "A"
+   },
+   {
+    "value": "ILCORSO",
+    "freq": 34,
+    "source": "A"
+   },
+   {
+    "value": "DAKS LADIES",
+    "freq": 24,
+    "source": "A"
+   },
+   {
+    "value": "ATHE VANESSABRUNO WOMEN",
+    "freq": 23,
+    "source": "A"
+   },
+   {
+    "value": "HAZZYS ACC",
+    "freq": 20,
+    "source": "A"
+   },
+   {
+    "value": "ATHE VANESSABRUNO ACC",
+    "freq": 16,
+    "source": "A"
+   },
+   {
+    "value": "REEBOK",
+    "freq": 15,
+    "source": "A"
+   },
+   {
+    "value": "HIS HAZZYS",
+    "freq": 15,
+    "source": "A"
+   },
+   {
+    "value": "HAZZYS GOLF WOMEN",
+    "freq": 13,
+    "source": "A"
+   },
+   {
+    "value": "HAZZYS GOLF",
+    "freq": 12,
+    "source": "A"
+   },
+   {
+    "value": "HIS HAZZYS Women",
+    "freq": 11,
+    "source": "A"
+   },
+   {
+    "value": "DAKS MEN",
+    "freq": 10,
+    "source": "A"
+   },
+   {
+    "value": "DAKS GOLF WOMEN",
+    "freq": 9,
+    "source": "A"
+   },
+   {
+    "value": "DAKS GOLF",
+    "freq": 9,
+    "source": "A"
+   },
+   {
+    "value": "Barbour",
+    "freq": 9,
+    "source": "A"
+   },
+   {
+    "value": "HAZZYS KIDS",
+    "freq": 9,
+    "source": "A"
+   },
+   {
+    "value": "DOUBLE FLAG",
+    "freq": 8,
+    "source": "A"
+   },
+   {
+    "value": "JILLSTUART NEW YORK WOMEN",
+    "freq": 8,
+    "source": "A"
+   },
+   {
+    "value": "JILLSTUART NEW YORK MEN",
+    "freq": 8,
+    "source": "A"
+   },
+   {
+    "value": "COLE HAAN",
+    "freq": 8,
+    "source": "A"
+   },
+   {
+    "value": "allegri",
+    "freq": 8,
+    "source": "A"
+   },
+   {
+    "value": "JILLSTUART NEWYORK ACC",
+    "freq": 8,
+    "source": "A"
+   },
+   {
+    "value": "TETON BROS.",
+    "freq": 8,
+    "source": "A"
+   },
+   {
+    "value": "VANESSABRUNO",
+    "freq": 7,
+    "source": "A"
+   },
+   {
+    "value": "FITFLOP",
+    "freq": 6,
+    "source": "A"
+   },
+   {
+    "value": "PHIZ",
+    "freq": 6,
+    "source": "A"
+   },
+   {
+    "value": "ATHE VANESSABRUNO",
+    "freq": 5,
+    "source": "A"
+   },
+   {
+    "value": "DAKS LITTLE",
+    "freq": 5,
+    "source": "A"
+   },
+   {
+    "value": "JILL BY JILLSTUART",
+    "freq": 5,
+    "source": "A"
+   },
+   {
+    "value": "NATIONAL GEOGRAPHIC KIDS",
+    "freq": 5,
+    "source": "A"
+   },
+   {
+    "value": "challenger",
+    "freq": 5,
+    "source": "A"
+   },
+   {
+    "value": "MAESTRO MEN",
+    "freq": 5,
+    "source": "A"
+   },
+   {
+    "value": "LACOSTE",
+    "freq": 5,
+    "source": "A"
+   },
+   {
+    "value": "HYERES LOR",
+    "freq": 4,
+    "source": "A"
+   },
+   {
+    "value": "ICEBISCUIT",
+    "freq": 4,
+    "source": "A"
+   },
+   {
+    "value": "lazybee",
+    "freq": 4,
+    "source": "A"
+   },
+   {
+    "value": "Gregory",
+    "freq": 4,
+    "source": "A"
+   },
+   {
+    "value": "ISLAND SLIPPER",
+    "freq": 4,
+    "source": "A"
+   },
+   {
+    "value": "BEBEDEPINO",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "BEBEZOO",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "OUTDOOR PRODUCTS KIDS",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "GENERAL IDEA",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "LEVI'S",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "ROTOTOBEBE",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "MARITHÉ KIDS",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "MILLET",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "KOLON SPORT",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "Lynx",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "MARTINEGOLF",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "OOFOS",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "VINCE WOMEN",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "JILLSTUART ACC MEN",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "A.T.CORNER",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "BEEN",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "BENETTON KIDS",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "SPAO KIDS",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "BLUE DOG",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "CALLAWAY",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "TAYLORMADE",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "PING",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "PUMA KIDS",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "LECHATELARD1802",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "TESLA",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "ROXY",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "QUIKSILVER",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "TEVA",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "CLAYMORE",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "tiny cosmos",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "HENRY STUART",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "SULWHASOO",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "AVAVE",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "fairliar",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "RAUM WOMEN",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "forte_forte",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "LEONARD",
+    "freq": 2,
+    "source": "A"
+   },
+   {
+    "value": "OWLEYBARN",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "LILIPURRI",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "LIEBELLO",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "DAKS GOLF MEN",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "MOLLIMELLI",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "BA&SH",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "ZIOZIA",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "OLZEN",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "EDITION",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "BROOKS BROTHERS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "JILLSTUART NEWYORK",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "dotoro",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "ABSORBA",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "STEP AROUND",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "MONPLISSE",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "MAISON KITSUNE",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "THOM BROWNE",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "MLB KIDS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "DISCOVERY KIDS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "BLACKYAK KIDS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "ADIDAS KIDS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "THE NORTH FACE KIDS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "FERRARO MILANO",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "ELCANTO",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "The BROWN",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "MUNSINGWEAR",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "LECOQ GOLF",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "DESCENTE GOLF",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "CAMPER",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "Camper",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "BOTTEGA VENETA",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "SALVATORE FERRAGAMO",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "GOLDEN GOOSE",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "J.ESTINA",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "GUESS KIDS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "SHOOPEN KIDS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "New Balane kids",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "SPAO",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "DAKS BABY",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "zerolounge",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "BERRYCLOSET",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "YOU-IT",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "TITLEIST",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "FOOTJOY",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "BEBEDEPINO UNDERWEAR",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "agabang",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "Disneybaby",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "ETTOI",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "BEVERLY HILLS POLO CLUB KIDS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "KZM",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "ARENA",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "AQUATICA",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "LUDIS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "SPYDER",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "SALEWA",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "VINSONMASSIF",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "NOMADE",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "NEPA",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "NEPA ISENBERG",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "Miele",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "ZAMBERLAN",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "LAUGHING-CHILD",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "BLUEDOG",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "BLUEDOG-BABY",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "MINKMUI",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "NEPA KIDS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "J.LINDEBERG",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "HAZZYS GOLF MEN",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "MARKGONZALES KIDS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "FREDPERRY",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "Volvik APPAREL",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "woongjin booxen",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "BLACK&WHITE",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "BACKCOUNTRY",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "PERIMITZ",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "RENOMA KIDS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "ADIDAS GOLF",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "The history of whoo",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "HERA",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "ATHE BEAUTY",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "creve9",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "DAKS SHOES",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "STARTER BLACK LABEL KIDS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "BLUETAIL",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "Kinoshita by TNGT",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "Yoyogi Pleats by TNGT",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "NEVERMINDALL",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "RENOMAUNDERWEAR",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "LAURA ASHLEY",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "LEMAIRE",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "THE ROW",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "CELINE",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "MONCLER",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "SAINT LAURENT",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "BILLABONG",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "RVCA",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "GGPX",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "BNX",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "MINIMUM EVERYDAY",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "TANKUS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "LESHOP",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "TWEE",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "GUESS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "SHESMISS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "LIST",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "SISTINA",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "MOTT",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "Fluke",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "DUNST",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "BESTI BELLI",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "VIKI",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "SI",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "ISABEY",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "GUERNSEY WOOLLENS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "BLACKYAK",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "SIYAZU",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "Massimo Dutti",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "ISABEL MARANT",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "ALLEGRI MEN",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "PATOU",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "PURDY",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "LeNIC & GOLF",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "CUTTER&BUCK",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "PEARLYGATES",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "minidou",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "PETIT BATEAU",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "BENETTON",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "R.ROBOT",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "PREMIATA",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "EGOEDIT",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "HELEMENT",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "Prestigio di allegri",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "ROSA MANSION",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "RaumSR",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "HICKIES",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "HOUSE RECIPE",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "EANNGAGU",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "Nikon",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "CUCKOO",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "SONY",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "Audio-Technica",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "BALMUDA",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "CHEFWIN",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "amante",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "HAZZYS HOME",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "ORIGO",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "SOFRAUM&",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "DAKS BEDDING",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "L'autre de min",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "GBH APPAREL",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "LENIC&MCCOY",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "DESCENTE",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "allegri Women",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "PXG",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "Cremeenfant",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "TL KIDS",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "PXG CLUB",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "SESA ONLINE",
+    "freq": 1,
+    "source": "A"
+   }
+  ],
+  "card": [
+   {
+    "value": "뉴템플릿 기획전",
+    "freq": 193,
+    "source": "A"
+   },
+   {
+    "value": "상단배너",
+    "freq": 193,
+    "source": "A"
+   },
+   {
+    "value": "구매혜택",
+    "freq": 130,
+    "source": "A"
+   },
+   {
+    "value": "네비게이션",
+    "freq": 96,
+    "source": "A"
+   },
+   {
+    "value": "추천상품",
+    "freq": 85,
+    "source": "A"
+   },
+   {
+    "value": "배너",
+    "freq": 70,
+    "source": "A"
+   },
+   {
+    "value": "유의사항",
+    "freq": 65,
+    "source": "A"
+   },
+   {
+    "value": "PLUS혜택",
+    "freq": 55,
+    "source": "A"
+   },
+   {
+    "value": "탭형구성",
+    "freq": 42,
+    "source": "A"
+   },
+   {
+    "value": "텍스트",
+    "freq": 28,
+    "source": "A"
+   },
+   {
+    "value": "타일배너",
+    "freq": 25,
+    "source": "A"
+   },
+   {
+    "value": "랜덤번호",
+    "freq": 17,
+    "source": "A"
+   },
+   {
+    "value": "화보형",
+    "freq": 17,
+    "source": "A"
+   },
+   {
+    "value": "배너블록",
+    "freq": 15,
+    "source": "A"
+   },
+   {
+    "value": "카운트다운",
+    "freq": 9,
+    "source": "A"
+   },
+   {
+    "value": "타임딜",
+    "freq": 9,
+    "source": "A"
+   },
+   {
+    "value": "리뷰",
+    "freq": 5,
+    "source": "A"
+   },
+   {
+    "value": "영상",
+    "freq": 5,
+    "source": "A"
+   },
+   {
+    "value": "제휴인증",
+    "freq": 4,
+    "source": "A"
+   },
+   {
+    "value": "룰렛이벤트",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "핫딜",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "선착순쿠폰",
+    "freq": 3,
+    "source": "A"
+   },
+   {
+    "value": "초대현황",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "중간배너",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "앱푸시동의",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "공동구매",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "멤버혜택",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "리뷰가이드",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "구매왕",
+    "freq": 1,
+    "source": "A"
+   },
+   {
+    "value": "댓글",
+    "freq": 1,
+    "source": "A"
+   }
+  ],
+  "coupon": [
+   {
+    "value": "쿠폰없음",
+    "freq": 178,
+    "source": "A"
+   },
+   {
+    "value": "퍼블리싱혜택카드",
+    "freq": 76,
+    "source": "A"
+   },
+   {
+    "value": "퍼블리싱쿠폰",
+    "freq": 59,
+    "source": "A"
+   },
+   {
+    "value": "DB쿠폰",
+    "freq": 28,
+    "source": "A"
+   }
+  ],
+  "pricetier": [
+   {
+    "value": "실속형(5~15만)",
+    "freq": 163,
+    "source": "A"
+   },
+   {
+    "value": "프리미엄형(15~40만)",
+    "freq": 130,
+    "source": "A"
+   },
+   {
+    "value": "가성비형(~5만)",
+    "freq": 36,
+    "source": "A"
+   },
+   {
+    "value": "럭셔리형(40만+)",
+    "freq": 11,
+    "source": "A"
+   }
+  ],
+  "discount": [
+   {
+    "value": "중할인(15~30%)",
+    "freq": 156,
+    "source": "A"
+   },
+   {
+    "value": "저할인(~15%)",
+    "freq": 99,
+    "source": "A"
+   },
+   {
+    "value": "고할인(30~50%)",
+    "freq": 59,
+    "source": "A"
+   },
+   {
+    "value": "초고할인(50%+)",
+    "freq": 26,
+    "source": "A"
+   }
+  ],
+  "metric": [
+   {
+    "value": "복잡도 보통",
+    "freq": 226,
+    "source": "A"
+   },
+   {
+    "value": "시인성 보통",
+    "freq": 172,
+    "source": "A"
+   },
+   {
+    "value": "복잡도 낮음",
+    "freq": 114,
+    "source": "A"
+   },
+   {
+    "value": "매출 상",
+    "freq": 113,
+    "source": "A"
+   },
+   {
+    "value": "유입 많음",
+    "freq": 113,
+    "source": "A"
+   },
+   {
+    "value": "유입 적음",
+    "freq": 112,
+    "source": "A"
+   },
+   {
+    "value": "전환율 높음",
+    "freq": 112,
+    "source": "A"
+   },
+   {
+    "value": "매출 하",
+    "freq": 111,
+    "source": "A"
+   },
+   {
+    "value": "전환율 낮음",
+    "freq": 111,
+    "source": "A"
+   },
+   {
+    "value": "전환율 보통",
+    "freq": 111,
+    "source": "A"
+   },
+   {
+    "value": "매출 중",
+    "freq": 110,
+    "source": "A"
+   },
+   {
+    "value": "유입 보통",
+    "freq": 109,
+    "source": "A"
+   },
+   {
+    "value": "시인성 낮음",
+    "freq": 103,
+    "source": "A"
+   },
+   {
+    "value": "시인성 높음",
+    "freq": 65,
+    "source": "A"
+   }
+  ]
+ }
+}

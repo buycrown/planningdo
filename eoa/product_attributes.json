@@ -1,0 +1,243 @@
+{
+ "source": "product_catalog",
+ "generated_at": "2026-06-26",
+ "catalog_size": 2512068,
+ "inplan_size": 113279,
+ "axes": {
+  "pricetier": [
+   {
+    "value": "럭셔리(30~100만)",
+    "freq": 654441,
+    "source": "A'"
+   },
+   {
+    "value": "가성비(~3만)",
+    "freq": 569453,
+    "source": "A'"
+   },
+   {
+    "value": "초럭셔리(100만+)",
+    "freq": 489428,
+    "source": "A'"
+   },
+   {
+    "value": "프리미엄(10~30만)",
+    "freq": 439607,
+    "source": "A'"
+   },
+   {
+    "value": "실속(3~10만)",
+    "freq": 359139,
+    "source": "A'"
+   }
+  ],
+  "discount": [
+   {
+    "value": "정가(0%)",
+    "freq": 1683881,
+    "source": "A'"
+   },
+   {
+    "value": "약할인(~20%)",
+    "freq": 330437,
+    "source": "A'"
+   },
+   {
+    "value": "중할인(20~40%)",
+    "freq": 247532,
+    "source": "A'"
+   },
+   {
+    "value": "강할인(40~60%)",
+    "freq": 137810,
+    "source": "A'"
+   },
+   {
+    "value": "초강할인(60%+)",
+    "freq": 112408,
+    "source": "A'"
+   }
+  ],
+  "itemkind": [
+   {
+    "value": "품목 L3",
+    "freq": 406869,
+    "source": "A'"
+   },
+   {
+    "value": "품목 E0",
+    "freq": 288685,
+    "source": "A'"
+   },
+   {
+    "value": "품목 2C",
+    "freq": 223699,
+    "source": "A'"
+   },
+   {
+    "value": "품목 P0",
+    "freq": 181409,
+    "source": "A'"
+   },
+   {
+    "value": "품목 7H",
+    "freq": 125898,
+    "source": "A'"
+   },
+   {
+    "value": "품목 T0",
+    "freq": 102233,
+    "source": "A'"
+   },
+   {
+    "value": "품목 D0",
+    "freq": 90932,
+    "source": "A'"
+   },
+   {
+    "value": "품목 J0",
+    "freq": 78526,
+    "source": "A'"
+   },
+   {
+    "value": "품목 K1",
+    "freq": 75793,
+    "source": "A'"
+   },
+   {
+    "value": "품목 7J",
+    "freq": 54135,
+    "source": "A'"
+   },
+   {
+    "value": "품목 3P",
+    "freq": 50412,
+    "source": "A'"
+   },
+   {
+    "value": "품목 1D",
+    "freq": 50372,
+    "source": "A'"
+   },
+   {
+    "value": "품목 4G",
+    "freq": 49571,
+    "source": "A'"
+   },
+   {
+    "value": "품목 7F",
+    "freq": 47970,
+    "source": "A'"
+   },
+   {
+    "value": "품목 U0",
+    "freq": 45439,
+    "source": "A'"
+   },
+   {
+    "value": "품목 4Z",
+    "freq": 39346,
+    "source": "A'"
+   },
+   {
+    "value": "품목 4R",
+    "freq": 28955,
+    "source": "A'"
+   },
+   {
+    "value": "품목 L2",
+    "freq": 27734,
+    "source": "A'"
+   },
+   {
+    "value": "품목 0B",
+    "freq": 26584,
+    "source": "A'"
+   },
+   {
+    "value": "품목 1Z",
+    "freq": 26053,
+    "source": "A'"
+   },
+   {
+    "value": "품목 7K",
+    "freq": 25929,
+    "source": "A'"
+   },
+   {
+    "value": "품목 4E",
+    "freq": 24662,
+    "source": "A'"
+   },
+   {
+    "value": "품목 D1",
+    "freq": 23672,
+    "source": "A'"
+   },
+   {
+    "value": "품목 4P",
+    "freq": 22618,
+    "source": "A'"
+   },
+   {
+    "value": "품목 4W",
+    "freq": 20691,
+    "source": "A'"
+   },
+   {
+    "value": "품목 Z6",
+    "freq": 17892,
+    "source": "A'"
+   },
+   {
+    "value": "품목 L1",
+    "freq": 17531,
+    "source": "A'"
+   },
+   {
+    "value": "품목 S0",
+    "freq": 17482,
+    "source": "A'"
+   },
+   {
+    "value": "품목 H1",
+    "freq": 17445,
+    "source": "A'"
+   },
+   {
+    "value": "품목 1F",
+    "freq": 17245,
+    "source": "A'"
+   }
+  ],
+  "prodtype": [
+   {
+    "value": "유형 10",
+    "freq": 2511643,
+    "source": "A'"
+   },
+   {
+    "value": "유형 50",
+    "freq": 423,
+    "source": "A'"
+   },
+   {
+    "value": "유형 20",
+    "freq": 2,
+    "source": "A'"
+   }
+  ],
+  "coverage": [
+   {
+    "value": "미노출(카탈로그)",
+    "freq": 2440106,
+    "source": "A'"
+   },
+   {
+    "value": "기획전노출",
+    "freq": 71962,
+    "source": "A'"
+   }
+  ]
+ }
+}
