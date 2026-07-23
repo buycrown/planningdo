@@ -923,50 +923,7 @@
         </tbody>
       </table>
     </div>
-
-    <div class="apx reveal">
-      <h3>A-3. 쿼리 개선 검토사항 (개발 협의)</h3>
-      <table class="map">
-        <thead><tr><th style="width:80px">구분</th><th>현행 조건</th><th>검토 포인트</th><th>개선안</th></tr></thead>
-        <tbody>
-          <tr>
-            <td>검토 1</td>
-            <td>REG_DT = '당일' (일자 단위)</td>
-            <td>아침 배치 대상에 포함되어야 할 전일 15:00~23:59 가입자와 당일 00:00~03:59 가입자를 배치별로 정확히 구분하지 못할 수 있음</td>
-            <td class="fixv">가입일'시' 범위 조건으로 변경<br>아침: 전일 15:00 ≤ 가입일시 &lt; 당일 04:00<br>저녁: 당일 04:00 ≤ 가입일시 &lt; 당일 15:00</td>
-          </tr>
-          <tr>
-            <td>검토 2</td>
-            <td>ACCESS_TIME ≥ TRUNC(SYSDATE) (당일 0시 이후)</td>
-            <td>전일 15:00~23:59 가입자가 전일 저녁에 본 상품 상세 이력이 조회되지 않아 세그먼트 A에서 누락(B로 오분류)되거나 최근 상품이 왜곡될 수 있음</td>
-            <td class="fixv">아침 배치는 전일 15:00부터 조회<br>ACCESS_TIME ≥ TRUNC(SYSDATE)-1 + 15/24</td>
-          </tr>
-          <tr>
-            <td>반영 완료</td>
-            <td>주문 확인(06·17시) 후 발송(08·19시)까지 약 2시간 공백</td>
-            <td>공백 사이 구매 회원에게 구매 유도 PUSH가 발송되는 오발송 가능</td>
-            <td class="fixv">STEP 5 '발송 직전 재검증' 단계로 본 기획에 반영 (B-1은 쿠폰 사용 여부도 재확인)</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="apx reveal">
-      <h3>A-4. 오픈 전 체크리스트</h3>
-      <table class="map">
-        <thead><tr><th>NO</th><th>항목</th><th>담당 협의</th></tr></thead>
-        <tbody>
-          <tr><td>1</td><td>쿼리 개선 검토 1·2 반영 (A-3 참조 — 가입일시 범위 · DW 조회 범위 확장)</td><td>개발</td></tr>
-          <tr><td>2</td><td>신규 발송 대상 테이블 설계 (세그먼트 구분 컬럼 포함) 및 배치 스케줄 등록</td><td>개발 · DBA</td></tr>
-          <tr><td>3</td><td>쿠폰 발급/보유 테이블 확인 및 보유 판정 기준 확정 (발급 여부 · 미사용 · 유효기간)</td><td>개발 · CRM</td></tr>
-          <tr><td>4</td><td>발송 직전 재검증 로직 (STEP 5 — 주문 + B-1 쿠폰 사용) 배치 반영</td><td>개발</td></tr>
-          <tr><td>5</td><td>B-1 · B-2 쿠폰 PUSH 문안 확정 및 랜딩 페이지 확정 (본 기획서 문안은 초안)</td><td>마케팅</td></tr>
-          <tr><td>6</td><td>세그먼트 A 품절 · 판매중지 상품 발송 제외 여부 검토</td><td>기획 · MD</td></tr>
-          <tr><td>7</td><td>발송군 / 미발송 대조군 설계 및 세그먼트별(A·B-1·B-2) 성과 분리 트래킹</td><td>기획 · 데이터</td></tr>
-          <tr><td>8</td><td>동일 회원 중복 발송 방지 (1회원 1일 1회 발송 원칙) 확인</td><td>개발</td></tr>
-        </tbody>
-      </table>
-    </div>
+ 
   </section>
 
 </main>
