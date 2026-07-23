@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>신규가입 후 첫구매 미진행 고객 대상 개인화 APP PUSH 발송 — 기획서 v2.0</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root{
+    --bg:#0A0E16;
+    --surface:#111725;
+    --surface2:#171F30;
+    --line:#242F45;
+    --text:#E8ECF4;
+    --muted:#8C96AB;
+    --am:#F5B14C;        /* 세그먼트 A · 아침 배치 — 앰버 */
+    --am-dim:rgba(245,177,76,.14);
+    --pm:#8B7CF6;        /* 저녁 배치 — 바이올렛 */
+    --pm-dim:rgba(139,124,246,.14);
+    --ok:#4ADE80;        /* 세그먼트 B-1 — 그린 */
+    --ok-dim:rgba(74,222,128,.12);
+    --danger:#F87171;
+    --danger-dim:rgba(248,113,113,.12);
+    --info:#60A5FA;      /* 세그먼트 B-2 — 블루 */
+    --info-dim:rgba(96,165,250,.12);
+    --pink:#F472B6;
+    --pink-dim:rgba(244,114,182,.12);
+    --mono:'JetBrains Mono','Cascadia Code',Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Pretendard Variable',Pretendard,-apple-system,'Malgun Gothic',sans-serif;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:rgba(245,177,76,.35)}
+
+  /* ── 상단 고정 네비 ─────────────────────────── */
+  nav{
+    position:sticky;top:0;z-index:50;
+    display:flex;align-items:center;gap:6px;
+    padding:14px 28px;
+    background:rgba(10,14,22,.82);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+  nav .logo{
+    font-weight:800;font-size:14px;letter-spacing:.04em;
+    background:linear-gradient(90deg,var(--am),var(--pm));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    margin-right:auto;white-space:nowrap;
+  }
+  nav a{
+    color:var(--muted);text-decoration:none;font-size:13px;font-weight:600;
+    padding:7px 14px;border-radius:99px;transition:all .2s;white-space:nowrap;
+  }
+  nav a:hover{color:var(--text);background:var(--surface2)}
+  nav a.active{color:var(--bg);background:var(--am)}
+  nav a:focus-visible{outline:2px solid var(--am);outline-offset:2px}
+
+  main{max-width:1080px;margin:0 auto;padding:0 28px 120px}
+
+  /* ── 히어로 ─────────────────────────────────── */
+  .hero{padding:88px 0 72px;border-bottom:1px solid var(--line)}
+  .hero .badges{display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap}
+  .badge{
+    font-size:12px;font-weight:700;letter-spacing:.08em;
+    padding:6px 14px;border-radius:99px;
+  }
+  .badge.phase{background:var(--am-dim);color:var(--am);border:1px solid rgba(245,177,76,.4)}
+  .badge.type{background:var(--pm-dim);color:var(--pm);border:1px solid rgba(139,124,246,.4)}
+  .badge.status{background:var(--ok-dim);color:var(--ok);border:1px solid rgba(74,222,128,.35)}
+  .hero h1{
+    font-size:clamp(30px,4.6vw,46px);font-weight:800;line-height:1.28;
+    letter-spacing:-.02em;margin-bottom:20px;
+  }
+  .hero h1 .grad{
+    background:linear-gradient(90deg,var(--am) 0%,var(--pink) 55%,var(--pm) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero p.lead{font-size:17px;color:var(--muted);max-width:720px;margin-bottom:36px}
+  .hero p.lead strong{color:var(--text)}
+  .hero .meta{
+    display:flex;gap:36px;flex-wrap:wrap;
+    font-size:13px;color:var(--muted);
+  }
+  .hero .meta b{display:block;color:var(--text);font-size:14px;margin-top:3px;font-weight:600}
+
+  /* ── 섹션 공통 ──────────────────────────────── */
+  section{padding:76px 0 12px;scroll-margin-top:56px}
+  .eyebrow{
+    display:flex;align-items:center;gap:12px;margin-bottom:14px;
+    font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.14em;
+  }
+  .eyebrow .no{color:var(--am)}
+  .eyebrow .label{color:var(--muted)}
+  .eyebrow::after{content:'';flex:1;height:1px;background:var(--line)}
+  section>h2{font-size:28px;font-weight:800;letter-spacing:-.01em;margin-bottom:10px}
+  section>.desc{color:var(--muted);font-size:15px;max-width:760px;margin-bottom:36px}
+  .hl{
+    background:linear-gradient(transparent 55%,rgba(245,177,76,.28) 55%);
+    color:var(--text);font-weight:700;padding:0 2px;
+  }
+  .hl-pm{background:linear-gradient(transparent 55%,rgba(139,124,246,.32) 55%);font-weight:700;padding:0 2px}
+  .hl-ok{background:linear-gradient(transparent 55%,rgba(74,222,128,.28) 55%);color:var(--text);font-weight:700;padding:0 2px}
+
+  /* ── 카드 ───────────────────────────────────── */
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+  .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    padding:26px 24px;transition:transform .25s,border-color .25s;
+  }
+  .card:hover{transform:translateY(-3px);border-color:#33405e}
+  .card .icon{font-size:26px;margin-bottom:14px}
+  .card h3{font-size:16px;font-weight:700;margin-bottom:8px}
+  .card p{font-size:13.5px;color:var(--muted)}
+  .card p b{color:var(--text)}
+  .card.accent-am{border-top:3px solid var(--am)}
+  .card.accent-pm{border-top:3px solid var(--pm)}
+  .card.accent-ok{border-top:3px solid var(--ok)}
+
+  /* 데이터 근거 (퍼널 바) */
+  .fun-wrap{
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    padding:26px 26px 18px;margin-bottom:24px;
+  }
+  .fun-wrap h3{font-size:16px;font-weight:700;margin-bottom:4px}
+  .fun-wrap .fw-sub{font-size:12.5px;color:var(--muted);margin-bottom:20px}
+  .frow{display:grid;grid-template-columns:230px 1fr 130px;gap:14px;align-items:center;padding:7px 0}
+  .frow .fl{font-size:13px;color:var(--muted);text-align:right}
+  .frow .fl b{color:var(--text);font-weight:600}
+  .frow .fbar{height:22px;border-radius:6px;background:var(--surface2);overflow:hidden;position:relative}
+  .frow .fbar i{display:block;height:100%;border-radius:6px}
+  .frow .fv{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+  .frow .fv b{color:var(--text);font-size:13.5px}
+  .frow.dim .fl,.frow.dim .fv{opacity:.65}
+  .fun-note{
+    margin-top:16px;padding:13px 16px;border-radius:10px;
+    background:var(--am-dim);border:1px solid rgba(245,177,76,.3);
+    font-size:13px;color:var(--text);
+  }
+  .fun-note b{color:var(--am)}
+
+  /* KPI 스트립 */
+  .kpi-strip{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:16px;
+    overflow:hidden;margin-bottom:8px;
+  }
+  .kpi{background:var(--surface);padding:22px 20px}
+  .kpi .k-label{font-size:12px;color:var(--muted);letter-spacing:.05em;font-weight:600}
+  .kpi .k-val{font-family:var(--mono);font-size:22px;font-weight:700;margin-top:6px}
+  .kpi .k-val.am{color:var(--am)} .kpi .k-val.pm{color:var(--pm)}
+  .kpi .k-val.ok{color:var(--ok)} .kpi .k-val.info{color:var(--info)}
+  .kpi .k-sub{font-size:11.5px;color:var(--muted);margin-top:4px}
+
+  /* ── 타임라인 ───────────────────────────────── */
+  .tl-wrap{
+    background:var(--surface);border:1px solid var(--line);border-radius:20px;
+    padding:34px 26px 22px;margin-bottom:26px;overflow-x:auto;
+  }
+  .tl-wrap h3{font-size:17px;font-weight:700;margin-bottom:4px;padding-left:6px}
+  .tl-wrap .sub{font-size:13px;color:var(--muted);margin-bottom:18px;padding-left:6px}
+  #timeline-svg{min-width:920px;display:block}
+  .tl-legend{
+    display:flex;gap:22px;flex-wrap:wrap;padding:16px 6px 4px;
+    font-size:12.5px;color:var(--muted);border-top:1px dashed var(--line);margin-top:12px;
+  }
+  .tl-legend span{display:inline-flex;align-items:center;gap:7px}
+  .lg-band{width:26px;height:10px;border-radius:3px;display:inline-block}
+  .lg-dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+
+  #tl-tooltip{
+    position:fixed;z-index:99;pointer-events:none;
+    background:#1D2740;border:1px solid #3A4a70;border-radius:10px;
+    padding:10px 14px;font-size:12.5px;line-height:1.5;color:var(--text);
+    box-shadow:0 8px 28px rgba(0,0,0,.5);max-width:260px;
+    opacity:0;transform:translateY(4px);transition:opacity .15s,transform .15s;
+  }
+  #tl-tooltip.show{opacity:1;transform:translateY(0)}
+  #tl-tooltip b{color:var(--am)}
+
+  /* 배치 요약 테이블 */
+  table.rule{
+    width:100%;border-collapse:collapse;font-size:14px;
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    overflow:hidden;margin-bottom:26px;
+  }
+  table.rule th{
+    text-align:left;padding:14px 18px;font-size:12.5px;letter-spacing:.06em;
+    color:var(--muted);background:var(--surface2);border-bottom:1px solid var(--line);
+    font-weight:700;
+  }
+  table.rule td{padding:15px 18px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.rule tr:last-child td{border-bottom:none}
+  .pill{
+    display:inline-block;font-family:var(--mono);font-size:12px;font-weight:700;
+    padding:4px 11px;border-radius:8px;
+  }
+  .pill.am{background:var(--am-dim);color:var(--am)}
+  .pill.pm{background:var(--pm-dim);color:var(--pm)}
+  .pill.ok{background:var(--ok-dim);color:var(--ok)}
+  .pill.info{background:var(--info-dim);color:var(--info)}
+
+  /* ── 세그먼트 분기도 & 메시지 ────────────────── */
+  .seg-root{
+    background:var(--surface2);border:1px solid #33405e;border-radius:14px;
+    padding:16px 22px;text-align:center;font-size:14.5px;font-weight:700;
+    max-width:560px;margin:0 auto 0;
+  }
+  .seg-root .sr-sub{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:3px}
+  .seg-connect{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+    text-align:center;color:#3A4a70;font-size:15px;padding:8px 0 10px;
+  }
+  .seg-cond{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:10px;
+  }
+  .seg-cond .sc{
+    font-size:12px;font-weight:700;text-align:center;
+    border:1px dashed;border-radius:99px;padding:6px 10px;
+  }
+  .sc.a{color:var(--am);border-color:rgba(245,177,76,.5);background:var(--am-dim)}
+  .sc.b1{color:var(--ok);border-color:rgba(74,222,128,.5);background:var(--ok-dim)}
+  .sc.b2{color:var(--info);border-color:rgba(96,165,250,.5);background:var(--info-dim)}
+  .seg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:26px}
+  .seg{
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    padding:20px 18px;display:flex;flex-direction:column;gap:14px;
+    transition:transform .25s,border-color .25s;
+  }
+  .seg:hover{transform:translateY(-3px);border-color:#33405e}
+  .seg.a{border-top:3px solid var(--am)}
+  .seg.b1{border-top:3px solid var(--ok)}
+  .seg.b2{border-top:3px solid var(--info)}
+  .seg .sg-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .seg .sg-tag{font-family:var(--mono);font-size:11px;font-weight:800;padding:3px 10px;border-radius:7px}
+  .seg.a .sg-tag{background:var(--am-dim);color:var(--am)}
+  .seg.b1 .sg-tag{background:var(--ok-dim);color:var(--ok)}
+  .seg.b2 .sg-tag{background:var(--info-dim);color:var(--info)}
+  .seg .sg-title{font-size:13.5px;font-weight:700}
+  .push-card{
+    background:rgba(30,38,58,.92);border:1px solid #354160;border-radius:16px;
+    padding:13px 15px;
+  }
+  .push-card .app{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);margin-bottom:7px}
+  .push-card .app .ai{
+    width:17px;height:17px;border-radius:5px;font-size:9.5px;font-weight:800;
+    background:linear-gradient(135deg,var(--am),var(--pink));color:#111;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  .push-card .t{font-size:13px;font-weight:700;margin-bottom:3px}
+  .push-card .b{font-size:12px;color:#C4CBDA}
+  .seg ul{list-style:none;margin-top:auto}
+  .seg li{
+    display:flex;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line);
+    font-size:12.5px;color:var(--muted);
+  }
+  .seg li:last-child{border-bottom:none}
+  .seg li b{min-width:56px;color:var(--text);font-weight:600;flex-shrink:0}
+  .seg .copy-state{font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px;align-self:flex-start}
+  .copy-state.fixed{background:var(--ok-dim);color:var(--ok)}
+  .copy-state.draft{background:var(--danger-dim);color:var(--danger)}
+
+  /* ── 프로세스 분기 순서도 (SVG) ─────────────── */
+  .fc-wrap{
+    background:var(--surface);border:1px solid var(--line);border-radius:20px;
+    padding:26px 20px 12px;margin-bottom:14px;overflow-x:auto;
+  }
+  .fc-wrap h3{font-size:17px;font-weight:700;margin-bottom:4px;padding-left:6px}
+  .fc-wrap .sub{font-size:13px;color:var(--muted);margin-bottom:14px;padding-left:6px}
+  #flowchart-svg{min-width:980px;display:block}
+  .fc-node{cursor:pointer}
+  .fc-node .fc-shape{transition:stroke-width .15s}
+  .fc-node:hover .fc-shape{stroke-width:3.5}
+  .fc-node.active .fc-shape{stroke-width:4}
+  .fc-node:focus-visible .fc-shape{stroke-width:4}
+  .rail-label{font-size:13.5px;font-weight:700;color:var(--muted);margin:18px 0 10px;padding-left:6px}
+
+  /* ── 공통 파이프라인 레일 (좌→우) ─────────────── */
+  .prail-wrap{margin-bottom:30px}
+  .prail{
+    display:flex;align-items:stretch;overflow-x:auto;padding-bottom:8px;
+  }
+  .pnode{
+    flex:1;min-width:104px;
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:14px 6px 12px;cursor:pointer;color:var(--text);font-family:inherit;
+    text-align:center;transition:border-color .2s,background .2s,transform .2s;
+  }
+  .pnode:hover{border-color:#33405e;transform:translateY(-2px)}
+  .pnode.active{
+    border-color:var(--am);background:rgba(245,177,76,.07);
+    box-shadow:0 0 0 1px var(--am);
+  }
+  .pnode:focus-visible{outline:2px solid var(--am);outline-offset:2px}
+  .pnode .pn-no{font-family:var(--mono);font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--muted)}
+  .pnode.active .pn-no{color:var(--am)}
+  .pnode .pn-t{font-size:12px;font-weight:700;line-height:1.4}
+  .pnode .pn-db{font-family:var(--mono);font-size:9px;color:var(--muted);line-height:1.3}
+  .pnode .newtag{margin-top:1px}
+  .parrow{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:3px;min-width:56px;padding:0 4px;
+  }
+  .parrow .ar{color:#3A4a70;font-size:16px;line-height:1}
+  .op{
+    font-family:var(--mono);font-size:9px;font-weight:800;letter-spacing:.05em;
+    padding:3px 8px;border-radius:99px;border:1px solid;white-space:nowrap;
+  }
+  .op.select{color:var(--info);border-color:rgba(96,165,250,.45);background:var(--info-dim)}
+  .op.insert{color:var(--ok);border-color:rgba(74,222,128,.45);background:var(--ok-dim)}
+  .op.verify{color:var(--am);border-color:rgba(245,177,76,.45);background:var(--am-dim)}
+  .op.send{color:var(--pink);border-color:rgba(244,114,182,.5);background:var(--pink-dim)}
+  .newtag{
+    font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--bg);
+    background:var(--ok);border-radius:6px;padding:2px 8px;
+  }
+  /* 상세 패널 */
+  .pdetail{
+    margin-top:16px;background:var(--surface);border:1px solid var(--line);
+    border-radius:16px;padding:24px 26px;min-height:200px;
+  }
+  .pd{display:none}
+  .pd.active{display:block;animation:pdIn .3s ease}
+  @keyframes pdIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .pd .head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  .pd .stepno{font-family:var(--mono);font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--am)}
+  .pd h3{font-size:16.5px;font-weight:700}
+  .pd .body{font-size:13.5px;color:var(--muted)}
+  .pd .body b{color:var(--text)}
+  .pd .body code{font-family:var(--mono);font-size:12px;color:var(--am)}
+  .pd .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+  .chip{font-family:var(--mono);font-size:11px;font-weight:700;padding:4px 11px;border-radius:7px}
+  .chip.tbl{background:var(--surface2);color:#AAB6CE;border:1px solid var(--line)}
+  .pd-hint{font-size:12px;color:var(--muted);margin-top:10px;text-align:right}
+
+  /* 쿼리 토글 */
+  .q-toggle{
+    margin-top:14px;font-size:12px;font-weight:700;color:var(--info);
+    background:none;border:1px solid rgba(96,165,250,.4);border-radius:8px;
+    padding:6px 14px;cursor:pointer;font-family:inherit;transition:background .2s;
+  }
+  .q-toggle:hover{background:var(--info-dim)}
+  .q-toggle:focus-visible{outline:2px solid var(--info);outline-offset:2px}
+  .q-body{
+    display:none;margin-top:12px;background:#070B12;border:1px solid var(--line);
+    border-radius:12px;padding:16px 18px;overflow-x:auto;
+  }
+  .q-body.open{display:block}
+  .q-body pre{
+    font-family:var(--mono);font-size:12px;line-height:1.7;color:#B9C4DA;
+    white-space:pre;
+  }
+  .q-body pre .kw{color:var(--info)} .q-body pre .cm{color:#5B677E} .q-body pre .st{color:var(--am)}
+
+  /* Appendix */
+  .apx{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px 26px;margin-bottom:18px}
+  .apx h3{font-size:15.5px;font-weight:700;margin-bottom:14px}
+  table.map{width:100%;border-collapse:collapse;font-size:13px}
+  table.map th{text-align:left;color:var(--muted);font-size:12px;padding:8px 12px;border-bottom:1px solid var(--line);font-weight:700}
+  table.map td{padding:9px 12px;border-bottom:1px dashed var(--line);color:var(--muted)}
+  table.map td:first-child{font-family:var(--mono);color:var(--am);font-weight:700}
+  table.map tr.now td{background:rgba(245,177,76,.06)}
+  table.map tr.now td:nth-child(2){color:var(--text);font-weight:700}
+  table.map td.fixv,table.map td .fixv{color:var(--ok)}
+
+  footer{
+    max-width:1080px;margin:0 auto;padding:36px 28px 60px;
+    border-top:1px solid var(--line);color:var(--muted);font-size:12.5px;
+    display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  }
+
+  /* 리빌 */
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.on{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    .pd.active{animation:none}
+    html{scroll-behavior:auto}
+  }
+
+  @media (max-width:860px){
+    .cards{grid-template-columns:1fr}
+    .kpi-strip{grid-template-columns:1fr 1fr}
+    .seg-grid,.seg-cond,.seg-connect{grid-template-columns:1fr}
+    .seg-connect{display:none}
+    .frow{grid-template-columns:1fr;gap:4px}
+    .frow .fl{text-align:left}
+    nav{overflow-x:auto}
+  }
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <span class="logo">LFmall CRM · PHASE 1</span>
+  <a href="#purpose" class="active">01 목적</a>
+  <a href="#rule">02 발송 RULE</a>
+  <a href="#process">03 발송 PROCESS</a>
+  <a href="#appendix">Appendix</a>
+</nav>
+
+<main>
+
+  <!-- ══════════ HERO ══════════ -->
+  <header class="hero">
+    <div class="badges">
+      <span class="badge phase">PHASE 1</span>
+      <span class="badge type">CRM · 개인화 트리거</span>
+      <span class="badge status">기획서 v2.1 — 대상 확장 · 분기 순서도</span>
+    </div>
+    <h1>
+      신규가입 후 첫구매 미진행 고객 대상<br>
+      <span class="grad">개인화 APP PUSH 발송</span>
+    </h1>
+    <p class="lead">
+      가입 당일 첫구매 없이 이탈한 신규회원 <strong>전원</strong>에게 세그먼트별 트리거를 발송합니다.
+      <strong>상품 상세페이지를 한 번이라도 열람한 회원</strong>에게는 가장 최근에 본 상품 기반 개인화 PUSH를,
+      <strong>열람 이력이 없는 회원</strong>에게는 신규가입 20% 쿠폰 기반 PUSH(사용 유도 / 다운로드 유도)를
+      하루 2회(08시·19시) 발송하여 재방문과 첫구매 전환을 유도합니다.
+    </p>
+    <div class="meta">
+      <div>프로젝트<b>신규가입 회원 첫구매 이탈 · 개인화 트리거</b></div>
+      <div>대상 채널<b>APP PUSH (Phase 1)</b></div>
+      <div>발송 세그먼트<b>A 상품상세 열람 · B-1 쿠폰 보유 · B-2 쿠폰 미보유</b></div>
+      <div>작성일<b>2026. 07. 15 (v2.0)</b></div>
+    </div>
+  </header>
+
+  <!-- ══════════ 01 목적 ══════════ -->
+  <section id="purpose">
+    <div class="eyebrow"><span class="no">01</span><span class="label">PURPOSE</span></div>
+    <h2>목적</h2>
+    <p class="desc">
+      '마지막 페이지가 상품 상세인 회원'만 대상으로 하면 발송 모수가 전체 가입의 15%에도 미치지 못합니다.
+      대상을 <span class="hl">'상품 상세를 한 번이라도 열람한 회원'</span>으로 넓히고,
+      열람 이력이 없는 회원까지 <span class="hl-ok">쿠폰 트리거</span>로 흡수하여
+      <b style="color:var(--text)">첫구매 미진행 회원 전원</b>을 커버합니다.
+    </p>
+
+    <!-- 데이터 근거 -->
+    <div class="fun-wrap reveal">
+      <h3>📊 대상 확장의 데이터 근거</h3>
+      <p class="fw-sub">2026-07-15 가입 회원 기준 (00시~17시 가입 · '상품상세페이지 최종 이탈 회원 data 확인' 참조)</p>
+      <div class="frow">
+        <div class="fl"><b>당일 가입 회원</b></div>
+        <div class="fbar"><i style="width:100%;background:linear-gradient(90deg,#33405e,#2A3450)"></i></div>
+        <div class="fv"><b>1,008명</b> · 100%</div>
+      </div>
+      <div class="frow">
+        <div class="fl">└ APP PUSH 동의</div>
+        <div class="fbar"><i style="width:47.9%;background:linear-gradient(90deg,#8B7CF6,rgba(139,124,246,.5))"></i></div>
+        <div class="fv"><b>483명</b> · 47.9%</div>
+      </div>
+      <div class="frow">
+        <div class="fl">└ 주문 없음 = <b>발송 모수</b></div>
+        <div class="fbar"><i style="width:30.7%;background:linear-gradient(90deg,#F472B6,rgba(244,114,182,.5))"></i></div>
+        <div class="fv"><b>309명</b> · 30.7%</div>
+      </div>
+      <div class="frow">
+        <div class="fl">└ 상품상세 <b>열람 이력 존재</b> (新 세그먼트 A)</div>
+        <div class="fbar"><i style="width:24.5%;background:linear-gradient(90deg,#F5B14C,rgba(245,177,76,.5))"></i></div>
+        <div class="fv"><b>247명</b> · 24.5%</div>
+      </div>
+      <div class="frow dim">
+        <div class="fl">└ 상품상세 <b>최종 이탈</b> (舊 기준)</div>
+        <div class="fbar"><i style="width:8%;background:linear-gradient(90deg,#F87171,rgba(248,113,113,.5))"></i></div>
+        <div class="fv"><b>81명</b> · 8.0%</div>
+      </div>
+      <div class="fun-note">
+        舊 기준(최종 이탈)의 모수 비중은 <b>7/13 10.5% · 7/14 6.9% · 7/15 8.0%</b>로 3일 연속 15%에 미달.
+        기준을 '열람 이력 존재'로 확장하면 세그먼트 A만으로 <b>약 3배(81명 → 247명)</b>,
+        쿠폰 세그먼트 B(62명)까지 포함하면 <b>발송 모수 309명 전원 커버 — 발송 사각지대 0명</b>이 됩니다.
+      </div>
+    </div>
+
+    <div class="cards reveal">
+      <div class="card accent-am">
+        <div class="icon">🔍</div>
+        <h3>세그먼트 A — 관심 상품이 명확한 회원</h3>
+        <p>상품 상세를 한 번이라도 열람한 회원에게 <b>가장 최근에 본 상품</b>의 브랜드·상품명을 담은
+        개인화 PUSH를 발송하고, 해당 상세페이지로 바로 랜딩시킵니다.</p>
+      </div>
+      <div class="card accent-ok">
+        <div class="icon">🎁</div>
+        <h3>세그먼트 B — 탐색 전 이탈 회원은 쿠폰으로</h3>
+        <p>상품 상세 열람 이력이 없는 회원은 관심 상품을 특정할 수 없으므로,
+        <b>신규가입 20% 쿠폰</b>을 트리거로 활용합니다. 보유 회원에겐 <b>사용 유도</b>,
+        미보유 회원에겐 <b>다운로드 유도</b> PUSH를 발송합니다.</p>
+      </div>
+      <div class="card accent-pm">
+        <div class="icon">📈</div>
+        <h3>목표 — 미구매 신규회원 100% 커버</h3>
+        <p>미구매·PUSH 동의 회원 <b>전원에게 상황에 맞는 트리거</b>를 발송해
+        첫구매 전환율을 끌어올리고, 세그먼트별 성과 비교로 Phase 2 고도화의 근거를 확보합니다.</p>
+      </div>
+    </div>
+
+    <div class="kpi-strip reveal">
+      <div class="kpi">
+        <div class="k-label">발송 성과</div>
+        <div class="k-val am">PUSH CTR</div>
+        <div class="k-sub">세그먼트별 클릭률 비교</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">재유입</div>
+        <div class="k-val pm">재방문율</div>
+        <div class="k-sub">클릭 후 24h 내 방문</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">핵심 전환</div>
+        <div class="k-val ok">첫구매 전환율</div>
+        <div class="k-sub">A vs B-1 vs B-2 · 대조군 비교</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">쿠폰 성과</div>
+        <div class="k-val info">쿠폰 사용률</div>
+        <div class="k-sub">B 세그먼트 다운로드·사용 추적</div>
+      </div>
+    </div>
+    <p style="font-size:12.5px;color:var(--muted);margin-top:10px">
+      ※ 성과 측정 지표(안). 오픈 후 미발송 대조군과의 A/B 비교로 순증 효과를 검증합니다.
+    </p>
+  </section>
+
+  <!-- ══════════ 02 발송 RULE ══════════ -->
+  <section id="rule">
+    <div class="eyebrow"><span class="no">02</span><span class="label">SENDING RULE</span></div>
+    <h2>APP PUSH 발송 RULE</h2>
+    <p class="desc">
+      발송 시각은 기존과 동일하게 <span class="hl">가입 시간대별 하루 2회(08시·19시)</span> 배치로 운영하고,
+      발송 대상은 <span class="hl-ok">3개 세그먼트(A / B-1 / B-2)</span>로 나눠 각각 다른 메시지를 발송합니다.
+    </p>
+
+    <!-- 타임라인 (JS 렌더링) -->
+    <div class="tl-wrap reveal">
+      <h3>📅 발송 타임라인 — 하루 2회 배치</h3>
+      <p class="sub">막대와 라벨 위에 마우스를 올리면 상세 설명이 표시됩니다. (모바일: 좌우 스크롤)</p>
+      <div id="timeline-container"></div>
+      <div class="tl-legend">
+        <span><i class="lg-band" style="background:linear-gradient(90deg,rgba(245,177,76,.9),rgba(245,177,76,.5))"></i> 아침 배치 가입 시간대</span>
+        <span><i class="lg-band" style="background:linear-gradient(90deg,rgba(139,124,246,.9),rgba(139,124,246,.5))"></i> 저녁 배치 가입 시간대</span>
+        <span><i class="lg-dot" style="background:var(--info)"></i> 주문 여부 확인</span>
+        <span><i class="lg-dot" style="background:var(--ok)"></i> 발송 직전 재검증 <b style="color:var(--ok);font-size:10px">NEW</b></span>
+        <span><i class="lg-dot" style="background:var(--pink)"></i> PUSH 발송 (3개 세그먼트 동시)</span>
+      </div>
+    </div>
+    <div id="tl-tooltip" role="tooltip"></div>
+
+    <table class="rule reveal">
+      <thead>
+        <tr>
+          <th style="width:120px">발송 배치</th>
+          <th>가입 시간대</th>
+          <th>주문 확인</th>
+          <th>발송 직전 재검증</th>
+          <th>공통 발송 조건</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="pill am">당일 08:00</span></td>
+          <td><b>전일 15:00 ~ 당일 03:59</b><br><span style="color:var(--muted);font-size:12.5px">13시간 구간</span></td>
+          <td>당일 <b>06:00</b>까지<br>주문 없는 회원</td>
+          <td><span class="pill ok">07:5x 재확인</span></td>
+          <td rowspan="2" style="font-size:13px;color:var(--muted)">
+            ① 첫구매 이력 없음<br>
+            ② APP PUSH 수신 동의 (<code style="font-family:var(--mono);font-size:11.5px;color:var(--am)">PUSH_YN='Y'</code>)<br>
+            ③ 세그먼트별 메시지 분기 (A / B-1 / B-2, 아래 분기도)<br>
+            ④ 야간 수신 동의 <b style="color:var(--text)">불필요</b> (08·19시 발송)<br>
+            ⑤ 1회원 1일 1회 발송
+          </td>
+        </tr>
+        <tr>
+          <td><span class="pill pm">당일 19:00</span></td>
+          <td><b>당일 04:00 ~ 당일 14:59</b><br><span style="color:var(--muted);font-size:12.5px">11시간 구간</span></td>
+          <td>당일 <b>17:00</b>까지<br>주문 없는 회원</td>
+          <td><span class="pill ok">18:5x 재확인</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 세그먼트 분기도 & 메시지 -->
+    <h3 style="font-size:18px;font-weight:700;margin:34px 0 18px">🔀 발송 세그먼트 분기 & 메시지</h3>
+    <div class="reveal">
+      <div class="seg-root">
+        신규가입 & 첫구매 미진행 & APP PUSH 수신 동의 회원
+        <span class="sr-sub">배치별 대상 전원 — 아래 3개 세그먼트 중 하나로 반드시 분류 (누락 없음)</span>
+      </div>
+      <div class="seg-connect"><span>▼</span><span>▼</span><span>▼</span></div>
+      <div class="seg-cond">
+        <div class="sc a">상품 상세페이지 열람 이력 있음</div>
+        <div class="sc b1">열람 이력 없음 · 신규가입 20% 쿠폰 <b>보유</b></div>
+        <div class="sc b2">열람 이력 없음 · 신규가입 20% 쿠폰 <b>미보유</b></div>
+      </div>
+      <div class="seg-grid">
+        <!-- 세그먼트 A -->
+        <div class="seg a">
+          <div class="sg-head">
+            <span class="sg-tag">SEG A</span>
+            <span class="sg-title">최근 본 상품 개인화</span>
+          </div>
+          <div class="push-card">
+            <div class="app"><span class="ai">LF</span> LF몰 · 지금</div>
+            <div class="t">관심 있게 보셨던 [브랜드명] [상품명]</div>
+            <div class="b">할인이 끝나기 전에 다시 만나보세요 &gt;</div>
+          </div>
+          <ul>
+            <li><b>기준</b><span>가장 최근에 열람한 상품 1건 (<code style="font-family:var(--mono);font-size:11px;color:var(--am)">RN=1</code>)</span></li>
+            <li><b>변수</b><span>[브랜드명] [상품명] 자동 치환</span></li>
+            <li><b>랜딩</b><span>해당 상품 상세페이지</span></li>
+          </ul>
+          <span class="copy-state fixed">문안 확정 (EXCEL 기준)</span>
+        </div>
+        <!-- 세그먼트 B-1 -->
+        <div class="seg b1">
+          <div class="sg-head">
+            <span class="sg-tag">SEG B-1</span>
+            <span class="sg-title">쿠폰 사용 유도</span>
+          </div>
+          <div class="push-card">
+            <div class="app"><span class="ai">LF</span> LF몰 · 지금</div>
+            <div class="t">신규가입 20% 쿠폰이 아직 잠들어 있어요 🎁</div>
+            <div class="b">첫 구매에 바로 사용해보세요 &gt;</div>
+          </div>
+          <ul>
+            <li><b>기준</b><span>신규가입 20% 쿠폰 보유 (미사용 · 유효기간 內)</span></li>
+            <li><b>변수</b><span>없음 (공통 문안)</span></li>
+            <li><b>랜딩</b><span>쿠폰 적용 가능 상품관 (마케팅 협의)</span></li>
+          </ul>
+          <span class="copy-state draft">문안 (안) — 마케팅 확정 필요</span>
+        </div>
+        <!-- 세그먼트 B-2 -->
+        <div class="seg b2">
+          <div class="sg-head">
+            <span class="sg-tag">SEG B-2</span>
+            <span class="sg-title">쿠폰 다운로드 유도</span>
+          </div>
+          <div class="push-card">
+            <div class="app"><span class="ai">LF</span> LF몰 · 지금</div>
+            <div class="t">가입 혜택 20% 쿠폰, 아직 안 받으셨어요!</div>
+            <div class="b">지금 다운로드하고 첫 구매 할인 받아보세요 &gt;</div>
+          </div>
+          <ul>
+            <li><b>기준</b><span>신규가입 20% 쿠폰 미보유 (미발급·미다운로드)</span></li>
+            <li><b>변수</b><span>없음 (공통 문안)</span></li>
+            <li><b>랜딩</b><span>쿠폰 다운로드 페이지 (마케팅 협의)</span></li>
+          </ul>
+          <span class="copy-state draft">문안 (안) — 마케팅 확정 필요</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 03 발송 PROCESS ══════════ -->
+  <section id="process">
+    <div class="eyebrow"><span class="no">03</span><span class="label">SENDING PROCESS</span></div>
+    <h2>APP PUSH 발송 PROCESS</h2>
+    <p class="desc">
+      프로세스는 두 부분으로 구성됩니다.
+      <span class="hl">세그먼트 분기 순서도(STEP 1~3)</span>에서 회원별로
+      <b style="color:var(--ok)">Y</b>/<b style="color:var(--danger)">N</b> 판단을 거쳐
+      3종 APP PUSH 중 하나가 결정되고, 이후
+      <span class="hl-pm">공통 발송 파이프라인(STEP 4~7)</span>을 거쳐 발송됩니다.
+      <b style="color:var(--am)">도형과 단계를 클릭</b>하면 화면 이동 없이 아래 패널에서 상세 설명과 SQL을 확인할 수 있습니다.
+    </p>
+
+    <div class="prail-wrap reveal">
+      <!-- 세그먼트 분기 순서도 STEP 1~3 (JS 렌더링) -->
+      <div class="fc-wrap">
+        <h3>🔀 세그먼트 분기 순서도 — STEP 1 ~ 3</h3>
+        <p class="sub">◇ 판단 도형의 Y/N 분기에 따라 3종 APP PUSH 중 하나가 결정됩니다. 도형을 클릭하면 하단 패널의 상세 내용이 전환됩니다. (모바일: 좌우 스크롤)</p>
+        <div id="flowchart-container"></div>
+      </div>
+
+      <p class="rail-label">⚙️ 공통 발송 파이프라인 — STEP 4 ~ 7 (3개 세그먼트 공통 경로)</p>
+      <div class="prail" id="prail" role="tablist" aria-label="공통 발송 파이프라인 단계">
+        <!-- STEP 4 -->
+        <button class="pnode" data-step="4" role="tab" aria-selected="false">
+          <svg width="48" height="42" viewBox="0 0 74 64" aria-hidden="true">
+            <ellipse cx="37" cy="12" rx="30" ry="10" fill="#1A2A45" stroke="#60A5FA" stroke-width="2.5"/>
+            <path d="M7 12 v40 a30 10 0 0 0 60 0 v-40" fill="#12203A" stroke="#60A5FA" stroke-width="2.5"/>
+            <circle cx="59" cy="49" r="12" fill="#4ADE80"/>
+            <path d="M54 49 l3.4 3.4 l6.6 -6.8" stroke="#0A0E16" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+          </svg>
+          <span class="pn-no">STEP 4</span>
+          <span class="pn-t">발송 대상 적재<br>(세그먼트 구분)</span>
+          <span class="pn-db">LFmall DB<br>신규 TABLE</span>
+        </button>
+        <div class="parrow"><span class="op verify">VERIFY</span><span class="ar">➜</span></div>
+
+        <!-- STEP 5 -->
+        <button class="pnode" data-step="5" role="tab" aria-selected="false">
+          <svg width="48" height="42" viewBox="0 0 74 64" aria-hidden="true">
+            <circle cx="37" cy="32" r="26" fill="rgba(74,222,128,.08)" stroke="#4ADE80" stroke-width="2.5"/>
+            <path d="M24 32 l9 9 l17 -17" stroke="#4ADE80" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="pn-no">STEP 5</span>
+          <span class="pn-t">발송 직전<br>재검증</span>
+          <span class="newtag">NEW</span>
+        </button>
+        <div class="parrow"><span class="op insert">INSERT</span><span class="ar">➜</span></div>
+
+        <!-- STEP 6 -->
+        <button class="pnode" data-step="6" role="tab" aria-selected="false">
+          <svg width="48" height="42" viewBox="0 0 74 64" aria-hidden="true">
+            <ellipse cx="37" cy="12" rx="30" ry="10" fill="#3A1B31" stroke="#F472B6" stroke-width="2.5"/>
+            <path d="M7 12 v40 a30 10 0 0 0 60 0 v-40" fill="#2A1425" stroke="#F472B6" stroke-width="2.5"/>
+          </svg>
+          <span class="pn-no">STEP 6</span>
+          <span class="pn-t">발송 데이터<br>적재</span>
+          <span class="pn-db">핑거푸쉬 DB</span>
+        </button>
+        <div class="parrow"><span class="op send">PUSH</span><span class="ar">➜</span></div>
+
+        <!-- STEP 7 -->
+        <button class="pnode" data-step="7" role="tab" aria-selected="false">
+          <svg width="48" height="42" viewBox="0 0 74 64" aria-hidden="true">
+            <rect x="22" y="6" width="30" height="52" rx="7" fill="#131B2C" stroke="#F472B6" stroke-width="2.5"/>
+            <rect x="26" y="14" width="22" height="10" rx="3" fill="#F472B6" opacity=".85"/>
+            <path d="M56 14 q7 4 0 9 M61 10 q11 7 0 16" stroke="#F5B14C" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
+          <span class="pn-no">STEP 7</span>
+          <span class="pn-t">APP PUSH 발송<br>성과 트래킹</span>
+          <span class="pn-db">08:00 · 19:00</span>
+        </button>
+      </div>
+
+      <!-- 상세 패널 (클릭한 단계의 설명이 여기 표시) -->
+      <div class="pdetail" id="pdetail">
+        <!-- STEP 1 -->
+        <div class="pd active" data-pd="1" role="tabpanel">
+          <div class="head"><span class="stepno">STEP 1</span><h3>발송 대상 회원 수집 — LFmall DB (운영)</h3></div>
+          <p class="body">
+            <code>STB_MEMBER</code>에서 배치별 가입 시간대의 <b>신규가입 회원</b>을 조회하고,
+            <code>LST_PUSH_AGREE_MEM</code>으로 <b>PUSH 수신 동의</b>(<code>APP_GB='J', PUSH_YN='Y'</code>)를 확인,
+            <code>STB_ORDER</code>에 유효 주문(<code>ORD_KIND_CD 00/10/30 · ORD_STS_CD 30~60</code>)이
+            <b>존재하지 않는</b> 회원만 추출합니다. 이 명단이 <b>배치 발송 모수 전체</b>가 됩니다.
+          </p>
+          <div class="chips">
+            <span class="chip tbl">STB_MEMBER</span>
+            <span class="chip tbl">LST_PUSH_AGREE_MEM</span>
+            <span class="chip tbl">STB_ORDER</span>
+          </div>
+          <button class="q-toggle" data-q="q1">쿼리 보기</button>
+          <div class="q-body" id="q1"><pre><span class="cm">-- 신규가입 & PUSH 동의 & 첫구매 미진행 회원 (발송 모수)</span>
+<span class="kw">SELECT</span> A.MEM_ID
+<span class="kw">FROM</span>   STB_MEMBER A
+<span class="kw">JOIN</span>   LST_PUSH_AGREE_MEM B <span class="kw">ON</span> A.MEM_ID = B.MEM_ID
+<span class="kw">WHERE</span>  A.REG_DT = <span class="st">'20260715'</span>  <span class="cm">-- ⚠ 개선 검토: 일시 범위 조건 (Appendix A-3 참조)</span>
+<span class="kw">AND</span>    B.APP_GB  = <span class="st">'J'</span>
+<span class="kw">AND</span>    B.PUSH_YN = <span class="st">'Y'</span>
+<span class="kw">AND NOT EXISTS</span> (
+         <span class="kw">SELECT</span> 1 <span class="kw">FROM</span> STB_ORDER SO
+         <span class="kw">WHERE</span>  SO.ORD_MEM_ID  = A.MEM_ID
+         <span class="kw">AND</span>    SO.ORD_KIND_CD <span class="kw">IN</span> (<span class="st">'00'</span>,<span class="st">'10'</span>,<span class="st">'30'</span>)
+         <span class="kw">AND</span>    SO.ORD_STS_CD <span class="kw">BETWEEN</span> <span class="st">'30'</span> <span class="kw">AND</span> <span class="st">'60'</span>)</pre></div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="pd" data-pd="2" role="tabpanel">
+          <div class="head"><span class="stepno">STEP 2</span><h3>상품상세 열람 이력 조회 — DW DB (세그먼트 A 분류)</h3></div>
+          <p class="body">
+            세션 · 페이지뷰 · 파라미터 3개 테이블을 <b>INNER JOIN</b>하되 파라미터 조인 조건을
+            <code>PAGE_ID='9' AND PARAM_NM='PRODCD'</code>로 걸어 <b>상품 상세 조회 기록만</b> 대상으로 합니다.
+            상세 열람 이력이 <b>한 건이라도 있는 회원은 세그먼트 A</b>로 분류하고,
+            <code>ROW_NUMBER ... RN=1</code>로 <b>가장 최근에 본 상품 1건</b>(상품코드)을 추출합니다.
+            열람 이력이 없는 회원은 STEP 3(쿠폰 분기)으로 넘깁니다.
+          </p>
+          <div class="chips">
+            <span class="chip tbl">WANL_A_DW_SESSION_TR_H</span>
+            <span class="chip tbl">WANL_A_DW_ACTION_TR_H</span>
+            <span class="chip tbl">WANL_A_DW_ACTION_PARAM_TR_H</span>
+          </div>
+          <button class="q-toggle" data-q="q2">쿼리 보기</button>
+          <div class="q-body" id="q2"><pre><span class="kw">WITH</span> tab1 <span class="kw">AS</span> (
+  <span class="kw">SELECT</span> <span class="cm">/*+ PARALLEL(C,4) */</span>
+         A.MEM_ID, A.GUESS_MEM_ID, B.ACCESS_TIME, B.PAGE_ID,
+         C.PARAM_NM, C.PARAM_VAL,  <span class="cm">-- PARAM_VAL = 상품코드</span>
+         ROW_NUMBER() <span class="kw">OVER</span>(<span class="kw">PARTITION BY</span> A.MEM_ID, A.GUESS_MEM_ID
+                           <span class="kw">ORDER BY</span> B.ACCESS_TIME <span class="kw">DESC</span>) <span class="kw">AS</span> RN
+  <span class="kw">FROM</span> WANL_A_DW_SESSION_TR_H@LN_LFM_DW A
+  <span class="kw">JOIN</span> WANL_A_DW_ACTION_TR_H@LN_LFM_DW B
+    <span class="kw">ON</span> A.DW_DATE=B.DW_DATE <span class="kw">AND</span> A."HOUR"=B."HOUR"
+   <span class="kw">AND</span> A.CHANNEL_CD=B.CHANNEL_CD <span class="kw">AND</span> A.SESSION_ID=B.SESSION_ID
+  <span class="kw">JOIN</span> WANL_A_DW_ACTION_PARAM_TR_H@LN_LFM_DW C   <span class="cm">-- ★ INNER JOIN으로 변경</span>
+    <span class="kw">ON</span> A.DW_DATE=C.DW_DATE <span class="kw">AND</span> A."HOUR"=C."HOUR"
+   <span class="kw">AND</span> A.CHANNEL_CD=C.CHANNEL_CD <span class="kw">AND</span> A.SESSION_ID=C.SESSION_ID
+   <span class="kw">AND</span> B.PAGE_SEQ=C.PAGE_SEQ
+   <span class="kw">AND</span> C.PAGE_ID = <span class="st">'9'</span>
+   <span class="kw">AND</span> C.PARAM_NM = <span class="st">'PRODCD'</span>   <span class="cm">-- ★ 상품 상세 조회 기록만 대상</span>
+  <span class="kw">WHERE</span> B.ACTION_TYPE_CD = <span class="st">'PV'</span>
+    <span class="kw">AND</span> B.ACCESS_TIME &gt;= TRUNC(SYSDATE)  <span class="cm">-- ⚠ 개선 검토: 조회 범위 확장 (Appendix A-3 참조)</span>
+)
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> tab1 a
+<span class="kw">WHERE</span>  a.RN = 1                    <span class="cm">-- ★ 회원별 '가장 최근에 본 상품' 1건</span>
+<span class="kw">AND</span>    a.MEM_ID <span class="kw">IN</span> ( <span class="cm">/* STEP 1 결과 (발송 모수) */</span> )</pre></div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="pd" data-pd="3" role="tabpanel">
+          <div class="head"><span class="stepno">STEP 3</span><h3>쿠폰 보유 확인 · 세그먼트 분기 — LFmall DB</h3><span class="newtag">NEW</span></div>
+          <p class="body">
+            STEP 1 발송 모수 중 <b>STEP 2에서 상품상세 열람 이력이 확인되지 않은 회원</b>을 대상으로,
+            <b>신규가입 20% 쿠폰 보유 여부</b>를 확인해 두 갈래로 분기합니다.
+            쿠폰 <b>보유</b>(발급 완료 · 미사용 · 유효기간 內) 회원은 <b style="color:var(--ok)">세그먼트 B-1(사용 유도)</b>,
+            <b>미보유</b>(미발급 · 미다운로드) 회원은 <b style="color:var(--info)">세그먼트 B-2(다운로드 유도)</b>로 분류합니다.
+            이로써 발송 모수 전원이 A / B-1 / B-2 중 하나로 분류됩니다.
+          </p>
+          <div class="chips">
+            <span class="chip tbl">쿠폰 발급/보유 테이블 (테이블명 협의)</span>
+            <span class="chip tbl">판정 기준: 발급 여부 · 미사용 · 유효기간</span>
+            <span class="chip tbl">분기: 보유 → B-1 / 미보유 → B-2</span>
+          </div>
+        </div>
+
+        <!-- STEP 4 -->
+        <div class="pd" data-pd="4" role="tabpanel">
+          <div class="head"><span class="stepno">STEP 4</span><h3>발송 대상 데이터 적재 — LFmall DB 신규 TABLE</h3></div>
+          <p class="body">
+            세그먼트 분류가 끝난 발송 대상을 LFmall DB의 <b>신규 발송 대상 테이블</b>에 INSERT합니다.
+            회원ID · <b>세그먼트 구분(A/B-1/B-2)</b> · 상품코드(A만) · 마지막 열람 일시 · 배치 구분(08시/19시) ·
+            발송 상태를 관리하여 <b>발송 이력 추적과 세그먼트별 성과 분석의 원천 테이블</b>로 활용합니다.
+          </p>
+          <div class="chips">
+            <span class="chip tbl">신규: PUSH 발송 대상 테이블 (테이블명 협의)</span>
+            <span class="chip tbl">관리 항목: 회원ID · 세그먼트 · 상품코드 · 배치 구분 · 발송 상태</span>
+          </div>
+        </div>
+
+        <!-- STEP 5 -->
+        <div class="pd" data-pd="5" role="tabpanel">
+          <div class="head"><span class="stepno">STEP 5</span><h3>발송 직전 재검증 — LFmall DB 재조회</h3><span class="newtag">NEW</span></div>
+          <p class="body">
+            주문 확인(06·17시)과 발송(08·19시) 사이의 <b>약 2시간 공백을 방어</b>합니다.
+            발송 직전 <code>STB_ORDER</code>를 재조회하여 그 사이 <b>구매를 완료한 회원을 발송 대상에서 제외</b>
+            (발송 상태 UPDATE)합니다. B-1 세그먼트는 <b>쿠폰 사용 여부도 재확인</b>하여
+            이미 쿠폰을 사용한 회원의 오발송을 함께 차단합니다.
+          </p>
+          <div class="chips">
+            <span class="chip tbl">STB_ORDER 재조회</span>
+            <span class="chip tbl">B-1: 쿠폰 사용 여부 재확인</span>
+            <span class="chip tbl">대상 테이블 상태 UPDATE</span>
+          </div>
+        </div>
+
+        <!-- STEP 6 -->
+        <div class="pd" data-pd="6" role="tabpanel">
+          <div class="head"><span class="stepno">STEP 6</span><h3>PUSH 발송 데이터 적재 — 핑거푸쉬 DB</h3></div>
+          <p class="body">
+            재검증을 통과한 최종 대상을 <b>세그먼트별 메시지 템플릿과 매핑해 핑거푸쉬 DB에 INSERT</b>합니다.
+            <b style="color:var(--am)">A</b>: 브랜드명·상품명 치환, 랜딩 <code>…/app/product/{상품코드}</code> ·
+            <b style="color:var(--ok)">B-1</b>: 쿠폰 사용 유도 문안, 랜딩 쿠폰 적용 상품관 ·
+            <b style="color:var(--info)">B-2</b>: 쿠폰 다운로드 유도 문안, 랜딩 쿠폰 다운로드 페이지.
+          </p>
+          <div class="chips">
+            <span class="chip tbl">핑거푸쉬 발송 테이블</span>
+            <span class="chip tbl">템플릿 3종 (A · B-1 · B-2)</span>
+            <span class="chip tbl">개인화 변수: 브랜드명 · 상품명 · 상품코드 (A)</span>
+          </div>
+        </div>
+
+        <!-- STEP 7 -->
+        <div class="pd" data-pd="7" role="tabpanel">
+          <div class="head"><span class="stepno">STEP 7</span><h3>APP PUSH 발송 · 성과 트래킹</h3></div>
+          <p class="body">
+            <b>당일 08:00 / 19:00</b>에 3개 세그먼트를 동시 배치 발송합니다.
+            발송 수 · 클릭(CTR) · 재방문 · <b>첫구매 전환</b> · 쿠폰 다운로드/사용을 대상 테이블과 연결해
+            <b>세그먼트별로 분리 측정</b>하고, A vs B-1 vs B-2 성과 비교로 Phase 2 고도화 방향을 도출합니다.
+          </p>
+          <div class="chips">
+            <span class="chip tbl">08:00 아침 배치</span>
+            <span class="chip tbl">19:00 저녁 배치</span>
+            <span class="chip tbl">세그먼트별 성과 분리 측정</span>
+          </div>
+        </div>
+
+        <p class="pd-hint">↑ 분기 순서도(STEP 1~3)의 도형 또는 파이프라인(STEP 4~7)의 단계를 클릭하면 이 패널의 내용이 전환됩니다</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ APPENDIX ══════════ -->
+  <section id="appendix">
+    <div class="eyebrow"><span class="no">A</span><span class="label">APPENDIX</span></div>
+    <h2>Appendix</h2>
+    <p class="desc">페이지 ID 매핑, 참조 테이블, 쿼리 개선 검토사항, 오픈 전 체크리스트.</p>
+
+    <div class="apx reveal">
+      <h3>A-1. DW 페이지 ID · 파라미터 매핑 (퍼널 확장 기준)</h3>
+      <table class="map">
+        <thead><tr><th>PAGE_ID</th><th>페이지</th><th>PARAM_NM</th><th>Phase</th></tr></thead>
+        <tbody>
+          <tr class="now"><td>9</td><td>상품 상세페이지</td><td>PRODCD</td><td><span class="pill am" style="font-size:11px">Phase 1 ★</span></td></tr>
+          <tr><td>21</td><td>검색 결과</td><td>SEARCHWORD</td><td>Phase 2 후보</td></tr>
+          <tr><td>4 · 108</td><td>브랜드관</td><td>BRANDID</td><td>Phase 2 후보</td></tr>
+          <tr><td>7</td><td>기획전</td><td>PLANID</td><td>Phase 2 후보</td></tr>
+          <tr><td>3</td><td>카테고리</td><td>CATEGORYID</td><td>Phase 2 후보</td></tr>
+          <tr><td>2</td><td>메뉴</td><td>MENUID</td><td>Phase 2 후보</td></tr>
+          <tr><td>147</td><td>라이브/VOD</td><td>LIVEVODID</td><td>Phase 2 후보</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="apx reveal">
+      <h3>A-2. 참조 테이블 요약</h3>
+      <table class="map">
+        <thead><tr><th>테이블</th><th>DB</th><th>용도</th></tr></thead>
+        <tbody>
+          <tr><td>STB_MEMBER</td><td>LFmall 운영</td><td>신규가입 회원 조회 (REG_DT)</td></tr>
+          <tr><td>LST_PUSH_AGREE_MEM</td><td>LFmall 운영</td><td>PUSH 수신 동의 (APP_GB='J', PUSH_YN='Y')</td></tr>
+          <tr><td>STB_ORDER</td><td>LFmall 운영</td><td>첫구매 여부 판별 (ORD_KIND_CD 00/10/30, ORD_STS_CD 30~60)</td></tr>
+          <tr><td>쿠폰 발급/보유 테이블</td><td>LFmall 운영 (협의)</td><td>신규가입 20% 쿠폰 보유 판정 (B-1/B-2 분기)</td></tr>
+          <tr><td>WANL_A_DW_SESSION_TR_H</td><td>DW (@LN_LFM_DW)</td><td>세션 정보</td></tr>
+          <tr><td>WANL_A_DW_ACTION_TR_H</td><td>DW (@LN_LFM_DW)</td><td>페이지뷰 · 접속 시간</td></tr>
+          <tr><td>WANL_A_DW_ACTION_PARAM_TR_H</td><td>DW (@LN_LFM_DW)</td><td>페이지 파라미터 (상품코드 등)</td></tr>
+          <tr><td>신규 발송 대상 테이블</td><td>LFmall 운영 (신설)</td><td>발송 대상 · 세그먼트 · 상태 · 성과 트래킹</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="apx reveal">
+      <h3>A-3. 쿼리 개선 검토사항 (개발 협의)</h3>
+      <table class="map">
+        <thead><tr><th style="width:80px">구분</th><th>현행 조건</th><th>검토 포인트</th><th>개선안</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>검토 1</td>
+            <td>REG_DT = '당일' (일자 단위)</td>
+            <td>아침 배치 대상에 포함되어야 할 전일 15:00~23:59 가입자와 당일 00:00~03:59 가입자를 배치별로 정확히 구분하지 못할 수 있음</td>
+            <td class="fixv">가입일'시' 범위 조건으로 변경<br>아침: 전일 15:00 ≤ 가입일시 &lt; 당일 04:00<br>저녁: 당일 04:00 ≤ 가입일시 &lt; 당일 15:00</td>
+          </tr>
+          <tr>
+            <td>검토 2</td>
+            <td>ACCESS_TIME ≥ TRUNC(SYSDATE) (당일 0시 이후)</td>
+            <td>전일 15:00~23:59 가입자가 전일 저녁에 본 상품 상세 이력이 조회되지 않아 세그먼트 A에서 누락(B로 오분류)되거나 최근 상품이 왜곡될 수 있음</td>
+            <td class="fixv">아침 배치는 전일 15:00부터 조회<br>ACCESS_TIME ≥ TRUNC(SYSDATE)-1 + 15/24</td>
+          </tr>
+          <tr>
+            <td>반영 완료</td>
+            <td>주문 확인(06·17시) 후 발송(08·19시)까지 약 2시간 공백</td>
+            <td>공백 사이 구매 회원에게 구매 유도 PUSH가 발송되는 오발송 가능</td>
+            <td class="fixv">STEP 5 '발송 직전 재검증' 단계로 본 기획에 반영 (B-1은 쿠폰 사용 여부도 재확인)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="apx reveal">
+      <h3>A-4. 오픈 전 체크리스트</h3>
+      <table class="map">
+        <thead><tr><th>NO</th><th>항목</th><th>담당 협의</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>쿼리 개선 검토 1·2 반영 (A-3 참조 — 가입일시 범위 · DW 조회 범위 확장)</td><td>개발</td></tr>
+          <tr><td>2</td><td>신규 발송 대상 테이블 설계 (세그먼트 구분 컬럼 포함) 및 배치 스케줄 등록</td><td>개발 · DBA</td></tr>
+          <tr><td>3</td><td>쿠폰 발급/보유 테이블 확인 및 보유 판정 기준 확정 (발급 여부 · 미사용 · 유효기간)</td><td>개발 · CRM</td></tr>
+          <tr><td>4</td><td>발송 직전 재검증 로직 (STEP 5 — 주문 + B-1 쿠폰 사용) 배치 반영</td><td>개발</td></tr>
+          <tr><td>5</td><td>B-1 · B-2 쿠폰 PUSH 문안 확정 및 랜딩 페이지 확정 (본 기획서 문안은 초안)</td><td>마케팅</td></tr>
+          <tr><td>6</td><td>세그먼트 A 품절 · 판매중지 상품 발송 제외 여부 검토</td><td>기획 · MD</td></tr>
+          <tr><td>7</td><td>발송군 / 미발송 대조군 설계 및 세그먼트별(A·B-1·B-2) 성과 분리 트래킹</td><td>기획 · 데이터</td></tr>
+          <tr><td>8</td><td>동일 회원 중복 발송 방지 (1회원 1일 1회 발송 원칙) 확인</td><td>개발</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span>신규가입 후 첫구매 미진행 고객 대상 개인화 APP PUSH 발송 · 기획서 v2.1</span>
+  <span>LFmall CRM · Phase 1 · 2026.07.15</span>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
