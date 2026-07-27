@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LFmall 인플루언서 어필리에이트 신청</title>
+<style>
+  :root {
+    --primary: #E4002B;          /* LF 브랜드 레드 */
+    --primary-dark: #C10024;
+    --primary-light: #FFF0F3;
+    --ink: #1A1A1A;
+    --gray-700: #4A4A4A;
+    --gray-500: #8A8A8A;
+    --gray-300: #D9D9D9;
+    --gray-100: #F5F5F7;
+    --white: #FFFFFF;
+    --success: #0BA360;
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #FAFAFC; color: var(--ink);
+    font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    -webkit-font-smoothing: antialiased; }
+
+  /* ---------- 상단 로고 ---------- */
+  .header {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-100);
+    box-shadow: 0 1px 8px rgba(0,0,0,.04);
+  }
+  .header__inner {
+    max-width: 640px; margin: 0 auto; padding: 16px 20px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo { display: inline-flex; align-items: center; text-decoration: none; }
+  .logo__img { height: 48px; width: auto; display: block; transition: transform .15s; }
+  .logo:hover .logo__img { transform: scale(1.05); }
+
+  /* ---------- 레이아웃 ---------- */
+  .container { max-width: 640px; margin: 0 auto; padding: 28px 20px 60px; }
+  .hero { text-align: center; margin-bottom: 28px; }
+  .hero__badge {
+    display: inline-block; background: var(--primary-light); color: var(--primary);
+    font-size: 13px; font-weight: 700; padding: 6px 14px; border-radius: 999px; margin-bottom: 12px;
+  }
+  .hero h1 { font-size: 24px; font-weight: 800; line-height: 1.35; letter-spacing: -0.5px; }
+  .hero p { margin-top: 8px; color: var(--gray-500); font-size: 14px; line-height: 1.6; }
+
+  .card {
+    background: var(--white); border: 1px solid #EFEFF2; border-radius: 16px;
+    padding: 24px 20px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.03);
+  }
+  .card__title { font-size: 17px; font-weight: 800; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .card__title::before { content: ""; width: 4px; height: 16px; background: var(--primary); border-radius: 2px; }
+
+  /* ---------- 폼 ---------- */
+  .field { margin-bottom: 18px; }
+  .field label.field__label {
+    display: block; font-size: 14px; font-weight: 700; margin-bottom: 8px; color: var(--ink);
+  }
+  .required::after { content: " *"; color: var(--primary); font-weight: 800; }
+  .field input[type="text"],
+  .field input[type="email"],
+  .field input[type="tel"],
+  .field input[type="url"] {
+    width: 100%; height: 48px; padding: 0 14px; font-size: 15px;
+    border: 1.5px solid var(--gray-300); border-radius: var(--radius);
+    background: var(--white); color: var(--ink);
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .field input:focus {
+    outline: none; border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(228,0,43,.12);
+  }
+  .field input::placeholder { color: #B5B5BC; }
+  .field .hint { font-size: 12px; color: var(--gray-500); margin-top: 6px; line-height: 1.5; }
+  .field .error-msg { display: none; font-size: 12px; color: var(--primary); margin-top: 6px; font-weight: 600; }
+  .field.invalid input { border-color: var(--primary); }
+  .field.invalid .error-msg { display: block; }
+
+  /* 관심 카테고리 칩 */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { position: relative; }
+  .chip input { position: absolute; opacity: 0; pointer-events: none; }
+  .chip span {
+    display: inline-block; padding: 9px 16px; font-size: 14px; font-weight: 600;
+    border: 1.5px solid var(--gray-300); border-radius: 999px; color: var(--gray-700);
+    background: var(--white); cursor: pointer; user-select: none;
+    transition: all .15s;
+  }
+  .chip input:checked + span {
+    background: var(--primary); border-color: var(--primary); color: var(--white);
+    box-shadow: 0 2px 8px rgba(228,0,43,.25);
+  }
+  .chip input:focus-visible + span { box-shadow: 0 0 0 3px rgba(228,0,43,.2); }
+
+  /* SNS 채널 */
+  .sns-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: stretch; }
+  .sns-row select {
+    flex: 0 0 128px; height: 48px; padding: 0 10px; font-size: 14px; font-weight: 600;
+    border: 1.5px solid var(--gray-300); border-radius: var(--radius);
+    background: var(--white); color: var(--ink); cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .sns-row select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(228,0,43,.12); }
+  .sns-row .sns-url { flex: 1; min-width: 0; }
+  .sns-row .btn-remove {
+    flex: 0 0 44px; height: 48px; border: 1.5px solid var(--gray-300); border-radius: var(--radius);
+    background: var(--white); color: var(--gray-500); font-size: 20px; cursor: pointer;
+    transition: all .15s;
+  }
+  .sns-row .btn-remove:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .btn-add-sns {
+    width: 100%; height: 46px; border: 1.5px dashed var(--primary); border-radius: var(--radius);
+    background: var(--primary-light); color: var(--primary); font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all .15s;
+  }
+  .btn-add-sns:hover { background: #FFE2E9; }
+
+  /* 파일 첨부 */
+  .file-drop {
+    border: 1.5px dashed var(--gray-300); border-radius: var(--radius);
+    padding: 22px 16px; text-align: center; cursor: pointer; background: var(--gray-100);
+    transition: all .15s;
+  }
+  .file-drop:hover, .file-drop.dragover { border-color: var(--primary); background: var(--primary-light); }
+  .file-drop .file-icon { font-size: 26px; }
+  .file-drop p { font-size: 14px; color: var(--gray-700); margin-top: 6px; font-weight: 600; }
+  .file-drop .sub { font-size: 12px; color: var(--gray-500); font-weight: 400; margin-top: 2px; }
+  #fileInput { display: none; }
+  .file-item {
+    display: flex; margin-top: 10px; padding: 12px 14px;
+    background: var(--white); border: 1.5px solid var(--success); border-radius: var(--radius);
+    font-size: 14px; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .file-item .name { font-weight: 700; word-break: break-all; }
+  .file-item .size { color: var(--gray-500); font-size: 12px; white-space: nowrap; margin-left: auto; }
+  .file-item .btn-file-remove {
+    border: none; background: none; color: var(--gray-500); font-size: 18px; cursor: pointer; line-height: 1;
+  }
+  .file-item .btn-file-remove:hover { color: var(--primary); }
+  .total-size { display: none; margin-top: 8px; font-size: 12px; font-weight: 700; color: var(--gray-700); text-align: right; }
+  .total-size.show { display: block; }
+
+  /* ---------- 약관 동의 ---------- */
+  .terms-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; }
+  .terms-item.all {
+    border-bottom: 1.5px solid var(--gray-100); padding-bottom: 16px; margin-bottom: 8px;
+  }
+  .checkbox-wrap { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+  .checkbox-wrap input { position: absolute; opacity: 0; pointer-events: none; }
+  .checkbox-wrap .box {
+    width: 24px; height: 24px; flex: 0 0 24px; border: 2px solid var(--gray-300); border-radius: 7px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--white); transition: all .15s;
+  }
+  .checkbox-wrap .box svg { width: 14px; height: 14px; stroke: var(--white); stroke-width: 3.2;
+    fill: none; opacity: 0; transition: opacity .12s; }
+  .checkbox-wrap input:checked + .box {
+    background: var(--primary); border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(228,0,43,.3);
+  }
+  .checkbox-wrap input:checked + .box svg { opacity: 1; }
+  .checkbox-wrap input:focus-visible + .box { box-shadow: 0 0 0 3px rgba(228,0,43,.2); }
+  .checkbox-wrap .txt { font-size: 15px; font-weight: 600; }
+  .terms-item.all .txt { font-size: 16px; font-weight: 800; }
+  .btn-terms-view {
+    border: none; background: none; color: var(--gray-500); font-size: 13px;
+    text-decoration: underline; cursor: pointer; padding: 4px; white-space: nowrap;
+  }
+  .btn-terms-view:hover { color: var(--primary); }
+  .terms-notice {
+    margin-top: 14px; padding: 14px; background: var(--gray-100); border-radius: var(--radius);
+    font-size: 12px; color: var(--gray-500); line-height: 1.65;
+  }
+
+  /* ---------- 제출 버튼 ---------- */
+  .btn-submit {
+    width: 100%; height: 56px; margin-top: 8px;
+    border: none; border-radius: 14px; font-size: 17px; font-weight: 800; letter-spacing: -0.3px;
+    background: linear-gradient(135deg, #FF2D55 0%, var(--primary) 100%);
+    color: var(--white); cursor: pointer;
+    box-shadow: 0 6px 18px rgba(228,0,43,.35);
+    transition: all .2s;
+  }
+  .btn-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(228,0,43,.4); }
+  .btn-submit:active:not(:disabled) { transform: translateY(0); }
+  .btn-submit:disabled {
+    background: var(--gray-300); color: var(--white); cursor: not-allowed; box-shadow: none;
+  }
+
+  /* ---------- 모달 (약관 자세히 보기) ---------- */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,.5); align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--white); border-radius: 16px; max-width: 560px; width: 100%;
+    max-height: 80vh; display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  }
+  .modal__head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 20px; border-bottom: 1px solid var(--gray-100);
+  }
+  .modal__head h3 { font-size: 17px; font-weight: 800; }
+  .modal__close { border: none; background: none; font-size: 22px; color: var(--gray-500); cursor: pointer; line-height: 1; }
+  .modal__close:hover { color: var(--ink); }
+  .modal__body { padding: 20px; overflow-y: auto; font-size: 13.5px; color: var(--gray-700); line-height: 1.7; }
+  .modal__body h4 { font-size: 14px; margin: 14px 0 6px; color: var(--ink); }
+  .modal__body h4:first-child { margin-top: 0; }
+  .modal__foot { padding: 14px 20px; border-top: 1px solid var(--gray-100); }
+  .modal__foot .btn-modal-ok {
+    width: 100%; height: 48px; border: none; border-radius: var(--radius);
+    background: var(--primary); color: var(--white); font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  .modal__foot .btn-modal-ok:hover { background: var(--primary-dark); }
+
+  /* ---------- 완료 화면 / 토스트 ---------- */
+  .toast {
+    position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: var(--white); font-size: 14px; font-weight: 600;
+    padding: 13px 22px; border-radius: 999px; opacity: 0; pointer-events: none;
+    transition: all .25s; z-index: 200; max-width: 90vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .complete { display: none; text-align: center; padding: 60px 20px; }
+  .complete.show { display: block; }
+  .complete .icon {
+    width: 72px; height: 72px; margin: 0 auto 20px; border-radius: 50%;
+    background: var(--primary-light); display: flex; align-items: center; justify-content: center;
+    font-size: 34px;
+  }
+  .complete h2 { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+  .complete p { color: var(--gray-500); font-size: 14px; line-height: 1.7; }
+
+  .loading-overlay {
+    display: none; position: fixed; inset: 0; z-index: 150;
+    background: rgba(255,255,255,.75); align-items: center; justify-content: center; flex-direction: column; gap: 14px;
+  }
+  .loading-overlay.show { display: flex; }
+  .spinner {
+    width: 44px; height: 44px; border: 4px solid var(--primary-light);
+    border-top-color: var(--primary); border-radius: 50%; animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-overlay p { font-size: 14px; font-weight: 700; color: var(--ink); }
+
+  @media (max-width: 420px) {
+    .sns-row { flex-wrap: wrap; }
+    .sns-row select { flex: 1 1 100%; }
+    .sns-row .sns-url { flex: 1 1 calc(100% - 52px); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 상단 : 로고 ===== -->
+<header class="header">
+  <div class="header__inner">
+    <a class="logo" href="https://m.lfmall.co.kr" target="_blank" rel="noopener" aria-label="LFmall 홈으로 이동">
+      <img src="lfmall-logo.png" alt="LFmall" class="logo__img" />
+    </a>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- ===== 신청 폼 영역 ===== -->
+  <div id="formArea">
+    <section class="hero">
+      <h1>LFmall 인플루언서 신청</h1>
+      <p>LFmall과 함께 성장할 인플루언서를 기다립니다.<br/>아래 정보를 입력해 주세요.</p>
+    </section>
+
+    <form id="applyForm" novalidate>
+
+      <!-- ===== 중단 : 인플루언서 정보 입력 ===== -->
+      <section class="card">
+        <h2 class="card__title">기본 정보</h2>
+
+        <div class="field" id="field-email">
+          <label class="field__label required" for="email">이메일</label>
+          <input type="email" id="email" name="email" placeholder="example@email.com" autocomplete="email" />
+          <p class="error-msg">올바른 이메일 주소를 입력해 주세요.</p>
+        </div>
+
+        <div class="field" id="field-name">
+          <label class="field__label required" for="name">이름</label>
+          <input type="text" id="name" name="name" placeholder="홍길동" autocomplete="name" />
+          <p class="error-msg">이름을 입력해 주세요.</p>
+        </div>
+
+        <div class="field" id="field-nickname">
+          <label class="field__label required" for="nickname">활동명</label>
+          <input type="text" id="nickname" name="nickname" placeholder="채널에서 사용하는 활동명을 입력해 주세요" />
+          <p class="error-msg">활동명을 입력해 주세요.</p>
+        </div>
+
+        <div class="field" id="field-category">
+          <label class="field__label required">관심 카테고리 <span style="font-weight:400;font-size:12px;color:#8A8A8A;">(복수 선택 가능)</span></label>
+          <div class="chips" id="categoryChips">
+            <label class="chip"><input type="checkbox" name="category" value="여성패션"/><span>여성패션</span></label>
+            <label class="chip"><input type="checkbox" name="category" value="남성패션"/><span>남성패션</span></label>
+            <label class="chip"><input type="checkbox" name="category" value="뷰티"/><span>뷰티</span></label>
+            <label class="chip"><input type="checkbox" name="category" value="스포츠·아웃도어"/><span>스포츠·아웃도어</span></label>
+            <label class="chip"><input type="checkbox" name="category" value="리빙·라이프스타일"/><span>리빙·라이프스타일</span></label>
+            <label class="chip"><input type="checkbox" name="category" value="잡화·슈즈"/><span>잡화·슈즈</span></label>
+            <label class="chip"><input type="checkbox" name="category" value="골프"/><span>골프</span></label>
+            <label class="chip"><input type="checkbox" name="category" value="키즈"/><span>키즈</span></label>
+          </div>
+          <p class="error-msg">관심 카테고리를 1개 이상 선택해 주세요.</p>
+        </div>
+
+        <div class="field" id="field-phone">
+          <label class="field__label required" for="phone">휴대폰번호</label>
+          <input type="tel" id="phone" name="phone" placeholder="010-0000-0000" inputmode="numeric" maxlength="13" autocomplete="tel" />
+          <p class="error-msg">올바른 휴대폰번호를 입력해 주세요.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="card__title">SNS 채널</h2>
+        <div class="field" id="field-sns">
+          <label class="field__label required">운영 중인 SNS 채널 <span style="font-weight:400;font-size:12px;color:#8A8A8A;">(여러 채널 추가 가능)</span></label>
+          <div id="snsList"><!-- JS로 행 생성 --></div>
+          <button type="button" class="btn-add-sns" id="btnAddSns">+ 채널 추가하기</button>
+          <p class="error-msg">SNS 채널 주소를 1개 이상 입력해 주세요.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="card__title">첨부파일</h2>
+        <div class="field" id="field-file" style="margin-bottom:0;">
+          <label class="field__label" for="fileInput">사업자등록 / 신분증 / 통장 사본 등을 업로드 해주세요.<br/><span style="font-weight:400;font-size:12px;color:#E4002B;">미첨부 시 정산이 지연될 수 있습니다.</span></label>
+          <div class="file-drop" id="fileDrop" role="button" tabindex="0" aria-label="파일 첨부하기">
+            <div class="file-icon">📎</div>
+            <p>클릭하거나 파일을 끌어다 놓으세요</p>
+            <p class="sub">여러 개 첨부 가능 · 총 용량 10MB 이하 · 첨부파일은 담당자 이메일로 전달됩니다</p>
+          </div>
+          <input type="file" id="fileInput" multiple />
+          <div id="fileList"></div>
+          <p class="total-size" id="fileTotal"></p>
+          <p class="error-msg" id="fileError">총 10MB 이하로만 첨부할 수 있습니다.</p>
+        </div>
+      </section>
+
+      <!-- ===== 하단 : 약관 동의 ===== -->
+      <section class="card">
+        <h2 class="card__title">약관 동의</h2>
+
+        <div class="terms-item all">
+          <label class="checkbox-wrap">
+            <input type="checkbox" id="agreeAll" />
+            <span class="box"><svg viewBox="0 0 16 16"><polyline points="2.5,8.5 6.5,12.5 13.5,4"/></svg></span>
+            <span class="txt">약관 전체 동의하기 (필수)</span>
+          </label>
+        </div>
+
+        <div class="terms-item">
+          <label class="checkbox-wrap">
+            <input type="checkbox" class="agree-item" id="agreeTerms" />
+            <span class="box"><svg viewBox="0 0 16 16"><polyline points="2.5,8.5 6.5,12.5 13.5,4"/></svg></span>
+            <span class="txt">서비스 이용약관 (필수)</span>
+          </label>
+          <button type="button" class="btn-terms-view" data-modal="modalTerms">자세히 보기</button>
+        </div>
+
+        <div class="terms-item">
+          <label class="checkbox-wrap">
+            <input type="checkbox" class="agree-item" id="agreePolicy" />
+            <span class="box"><svg viewBox="0 0 16 16"><polyline points="2.5,8.5 6.5,12.5 13.5,4"/></svg></span>
+            <span class="txt">서비스 운영정책 (필수)</span>
+          </label>
+          <button type="button" class="btn-terms-view" data-modal="modalPolicy">자세히 보기</button>
+        </div>
+
+        <p class="terms-notice">
+          전체 동의는 본 서비스 활동을 위한 필수 동의사항이 포함 되어 있습니다.
+          필수사항의 동의를 거부 할 권리가 있습니다. 다만, 동의를 거부할 경우 본 서비스 신청이 불가합니다.
+        </p>
+      </section>
+
+      <button type="submit" class="btn-submit" id="btnSubmit" disabled>신청하기</button>
+    </form>
+  </div>
+
+  <!-- ===== 신청 완료 화면 ===== -->
+  <div class="complete" id="completeArea">
+    <div class="icon">🎉</div>
+    <h2>신청이 완료되었습니다!</h2>
+    <p>담당자 확인 후 입력하신 이메일로<br/>안내드릴 예정입니다. 감사합니다.</p>
+  </div>
+
+</main>
+
+<!-- ===== 약관 모달 : 서비스 이용약관 ===== -->
+<div class="modal-overlay" id="modalTerms" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTermsTitle">
+    <div class="modal__head">
+      <h3 id="modalTermsTitle">서비스 이용약관</h3>
+      <button type="button" class="modal__close" data-close>✕</button>
+    </div>
+    <div class="modal__body">
+      <h4>제1조 (목적)</h4>
+      <p>본 약관은 LFmall 인플루언서 어필리에이트 프로그램(이하 "서비스")의 이용과 관련하여 회사와 신청자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.</p>
+      <h4>제2조 (정의)</h4>
+      <p>"인플루언서"란 SNS 채널을 운영하며 본 서비스에 참여를 신청한 자를 말합니다. "어필리에이트 활동"이란 LFmall 상품을 자신의 채널에 소개하고 성과에 따라 수수료를 지급받는 활동을 말합니다.</p>
+      <h4>제3조 (신청 및 승인)</h4>
+      <p>서비스 참여는 본 신청 양식 제출 후 회사의 내부 심사를 거쳐 승인됩니다. 회사는 신청자의 채널 성격, 콘텐츠 품질 등을 종합적으로 검토하여 승인 여부를 결정할 수 있습니다.</p>
+      <h4>제4조 (개인정보의 수집 및 이용)</h4>
+      <p>회사는 서비스 신청 및 운영을 위해 이메일, 이름, 활동명, 휴대폰번호, SNS 채널 정보를 수집하며, 수집된 정보는 신청 접수 및 담당자 안내 목적으로만 이용됩니다.</p>
+      <h4>제5조 (신청자의 의무)</h4>
+      <p>신청자는 정확한 정보를 기재하여야 하며, 허위 정보 기재로 인한 불이익은 신청자 본인에게 있습니다.</p>
+      <p style="margin-top:14px;color:#8A8A8A;font-size:12px;">※ 본 약관은 POC용 예시 문안입니다. 실제 서비스 오픈 시 법무 검토를 거친 정식 약관으로 교체가 필요합니다.</p>
+    </div>
+    <div class="modal__foot"><button type="button" class="btn-modal-ok" data-close>확인</button></div>
+  </div>
+</div>
+
+<!-- ===== 약관 모달 : 서비스 운영정책 ===== -->
+<div class="modal-overlay" id="modalPolicy" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalPolicyTitle">
+    <div class="modal__head">
+      <h3 id="modalPolicyTitle">서비스 운영정책</h3>
+      <button type="button" class="modal__close" data-close>✕</button>
+    </div>
+    <div class="modal__body">
+      <h4>1. 콘텐츠 운영 기준</h4>
+      <p>인플루언서는 LFmall 브랜드 이미지에 부합하는 콘텐츠를 제작해야 하며, 허위·과장 광고, 타인의 권리를 침해하는 콘텐츠 게시를 금지합니다.</p>
+      <h4>2. 광고 표기 의무</h4>
+      <p>어필리에이트 링크가 포함된 콘텐츠에는 공정거래위원회 「추천·보증 등에 관한 표시·광고 심사지침」에 따라 경제적 대가 관계를 명확히 표기해야 합니다.</p>
+      <h4>3. 부정행위 금지</h4>
+      <p>자가 구매, 허위 클릭, 매크로 등 비정상적인 방법으로 성과를 발생시키는 행위는 금지되며, 적발 시 활동 자격이 제한되고 수수료 지급이 취소될 수 있습니다.</p>
+      <h4>4. 활동 자격의 변경 및 종료</h4>
+      <p>회사는 운영정책 위반, 장기간 미활동 등의 사유가 있는 경우 사전 안내 후 활동 자격을 조정하거나 종료할 수 있습니다.</p>
+      <h4>5. 정책의 변경</h4>
+      <p>본 운영정책은 서비스 개선을 위해 변경될 수 있으며, 변경 시 사전 공지합니다.</p>
+      <p style="margin-top:14px;color:#8A8A8A;font-size:12px;">※ 본 운영정책은 POC용 예시 문안입니다. 실제 서비스 오픈 시 법무 검토를 거친 정식 정책으로 교체가 필요합니다.</p>
+    </div>
+    <div class="modal__foot"><button type="button" class="btn-modal-ok" data-close>확인</button></div>
+  </div>
+</div>
+
+<!-- 전송 중 로딩 -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p>신청서를 전송하고 있습니다…</p>
+</div>
+
+<!-- 토스트 메시지 -->
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
