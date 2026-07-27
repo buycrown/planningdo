@@ -134,6 +134,34 @@ $("#phone").addEventListener("input", (e) => {
 });
 
 /* =========================================================
+ * 2-1. 사업자 유무 → 첨부파일 안내 문구 연동
+ * ========================================================= */
+function getBizStatus() {
+  const checked = document.querySelector('input[name="biz"]:checked');
+  return checked ? checked.value : "";
+}
+
+function updateFileGuide() {
+  const guide = $("#fileGuideDocs");
+  const biz = getBizStatus();
+  if (biz === "사업자 있음") {
+    guide.textContent = "사업자등록증, 신분증, 통장 사본을 업로드 해주세요.";
+  } else if (biz === "사업자 없음") {
+    guide.textContent = "신분증, 통장 사본을 업로드 해주세요.";
+  } else {
+    guide.textContent = "사업자 유무 선택 시 필요한 서류를 안내해 드립니다.";
+  }
+}
+
+$$('input[name="biz"]').forEach((radio) =>
+  radio.addEventListener("change", () => {
+    setFieldError("field-biz", false);
+    updateFileGuide();
+  })
+);
+updateFileGuide();
+
+/* =========================================================
  * 3. 파일 첨부 (여러 개 가능, 총 용량 10MB 이하)
  * ========================================================= */
 let attachedFiles = [];
@@ -308,6 +336,10 @@ function validateForm() {
   setFieldError("field-phone", !phoneOk);
   if (!phoneOk) { ok = false; focusTargets.push($("#phone")); }
 
+  const bizOk = getBizStatus() !== "";
+  setFieldError("field-biz", !bizOk);
+  if (!bizOk) ok = false;
+
   const snsOk = collectSnsChannels().length > 0;
   setFieldError("field-sns", !snsOk);
   if (!snsOk) ok = false;
@@ -341,6 +373,7 @@ $("#applyForm").addEventListener("submit", async (e) => {
     nickname: $("#nickname").value.trim(),
     categories: [...$$('input[name="category"]:checked')].map((c) => c.value),
     phone: $("#phone").value.trim(),
+    bizStatus: getBizStatus(),
     snsChannels: collectSnsChannels(),
     submittedAt: new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" }),
     attachments: []

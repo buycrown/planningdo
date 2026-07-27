@@ -55,6 +55,7 @@ function doPost(e) {
       row("활동명", data.nickname) +
       row("관심 카테고리", (data.categories || []).join(", ")) +
       row("휴대폰번호", data.phone) +
+      row("사업자 유무", data.bizStatus) +
       row("신청 일시", data.submittedAt) +
       "</table>" +
       "<h3 style='margin-top:20px;'>SNS 채널</h3>" +
