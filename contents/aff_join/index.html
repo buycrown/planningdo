@@ -27,16 +27,21 @@
     --glass-shadow: 0 8px 32px rgba(84, 70, 190, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.85);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  /* 배경: 파스텔 소셜 아이콘을 타일로 반복해 화면 전체를 채움 (html 요소에 직접 적용) */
+  /* 배경: PC에서는 파스텔 소셜 아이콘 이미지를 화면 가득 크게(cover) 한 장으로 표시 */
   html {
     min-height: 100%;
     background:
-      url('apply_background.jpg') top left / 420px auto repeat,
+      url('apply_background.jpg') center center / cover no-repeat,
       linear-gradient(160deg, #F4F7FD 0%, #EDF0FA 100%);
+    background-attachment: fixed, fixed;
   }
   body { background: transparent; color: var(--ink);
     font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
     -webkit-font-smoothing: antialiased; }
+  /* 모바일: 배경 이미지 제거하고 깔끔한 그라데이션만 (요청) */
+  @media (max-width: 768px) {
+    html { background: linear-gradient(160deg, #F4F7FD 0%, #EDF0FA 100%); background-attachment: scroll; }
+  }
   button, label, .chip span { -webkit-tap-highlight-color: transparent; }
 
   /* ---------- 상단 로고 ---------- */
