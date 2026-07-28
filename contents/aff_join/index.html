@@ -30,13 +30,11 @@
   html, body { background: #EFF3FB; color: var(--ink);
     font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
     -webkit-font-smoothing: antialiased; }
-  /* 배경: 생동감 있는 컬러 블롭 (글래스 블러가 살아나는 바탕) */
+  /* 배경: 파스텔 소셜 아이콘 이미지 (화면 가득 cover) + 화이트 스크림으로 폼 가독성 확보 */
   body::before {
     content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
     background:
-      radial-gradient(42% 38% at 12% 8%,  rgba(47, 183, 220, .34), transparent 70%),
-      radial-gradient(46% 42% at 88% 16%, rgba(240, 96, 159, .26), transparent 70%),
-      radial-gradient(50% 46% at 50% 105%, rgba(109, 90, 230, .30), transparent 70%),
+      url('apply_background.jpg') center center / cover no-repeat fixed,
       linear-gradient(160deg, #F4F7FD 0%, #EDF0FA 100%);
   }
   button, label, .chip span { -webkit-tap-highlight-color: transparent; }
@@ -352,7 +350,7 @@
   <!-- ===== 신청 폼 영역 ===== -->
   <div id="formArea">
     <section class="hero">
-      <h1>LFmall 어필리에이트 서비스 가입 신청</h1>
+      <h1>LFmall 어필리에이트 서비스<br/>가입 신청</h1>
       <p>LFmall과 함께 성장할 인플루언서를 기다립니다.<br/>아래 정보를 입력해 주세요.</p>
     </section>
 
