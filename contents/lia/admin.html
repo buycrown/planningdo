@@ -224,6 +224,19 @@
   .badge-file { background: #EEF2FF; color: #4353FF; cursor: pointer; transition: all .12s; }
   .badge-file:hover { background: #4353FF; color: var(--white); box-shadow: 0 2px 8px rgba(67,83,255,.3); }
   td.dt { white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--gray-700); font-size: 12.5px; }
+
+  /* ===== 초대 내역 리스트: 컬럼 간격/폭 정리 ===== */
+  #viewInvites table { table-layout: fixed; }
+  #viewInvites th, #viewInvites td { padding: 14px 16px; }
+  #viewInvites th:nth-child(1), #viewInvites td:nth-child(1) { width: 60px; text-align: center; }          /* No. */
+  #viewInvites td:nth-child(1) { text-align: center; }
+  #viewInvites th:nth-child(2), #viewInvites td:nth-child(2) { width: 260px; }                              /* 초대일시 */
+  #viewInvites th:nth-child(3), #viewInvites td:nth-child(3) { width: 200px; }                              /* 인스타 계정 */
+  #viewInvites td:nth-child(3) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #viewInvites th:nth-child(4), #viewInvites td:nth-child(4) { width: 110px; }                              /* 가입여부 */
+  #viewInvites th:nth-child(5), #viewInvites td:nth-child(5) { width: auto; }                               /* 메모 (가변) */
+  #viewInvites th:nth-child(6), #viewInvites td:nth-child(6) { width: 88px; text-align: center; }           /* DM */
+  #viewInvites td.dt { font-size: 13px; }
   td.no { color: var(--gray-500); font-weight: 700; }
 
   /* SNS 채널 아이콘 */

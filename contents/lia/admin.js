@@ -12,6 +12,13 @@ const CONFIG = {
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
+/* "2026-07-28 14:30:05" → "2026년 07월 28일 14시 30분 05초" (초대일시 표기) */
+function formatKST(raw) {
+  const m = String(raw || "").match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/);
+  if (!m) return raw || "-";
+  return `${m[1]}년 ${m[2]}월 ${m[3]}일 ${m[4]}시 ${m[5]}분 ${m[6]}초`;
+}
+
 let records = [];        // 신청 내역
 let invites = [];        // 초대 내역 (전체)
 let invitesView = [];    // 초대 내역 (검색 필터 적용)
@@ -535,7 +542,7 @@ function renderInvites() {
 
     const tdDt = document.createElement("td");
     tdDt.className = "dt";
-    tdDt.textContent = r.invitedAt || "-";
+    tdDt.textContent = formatKST(r.invitedAt); // 년 월 일 시 분 초
     tr.appendChild(tdDt);
 
     /* 인스타 계정 (클릭 시 프로필 새 창) */
