@@ -12,11 +12,24 @@ const CONFIG = {
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
-/* "2026-07-28 14:30:05" → "2026년 07월 28일 14시 30분 05초" (초대일시 표기) */
+/* 어떤 형식이 와도 "2026년 07월 28일 14시 30분 05초"로 통일 (초대일시 표기)
+   - "2026-07-28 14:30:05" (문자열 저장분)
+   - "Tue Jul 28 2026 14:30:05 GMT+0900 (한국 표준시)" (시트가 날짜값으로 자동변환한 분) */
 function formatKST(raw) {
-  const m = String(raw || "").match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/);
-  if (!m) return raw || "-";
-  return `${m[1]}년 ${m[2]}월 ${m[3]}일 ${m[4]}시 ${m[5]}분 ${m[6]}초`;
+  if (!raw && raw !== 0) return "-";
+  const s = String(raw).trim();
+  const m = s.match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/);
+  if (m) return `${m[1]}년 ${m[2]}월 ${m[3]}일 ${m[4]}시 ${m[5]}분 ${m[6]}초`;
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false
+    }).formatToParts(d).reduce((o, p) => (o[p.type] = p.value, o), {});
+    const hh = parts.hour === "24" ? "00" : parts.hour;
+    return `${parts.year}년 ${parts.month}월 ${parts.day}일 ${hh}시 ${parts.minute}분 ${parts.second}초`;
+  }
+  return s;
 }
 
 let records = [];        // 신청 내역
