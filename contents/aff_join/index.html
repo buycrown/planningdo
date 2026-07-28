@@ -27,16 +27,16 @@
     --glass-shadow: 0 8px 32px rgba(84, 70, 190, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.85);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { background: #EFF3FB; color: var(--ink);
-    font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-    -webkit-font-smoothing: antialiased; }
-  /* 배경: 파스텔 소셜 아이콘 이미지 (화면 가득 cover) + 화이트 스크림으로 폼 가독성 확보 */
-  body::before {
-    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  /* 배경: 파스텔 소셜 아이콘을 타일로 반복해 화면 전체를 채움 (html 요소에 직접 적용) */
+  html {
+    min-height: 100%;
     background:
-      url('apply_background.jpg') center center / cover no-repeat fixed,
+      url('apply_background.jpg') top left / 420px auto repeat,
       linear-gradient(160deg, #F4F7FD 0%, #EDF0FA 100%);
   }
+  body { background: transparent; color: var(--ink);
+    font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    -webkit-font-smoothing: antialiased; }
   button, label, .chip span { -webkit-tap-highlight-color: transparent; }
 
   /* ---------- 상단 로고 ---------- */
@@ -69,8 +69,8 @@
   .card {
     /* 글래스 카드: 반투명 + 블러 + 상단 하이라이트로 입체감 */
     background: var(--glass-bg);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(170%);
+    backdrop-filter: blur(16px) saturate(170%);
     border: 1px solid var(--glass-border); border-radius: 18px;
     padding: 24px 20px; margin-bottom: 20px;
     box-shadow: var(--glass-shadow);
