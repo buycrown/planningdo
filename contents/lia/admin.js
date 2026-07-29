@@ -52,8 +52,13 @@ function pageSlice(arr, p) {
 }
 
 /* 인스타 초대 DM 설정 */
-const DM_ACCOUNT = "lfmall_fashionclub";
-const DM_MESSAGE = "안녕하세요 LFmall 입니다. 인플루언서 가입 신청 URL 전달드려요. (https://buycrown.cloud/lfapplyfor/) 신청 이후에는 담당자가 별도 연락드릴 예정입니다.";
+/* 발송 계정·메시지 기본값 (폼에서 매 발송마다 수정 가능) */
+const DEFAULT_SENDER = "lfmall_fashionclub";
+const DEFAULT_MESSAGE = "안녕하세요 LFmall 입니다. 인플루언서 가입 신청 URL 전달드려요. (https://buycrown.cloud/lfapplyfor/) 신청 이후에는 담당자가 별도 연락드릴 예정입니다.";
+
+/* 현재 폼에 입력된 발송 계정 / 메시지 (비어있으면 기본값) */
+function currentSender() { return ($("#inviteSender").value || "").trim().replace(/^@/, "") || DEFAULT_SENDER; }
+function currentMessage() { return ($("#inviteMessage").value || "").trim() || DEFAULT_MESSAGE; }
 
 /* ---------- 공통 ---------- */
 function showToast(msg) {
@@ -526,9 +531,20 @@ function renderInviteDashboard() {
   $("#navInvCnt").textContent = invites.length;
 }
 
+/* DM 문구(현재 입력값)를 클립보드에 복사하고 대상과의 DM 창을 새 탭으로 연다 */
 function openDmWindow(handle) {
-  navigator.clipboard && navigator.clipboard.writeText(DM_MESSAGE).catch(() => {});
+  navigator.clipboard && navigator.clipboard.writeText(currentMessage()).catch(() => {});
   window.open("https://ig.me/m/" + encodeURIComponent(handle), "_blank", "noopener");
+}
+
+/* 발송 안내 문구를 현재 발송 계정 기준으로 갱신 */
+function updateDmGuide() {
+  const el = $("#dmGuide");
+  if (!el) return;
+  el.innerHTML =
+    "<b>발송 계정: @" + currentSender() + "</b> · [초대하기] 클릭 시 ① 초대 내역에 기록 → " +
+    "② 위 발송 메시지가 클립보드에 복사 → ③ 대상 계정과의 인스타그램 DM 창이 새 탭으로 열립니다. " +
+    "<b>발송 계정(@" + currentSender() + ")으로 로그인된 상태</b>에서 DM 창에 <b>붙여넣기(Ctrl+V) 후 전송</b>하면 완료돼요.";
 }
 
 function renderInvites() {
@@ -591,11 +607,11 @@ function renderInvites() {
     dmBtn.type = "button";
     dmBtn.className = "pg-btn";
     dmBtn.textContent = "✉️ DM";
-    dmBtn.title = "DM 문구 복사 + DM 창 열기 (발송 계정: @" + DM_ACCOUNT + ")";
+    dmBtn.title = "현재 발송 메시지 복사 + DM 창 열기 (발송 계정: @" + currentSender() + ")";
     dmBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       openDmWindow(r.insta);
-      showToast("DM 문구가 복사되었습니다. 열린 DM 창에 붙여넣어 전송하세요.");
+      showToast("발송 메시지가 복사되었습니다. @" + currentSender() + " 계정으로 DM 창에 붙여넣어 전송하세요.");
     });
     tdDm.appendChild(dmBtn);
     tr.appendChild(tdDm);
@@ -610,11 +626,13 @@ $("#btnInvite").addEventListener("click", async () => {
   const handle = $("#inviteInsta").value.trim().replace(/^@/, "");
   if (!handle) { showToast("초대할 인스타그램 계정을 입력해 주세요."); $("#inviteInsta").focus(); return; }
   if (!/^[A-Za-z0-9._]{1,30}$/.test(handle)) { showToast("올바른 인스타그램 계정 형식이 아닙니다. (영문/숫자/밑줄/마침표)"); return; }
+  if (!$("#inviteMessage").value.trim()) { showToast("발송 메시지를 입력해 주세요."); $("#inviteMessage").focus(); return; }
   setLoading(true, "초대 등록 중…");
   try {
     await api("inviteCreate", { insta: handle, memo: $("#inviteMemo").value.trim() });
-    openDmWindow(handle);
-    showToast("초대 기록 완료! DM 문구가 복사되었습니다. 열린 DM 창에 붙여넣어 전송하세요.");
+    openDmWindow(handle); // 현재 발송 메시지 복사 + DM 창 열기
+    showToast("초대 기록 완료! 발송 메시지가 복사되었습니다. @" + currentSender() + " 계정으로 DM 창에 붙여넣어 전송하세요.");
+    /* 발송 계정·메시지는 재사용을 위해 유지, 대상 계정·메모만 초기화 */
     $("#inviteInsta").value = ""; $("#inviteMemo").value = "";
     await loadInvites();
   } catch (err) {
@@ -624,6 +642,8 @@ $("#btnInvite").addEventListener("click", async () => {
   }
 });
 $("#inviteInsta").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#btnInvite").click(); });
+/* 발송 계정 변경 시 안내 문구 실시간 갱신 */
+$("#inviteSender").addEventListener("input", updateDmGuide);
 
 /* 초대 상세/수정 모달 */
 function openInviteDetail(id) {
@@ -656,6 +676,10 @@ $("#btnInvDelete").addEventListener("click", () => {
 /* ---------- 초기화: 세션 토큰이 있으면 자동 진입 ---------- */
 (async function init() {
   updateMaskButton();
+  /* 발송 계정·메시지 기본값 채우고 안내 문구 초기화 */
+  if ($("#inviteSender") && !$("#inviteSender").value) $("#inviteSender").value = DEFAULT_SENDER;
+  if ($("#inviteMessage") && !$("#inviteMessage").value) $("#inviteMessage").value = DEFAULT_MESSAGE;
+  updateDmGuide();
   if (sessionStorage.getItem("lf_admin_token")) {
     showAdmin();
     try { await loadList(); await loadInvites(); }

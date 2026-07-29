@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>LIA</title>
+<title>LFmall Influencer Administrator</title>
 <style>
   :root {
     /* 미래지향 팔레트: 시안 → 바이올렛 → 핑크 (LiA 브랜드 그라데이션과 조화) */
@@ -191,12 +191,13 @@
   td.memo-cell { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--gray-700); }
 
   /* ===== 초대 폼 ===== */
-  .invite-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  .invite-form .at-input { position: relative; flex: 0 1 300px; min-width: 220px; }
-  .invite-form .at-input::before { content: "@"; position: absolute; left: 12px; top: 50%;
+  .invite-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px 14px; }
+  @media (max-width: 760px) { .invite-grid { grid-template-columns: 1fr; } }
+  .invite-grid .fld .f-label { margin-top: 0; }
+  .at-input { position: relative; }
+  .at-input::before { content: "@"; position: absolute; left: 12px; top: 50%;
     transform: translateY(-50%); font-weight: 800; color: var(--primary); z-index: 1; }
-  .invite-form .at-input input { padding-left: 30px; }
-  .invite-form .memo-input { flex: 1 1 220px; min-width: 180px; }
+  .at-input input { padding-left: 30px; }
   .dm-preview { margin-top: 12px; padding: 12px 14px; border-radius: 12px;
     background: rgba(255,255,255,.55); border: 1px dashed rgba(109,90,230,.45);
     font-size: 12.5px; color: var(--gray-700); line-height: 1.65; }
@@ -443,17 +444,30 @@
           <div class="toolbar" style="margin-bottom:4px;">
             <span style="font-size:16px;font-weight:800;">인플루언서 초대</span>
           </div>
-          <div class="invite-form">
-            <div class="at-input">
-              <input type="text" id="inviteInsta" placeholder="인스타그램 계정 (예: style_kim)" autocapitalize="none" autocorrect="off" spellcheck="false" />
+          <div class="invite-grid">
+            <div class="fld">
+              <label class="f-label">발송 계정</label>
+              <div class="at-input">
+                <input type="text" id="inviteSender" placeholder="lfmall_fashionclub" autocapitalize="none" autocorrect="off" spellcheck="false" />
+              </div>
             </div>
-            <input type="text" id="inviteMemo" class="memo-input" placeholder="메모 (선택)" />
+            <div class="fld">
+              <label class="f-label">초대할 인스타그램 계정</label>
+              <div class="at-input">
+                <input type="text" id="inviteInsta" placeholder="style_kim" autocapitalize="none" autocorrect="off" spellcheck="false" />
+              </div>
+            </div>
+            <div class="fld">
+              <label class="f-label">메모 (선택)</label>
+              <input type="text" id="inviteMemo" placeholder="예: 7월 뷰티 캠페인" />
+            </div>
+          </div>
+          <label class="f-label" style="margin-top:14px;">발송 메시지 <span style="font-weight:400;color:#8A8A9A;">(매 발송마다 수정 가능)</span></label>
+          <textarea id="inviteMessage" rows="3" placeholder="인플루언서에게 보낼 DM 내용을 입력하세요"></textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:12px;">
             <button type="button" class="btn btn-primary" id="btnInvite">✉️ 초대하기</button>
           </div>
-          <div class="dm-preview">
-            <b>발송 계정: @lfmall_fashionclub</b> · [초대하기] 클릭 시 ① 초대 내역에 기록 → ② 아래 DM 문구가 클립보드에 복사 → ③ 해당 계정과의 인스타그램 DM 창이 새 탭으로 열립니다. DM 창에 <b>붙여넣기(Ctrl+V) 후 전송</b>만 하면 완료돼요.<br/>
-            "안녕하세요 LFmall 입니다. 인플루언서 가입 신청 URL 전달드려요. (https://buycrown.cloud/lfapplyfor/) 신청 이후에는 담당자가 별도 연락드릴 예정입니다."
-          </div>
+          <div class="dm-preview" id="dmGuide"></div>
         </div>
 
         <div class="card">
