@@ -305,7 +305,7 @@ table{border-collapse:collapse;width:100%;}
 
 /* ---- 수기 업무 Phase 전환 추이 매트릭스 ---- */
 .trend{margin-top:4px;border:1px solid var(--ink-200);border-radius:6px;overflow:auto;}
-.trend table{font-size:12.2px;min-width:900px;}
+.trend table{font-size:12.2px;min-width:1140px;}
 .trend th{
   background:var(--ink-50);padding:7px 10px;font-size:11.5px;font-weight:700;color:var(--ink-600);
   border-bottom:1px solid var(--ink-200);text-align:center;white-space:nowrap;
@@ -318,6 +318,17 @@ table{border-collapse:collapse;width:100%;}
   padding:4px 10px;text-align:left;border-bottom:1px solid var(--ink-200);
 }
 .trend .tseq{font-family:var(--font-num);font-weight:700;color:var(--brand);font-size:11px;margin-right:6px;}
+.trend td.dir{font-size:11.8px;color:var(--ink-700);line-height:1.5;padding:5px 10px;border-left:1px solid var(--ink-100);}
+.trend td.dir.na{color:var(--ink-300);}
+.trend .dtag{
+  display:inline-block;font-size:9.5px;font-weight:700;color:#fff;border-radius:3px;
+  padding:0 5px;margin-right:6px;vertical-align:1px;white-space:nowrap;
+}
+.trend .dtag.P1{background:var(--p1);}
+.trend .dtag.P15{background:var(--p15);}
+.trend .dtag.P2{background:var(--p2);}
+.trend .dtag.P3{background:var(--p3);}
+.trend .dtag.P4{background:var(--p4);}
 .trend .cell{
   display:block;height:23px;line-height:23px;font-size:10.5px;font-weight:700;
   border-left:1px solid var(--ink-100);cursor:pointer;
@@ -644,7 +655,7 @@ table{border-collapse:collapse;width:100%;}
       <h1 class="doc-title">어필리에이트 마케팅 업무 프로세스 진단 및 단계별 시스템화 추진(안)</h1>
       <p class="doc-sub">현행 수기 운영 실태 진단 · Phase 기반 개선 로드맵 · 부서 간 협의 필요사항</p>
       <div class="doc-meta">
-        <span>리뷰 대상 <b>유관부서</b></span>
+        <span>리뷰 대상 <b>유관 부서</b></span>
         <span>주관 <b>e-컨텐츠실</b></span>
         <span>기준 자료 <b>어필리에이트 서비스 상세 업무 흐름도.xlsx</b></span>
         <span>작성일 <b id="docDate">-</b></span>
@@ -898,7 +909,9 @@ const DataModule = (function(){
       { seq:"2-1-1", detail:"어필리에이트 마케팅 진행 의사 확인", system:"인스타그램", nature:"수기", owner:"e-컨텐츠실", depth:1 },
       { seq:"2-1-2", detail:"수수료 협의", system:"인스타그램", nature:"수기", owner:"e-컨텐츠실", depth:1 },
       { seq:"2-2",   detail:"SNS 채널 정보 및 정산을 위한 정보 수집 (사업자등록증, 신분증, 통장사본)", system:"이메일", nature:"수기", owner:"e-컨텐츠실", depth:1 },
-      { seq:"2-3",   detail:"전자계약 체결", system:"CS Bill", nature:"수기", owner:"e-컨텐츠실", depth:1 },
+      { seq:"2-3",   detail:"전자계약 체결", system:"", nature:"", owner:"", depth:0 },
+      { seq:"2-3-1", detail:"전자계약 체결", system:"CS Bill", nature:"수기", owner:"e-컨텐츠실", depth:1 },
+      { seq:"2-3-2", detail:"약관 및 지급 수수료 안내 (인플루언서 이메일 발송)", system:"이메일", nature:"수기", owner:"e-컨텐츠실", depth:1 },
       { seq:"2-4",   detail:"PLAS 거래선 등록", system:"LF on > PLAS", nature:"수기", owner:"e-컨텐츠실", depth:1 }
     ]},
     { no:3, title:"링크 생성", items:[
@@ -934,7 +947,7 @@ const DataModule = (function(){
   const improvements = [
     { id:"IMP-01", stageNo:1, stageTitle:"기획", seq:"1-2",
       task:"섭외 대상 인플루언서 및 수수료 배부율 협의 (w.브랜드 사업부)",
-      direction:"인플루언서 풀 조회 서비스 신설 — 브랜드사업부 협의 기준 화면 제공",
+      direction:"LF 인플루언서 풀 공유 시스템 신규 구축",
       asIs:"브랜드사업부와 별도 소통 채널을 통해 섭외 대상 및 수수료 배부율을 협의",
       asIsSystem:"-", asIsNature:"수기", owner:"e-컨텐츠실",
       toBe:"· LFmall 인플루언서 풀을 확인할 수 있는 서비스 신설\n  (브랜드사업부와 섭외 대상 소통 시 해당 화면을 기준으로 소통)",
@@ -943,29 +956,30 @@ const DataModule = (function(){
 
     { id:"IMP-02", stageNo:2, stageTitle:"섭외", seq:"2-2",
       task:"SNS 채널 정보 및 정산을 위한 정보 수집 (사업자등록증, 신분증, 통장사본)",
-      direction:"가입 신청 WEB 화면 신설 — 정산 자료 온라인 제출 및 DB화",
+      direction:"어필리에이트 서비스 가입 신청 페이지에서 가입 유도",
       asIs:"이메일을 통해 인플루언서별 정산 필요 서류를 개별 수집",
       asIsSystem:"이메일", asIsNature:"수기", owner:"e-컨텐츠실",
       toBe:"· 어필리에이트 서비스 가입 신청용 WEB 화면 신설\n· 가입 신청 시 정산을 위한 자료 제출 (첨부파일)",
       toBeSystem:"신규 WEB 화면", effect:"인플루언서 정산 정보의 DB화 가능\n수기 수집 업무 개선",
       originPhase:"PHASE 1" },
 
-    { id:"IMP-03", stageNo:2, stageTitle:"섭외", seq:"2-3",
+    { id:"IMP-03", stageNo:2, stageTitle:"섭외", seq:"2-3-1",
       task:"전자계약 체결",
-      direction:"전자계약 → 이용약관 동의로 프로세스 전환",
+      direction:"어필리에이트 서비스 가입 신청 페이지에서 약관 동의 대체",
       asIs:"CS Bill을 통해 인플루언서별 전자계약을 개별 체결",
       asIsSystem:"CS Bill", asIsNature:"수기", owner:"e-컨텐츠실",
       toBe:"· 전자계약 대신 '이용약관' 동의로 프로세스 변경",
       toBeSystem:"약관 동의", effect:"인플루언서 별 전자계약 업무 리소스 감소\n전자계약서 이용 비용 절감\n상호간(인플루언서 : LF) 업무 편의성 제공",
       originPhase:"PHASE 1" },
 
-    { id:"IMP-04", stageNo:2, stageTitle:"섭외", seq:"2-3",
-      task:"전자계약 체결 — 가입자 정보 제공 화면",
-      direction:"LFmall 마이페이지에 약관·가입 승인 여부·지급 수수료 확인 화면 신설",
+    { id:"IMP-04", stageNo:2, stageTitle:"섭외", seq:"2-3-2",
+      task:"약관 및 지급 수수료 안내 (인플루언서 이메일 발송)",
+      direction:"LFmall 마이페이지에 '크리에이터 활동 내역' 메뉴 신설",
       asIs:"약관·가입 승인 여부·지급 수수료를 이메일로 개별 안내",
       asIsSystem:"이메일", asIsNature:"수기", owner:"e-컨텐츠실",
       toBe:"· 어필리에이트 서비스 가입자(LFmall 회원)도 약관, 가입 승인 여부, 지급 수수료를 확인할 수 있는 화면 필요 (법무BSU 검토 내용)\n· LFmall 마이페이지 신규 메뉴로 검토\n\n※ PHASE 1 오픈 시, 1.5 진행 전까지 '약관 및 수수료'는 인플루언서 이메일로 발송",
-      toBeSystem:"LFmall 마이페이지", effect:"법무 검토 이행\n추후 '크리에이터 마켓' 기능 확대를 위한 발판 마련",
+      toBeSystem:"LFmall 마이페이지 (크리에이터 활동 내역)",
+      effect:"법무 검토 이행\n추후 '크리에이터 마켓' 기능 확대를 위한 발판 마련",
       originPhase:"PHASE 1.5" },
 
     { id:"IMP-05", stageNo:5, stageTitle:"정산", seq:"5-1-5",
@@ -1007,6 +1021,8 @@ const DataModule = (function(){
   }
   const tasks = allTasks();
   const manualCount = tasks.filter(function(t){ return t.nature==="수기"; }).length;
+  let groupCount = 0;
+  stages.forEach(function(s){ s.items.forEach(function(i){ if(i.depth===0) groupCount++; }); });
   const systemsUsed = Array.from(new Set(tasks.map(function(t){return t.system;}).filter(function(s){ return s && s!=="-"; })));
   const targetSeqs  = Array.from(new Set(improvements.map(function(i){return i.seq;})));
 
@@ -1015,7 +1031,7 @@ const DataModule = (function(){
   function phaseLabel(id){ const p=phases.find(function(x){return x.id===id;}); return p?p.label:id; }
 
   return { stages, phases, improvements, issues, tasks,
-           manualCount, systemsUsed, targetSeqs,
+           manualCount, groupCount, systemsUsed, targetSeqs,
            phaseIndex, phaseCls, phaseLabel };
 })();
 </script>
@@ -1365,7 +1381,8 @@ const FlowView = (function(D,U){
       const st = D.stages.find(function(s){return s.no===activeStage;});
       cap.textContent = "'"+st.title+"' 단계 기준 "+shown+"행 표시 중 · 전체 보기는 우측 상단 버튼을 이용하십시오.";
     }else{
-      cap.textContent = "전체 "+shown+"행 표시 · 실행 업무 "+D.tasks.length+"건(전량 수기), 업무 묶음 3건, 판매 단계 1행 포함";
+      cap.textContent = "전체 "+shown+"행 표시 · 실행 업무 "+D.tasks.length+"건(전량 수기), 업무 묶음 "
+                      + D.groupCount+"건, 판매 단계 1행 포함";
     }
   }
 
@@ -1478,21 +1495,41 @@ const PhaseView = (function(D,U){
       return hits[0];
     }
 
-    let h = '<table><thead><tr><th class="lft">업무 단계 · 상세 업무 (현행 수기 '+D.manualCount+'건)</th>';
+    /* 업무별 개선 방향 */
+    function dirOf(seq){
+      const hits = D.improvements.filter(function(x){return x.seq===seq;});
+      if(!hits.length) return null;
+      hits.sort(function(x,y){ return D.phaseIndex(a[x.id])-D.phaseIndex(a[y.id]); });
+      return hits;
+    }
+
+    let h = '<table><thead><tr><th class="lft">업무 단계 · 상세 업무 (현행 수기 '+D.manualCount+'건)</th>'
+          + '<th class="lft" style="min-width:290px">개선 방향</th>';
     D.phases.forEach(function(p){
-      h += '<th class="'+(p.id===act?"cur":"")+'" style="width:92px">'+U.esc(p.label)+'</th>';
+      h += '<th class="'+(p.id===act?"cur":"")+'" style="width:88px">'+U.esc(p.label)+'</th>';
     });
     h += '</tr></thead><tbody>';
 
     D.stages.forEach(function(s){
       const exec = s.items.filter(function(i){return i.depth===1;});
       if(!exec.length) return;
-      h += '<tr class="stg"><td colspan="'+(D.phases.length+1)+'">'+s.no+'. '+U.esc(s.title)
+      h += '<tr class="stg"><td colspan="'+(D.phases.length+2)+'">'+s.no+'. '+U.esc(s.title)
          + ' <span style="font-weight:400;color:var(--ink-400)">· '+exec.length+'건</span></td></tr>';
       exec.forEach(function(it){
         const own = ownerPhase(it.seq);
         const oi  = own ? D.phaseIndex(own) : -1;
+        const dirs = dirOf(it.seq);
         h += '<tr><td class="lft"><span class="tseq">'+U.esc(it.seq)+'</span>'+U.esc(it.detail)+'</td>';
+        if(dirs){
+          h += '<td class="lft dir">'
+             + dirs.map(function(x){
+                 return '<span class="dtag '+D.phaseCls(a[x.id])+'">'+U.esc(D.phaseLabel(a[x.id]))+'</span>'
+                      + U.esc(x.direction);
+               }).join('<br>')
+             + '</td>';
+        }else{
+          h += '<td class="lft dir na">개선 계획 없음 · 현행 수기 유지</td>';
+        }
         D.phases.forEach(function(p,k){
           let cls="manual", txt="수기";
           if(oi>=0 && k===oi){ cls="now "+p.cls; txt="개선"; }
@@ -1503,7 +1540,7 @@ const PhaseView = (function(D,U){
       });
     });
 
-    h += '</tbody><tfoot><tr><td class="lft">Phase 완료 시점 수기 업무 잔존</td>';
+    h += '</tbody><tfoot><tr><td class="lft" colspan="2">Phase 완료 시점 수기 업무 잔존</td>';
     D.phases.forEach(function(p){
       h += '<td>'+cumulative(p.id).manualLeft+'건</td>';
     });
@@ -1924,7 +1961,7 @@ const UI = (function(D,U){
     const c = PhaseView.cumulative(last);
     const items = [
       { l:"업무 단계", v:D.stages.length, u:"단계", n:"기획 · 섭외 · 링크 생성 · 판매 · 정산", cls:"" },
-      { l:"현행 실행 업무", v:D.tasks.length, u:"건", n:"업무 묶음 3건은 별도 집계", cls:"" },
+      { l:"현행 실행 업무", v:D.tasks.length, u:"건", n:"업무 묶음 "+D.groupCount+"건은 별도 집계", cls:"" },
       { l:"수기 운영 업무", v:D.manualCount, u:"건", n:"실행 업무 전량이 수기 운영", cls:"amber" },
       { l:"개선 대상", v:D.targetSeqs.length, u:"업무", n:"개선 항목 "+D.improvements.length+"건 / "+D.phases.length+"개 Phase", cls:"violet" },
       { l:"최종 Phase 완료 시", v:c.manualLeft, u:"건 잔존", n:"수기 "+D.manualCount+"건 → "+c.manualLeft+"건", cls:"violet" },
