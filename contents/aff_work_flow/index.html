@@ -1,0 +1,2114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>어필리에이트 마케팅 업무 프로세스 개선 리포트</title>
+<style>
+/* ============================================================
+   Design Tokens
+   ============================================================ */
+:root{
+  --font-base:"Malgun Gothic","맑은 고딕","Segoe UI","Apple SD Gothic Neo","Noto Sans KR","Helvetica Neue",Arial,sans-serif;
+  --font-num:"Segoe UI","Malgun Gothic",Arial,sans-serif;
+
+  --ink-900:#101828;
+  --ink-800:#1d2939;
+  --ink-700:#344054;
+  --ink-600:#475467;
+  --ink-500:#667085;
+  --ink-400:#98a2b3;
+  --ink-300:#d0d5dd;
+  --ink-200:#e4e7ec;
+  --ink-100:#f2f4f7;
+  --ink-50:#f9fafb;
+  --white:#ffffff;
+
+  --navy:#0f2a4a;
+  --navy-700:#173c66;
+  --brand:#0b5fb0;
+  --brand-600:#1069c4;
+  --brand-100:#e7f1fb;
+  --brand-50:#f2f8fe;
+
+  --manual:#b54708;
+  --manual-bg:#fff6ed;
+  --manual-bd:#f9dbaf;
+  --system:#026aa2;
+  --system-bg:#f0f9ff;
+  --system-bd:#b9e6fe;
+
+  --ok:#067647;
+  --ok-bg:#ecfdf3;
+  --ok-bd:#abefc6;
+  --warn:#b42318;
+  --warn-bg:#fef3f2;
+  --warn-bd:#fecdca;
+
+  --p1:#0b5fb0;
+  --p15:#0e7490;
+  --p2:#6941c6;
+  --p3:#c4620d;
+  --p4:#475467;
+
+  --shadow-sm:0 1px 2px rgba(16,24,40,.06);
+  --shadow-md:0 2px 8px rgba(16,24,40,.08);
+  --shadow-lg:0 8px 24px rgba(16,24,40,.10);
+  --radius:8px;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:var(--font-base);
+  background:var(--ink-100);
+  color:var(--ink-800);
+  font-size:14px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em;}
+p{margin:0;}
+button{font-family:inherit;cursor:pointer;}
+select,textarea,input{font-family:inherit;font-size:inherit;}
+table{border-collapse:collapse;width:100%;}
+
+/* ============================================================
+   Layout
+   ============================================================ */
+.wrap{width:100%;max-width:none;padding:0 32px 80px;}
+.section{margin-top:28px;}
+
+/* Header */
+.topbar{
+  background:linear-gradient(105deg,var(--navy) 0%,var(--navy-700) 55%,#1e5286 100%);
+  color:#fff;padding:22px 32px 20px;
+}
+.topbar-inner{display:flex;align-items:flex-start;justify-content:space-between;gap:28px;flex-wrap:wrap;}
+.doc-eyebrow{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:#9dc2e8;font-weight:600;}
+.doc-title{font-size:25px;margin-top:5px;line-height:1.25;}
+.doc-sub{font-size:13px;color:#c2d8ee;margin-top:6px;}
+.doc-meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:#a9c8e4;}
+.doc-meta b{color:#fff;font-weight:600;}
+
+.topbar-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.btn{
+  border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);color:#fff;
+  padding:7px 13px;border-radius:6px;font-size:12.5px;font-weight:600;transition:.15s;
+  white-space:nowrap;
+}
+.btn:hover{background:rgba(255,255,255,.18);}
+.btn-solid{background:#fff;color:var(--navy);border-color:#fff;}
+.btn-solid:hover{background:#eaf2fa;}
+
+.btn-lt{
+  border:1px solid var(--ink-300);background:#fff;color:var(--ink-700);
+  padding:6px 12px;border-radius:6px;font-size:12.5px;font-weight:600;transition:.15s;
+}
+.btn-lt:hover{background:var(--ink-50);border-color:var(--ink-400);}
+.btn-lt.primary{background:var(--brand);border-color:var(--brand);color:#fff;}
+.btn-lt.primary:hover{background:var(--brand-600);}
+.btn-lt.danger{color:var(--warn);border-color:var(--warn-bd);}
+.btn-lt.danger:hover{background:var(--warn-bg);}
+.btn-lt.mini{padding:3px 9px;font-size:11.5px;}
+
+/* Nav */
+.navbar{
+  position:sticky;top:0;z-index:60;background:rgba(255,255,255,.96);
+  backdrop-filter:blur(6px);border-bottom:1px solid var(--ink-200);
+  padding:0 32px;display:flex;align-items:center;gap:4px;box-shadow:var(--shadow-sm);
+  overflow-x:auto;
+}
+.navbar a{
+  padding:13px 15px;font-size:13px;font-weight:600;color:var(--ink-600);
+  text-decoration:none;border-bottom:2.5px solid transparent;white-space:nowrap;
+}
+.navbar a:hover{color:var(--brand);}
+.navbar a.on{color:var(--brand);border-bottom-color:var(--brand);}
+.nav-spacer{flex:1;}
+.nav-note{font-size:11.5px;color:var(--ink-400);padding-right:4px;white-space:nowrap;}
+
+/* Card */
+.card{background:#fff;border:1px solid var(--ink-200);border-radius:var(--radius);box-shadow:var(--shadow-sm);}
+.card-hd{
+  padding:15px 20px;border-bottom:1px solid var(--ink-200);
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.card-bd{padding:20px;}
+.sec-no{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:25px;height:25px;border-radius:5px;background:var(--navy);color:#fff;
+  font-size:13px;font-weight:700;font-family:var(--font-num);flex:none;
+}
+.sec-title{font-size:17px;color:var(--ink-900);}
+.sec-desc{font-size:12.5px;color:var(--ink-500);width:100%;margin-top:-2px;}
+.hd-right{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px;}
+.kpi{
+  background:#fff;border:1px solid var(--ink-200);border-left:3px solid var(--brand);
+  border-radius:6px;padding:13px 15px;box-shadow:var(--shadow-sm);
+}
+.kpi-l{font-size:11.5px;color:var(--ink-500);font-weight:600;letter-spacing:.01em;}
+.kpi-v{font-size:24px;font-weight:700;color:var(--ink-900);font-family:var(--font-num);line-height:1.2;margin-top:3px;}
+.kpi-v small{font-size:13px;font-weight:600;color:var(--ink-500);margin-left:2px;}
+.kpi-n{font-size:11.5px;color:var(--ink-400);margin-top:2px;}
+.kpi.amber{border-left-color:var(--manual);}
+.kpi.violet{border-left-color:var(--p2);}
+.kpi.red{border-left-color:var(--warn);}
+
+/* Summary prose */
+.prose-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:4px;}
+.prose-box{background:var(--ink-50);border:1px solid var(--ink-200);border-radius:6px;padding:15px 17px;}
+.prose-box h4{font-size:13px;color:var(--brand);margin-bottom:7px;letter-spacing:.02em;}
+.prose-box p, .prose-box li{font-size:13px;color:var(--ink-700);line-height:1.7;}
+.prose-box ul{margin:0;padding-left:17px;}
+.prose-box li+li{margin-top:4px;}
+
+/* ============================================================
+   Badges
+   ============================================================ */
+.bdg{
+  display:inline-block;padding:1.5px 7px;border-radius:4px;font-size:11px;font-weight:700;
+  border:1px solid transparent;white-space:nowrap;line-height:1.5;
+}
+.bdg-manual{background:var(--manual-bg);color:var(--manual);border-color:var(--manual-bd);}
+.bdg-sys{background:var(--system-bg);color:var(--system);border-color:var(--system-bd);}
+.bdg-none{background:var(--ink-100);color:var(--ink-500);border-color:var(--ink-200);}
+.bdg-ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-bd);}
+.bdg-warn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-bd);}
+.bdg-tgt{background:#f4f3ff;color:var(--p2);border-color:#d9d6fe;}
+.bdg-p{color:#fff;border:none;}
+.bdg-p.P1{background:var(--p1);}
+.bdg-p.P15{background:var(--p15);}
+.bdg-p.P2{background:var(--p2);}
+.bdg-p.P3{background:var(--p3);}
+.bdg-p.P4{background:var(--p4);}
+
+/* ============================================================
+   Section 1 — Process Flowbar (순서도) + 단계별 업무 장표
+   ============================================================ */
+.flowbar{display:flex;align-items:stretch;gap:0;overflow-x:auto;padding:4px 2px 8px;}
+.fstep{
+  flex:1 1 0;min-width:154px;border:1px solid var(--ink-300);background:#fff;border-radius:7px;
+  padding:10px 13px;text-align:left;transition:.15s;box-shadow:var(--shadow-sm);
+  display:flex;flex-direction:column;gap:2px;
+}
+.fstep:hover{border-color:var(--brand);box-shadow:var(--shadow-md);transform:translateY(-1px);}
+.fstep.on{border-color:var(--brand);border-width:2px;background:var(--brand-50);box-shadow:0 0 0 3px var(--brand-100);}
+.fstep.idle{background:var(--ink-50);border-style:dashed;}
+.fs-top{display:flex;align-items:center;gap:8px;}
+.fs-n{
+  width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;font-family:var(--font-num);flex:none;
+}
+.fstep.idle .fs-n{background:var(--ink-400);}
+.fstep.on .fs-n{background:var(--navy);}
+.fs-t{font-size:14.5px;font-weight:700;color:var(--ink-900);}
+.fs-m{font-size:11.5px;color:var(--ink-500);font-family:var(--font-num);}
+.fs-b{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;}
+.fs-b .bdg{font-size:10px;padding:0 5px;}
+.fs-arrow{
+  flex:none;width:24px;display:flex;align-items:center;justify-content:center;
+  color:var(--ink-400);font-size:15px;font-weight:700;
+}
+.flow-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-500);padding-top:2px;}
+.flow-legend span{display:flex;align-items:center;gap:5px;}
+.lg-sw{width:11px;height:11px;border-radius:3px;display:inline-block;}
+
+.sheet-hd{
+  margin-top:16px;padding:11px 15px;border:1px solid var(--ink-200);border-bottom:none;
+  border-radius:6px 6px 0 0;background:var(--ink-50);
+  display:flex;align-items:center;gap:11px;flex-wrap:wrap;
+}
+.sheet-hd .sn{
+  width:22px;height:22px;border-radius:5px;background:var(--navy);color:#fff;font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;font-family:var(--font-num);flex:none;
+}
+.sheet-hd .st2{font-size:14px;font-weight:700;color:var(--ink-900);}
+.sheet-hd .sm{font-size:12px;color:var(--ink-600);}
+.sheet-hd .sr{margin-left:auto;display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+
+/* Detail table */
+.tbl-wrap{border:1px solid var(--ink-200);border-radius:6px;overflow:hidden;margin-top:16px;}
+.tbl-wrap.attached{margin-top:0;border-radius:0 0 6px 6px;}
+.tbl{font-size:12.8px;}
+.tbl thead th{
+  background:var(--navy);color:#fff;font-size:11.8px;font-weight:700;padding:9px 11px;
+  text-align:left;letter-spacing:.02em;white-space:nowrap;
+}
+.tbl tbody td{padding:8px 11px;border-bottom:1px solid var(--ink-200);vertical-align:middle;color:var(--ink-700);}
+.tbl tbody tr:hover{background:var(--brand-50);}
+.tbl tbody tr.dim td{color:var(--ink-400);background:var(--ink-50);font-style:normal;}
+.tbl tbody tr.grp-row td{background:var(--ink-50);font-weight:700;color:var(--ink-800);}
+.tbl tbody tr.tgt-row{background:#fcfcff;}
+.tbl tbody tr.tgt-row td:first-child{box-shadow:inset 3px 0 0 var(--p2);}
+.tbl .c-seq{font-family:var(--font-num);font-weight:700;color:var(--brand);white-space:nowrap;}
+.tbl .c-stage{font-weight:700;color:var(--ink-800);white-space:nowrap;}
+.tbl .c-ctr{text-align:center;white-space:nowrap;}
+.tbl .indent{padding-left:26px;}
+.tbl-cap{font-size:11.5px;color:var(--ink-400);margin-top:7px;}
+
+/* ============================================================
+   Section 2 — Phase Tabs
+   ============================================================ */
+.phase-tabs{display:flex;gap:5px;flex-wrap:wrap;border-bottom:1px solid var(--ink-200);}
+.ptab{
+  border:1px solid var(--ink-300);border-bottom:none;background:var(--ink-50);color:var(--ink-600);
+  padding:9px 17px 8px;border-radius:6px 6px 0 0;font-size:13px;font-weight:700;
+  position:relative;top:1px;transition:.15s;display:flex;align-items:center;gap:8px;
+}
+.ptab:hover{background:#fff;color:var(--ink-800);}
+.ptab.on{background:#fff;color:var(--brand);border-color:var(--ink-300);border-bottom:2px solid #fff;box-shadow:0 -2px 0 var(--brand) inset;}
+.ptab .dot{width:7px;height:7px;border-radius:50%;background:var(--ink-300);flex:none;}
+.ptab.on .dot{background:var(--brand);}
+.ptab .n{
+  font-size:10.5px;font-weight:700;background:var(--ink-200);color:var(--ink-600);
+  border-radius:9px;padding:0 6px;font-family:var(--font-num);
+}
+.ptab.on .n{background:var(--brand-100);color:var(--brand);}
+
+.phase-body{border:1px solid var(--ink-300);border-top:none;border-radius:0 0 7px 7px;padding:20px;background:#fff;}
+
+/* progress meter */
+.meter-row{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;margin-bottom:20px;}
+.meter{background:var(--ink-50);border:1px solid var(--ink-200);border-radius:6px;padding:14px 16px;}
+.meter-hd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.meter-t{font-size:12.5px;font-weight:700;color:var(--ink-700);}
+.meter-v{font-size:13px;font-weight:700;color:var(--ink-900);font-family:var(--font-num);}
+.meter-v em{font-style:normal;color:var(--ok);}
+.bar{height:11px;background:var(--ink-200);border-radius:6px;overflow:hidden;margin-top:9px;display:flex;}
+.bar-fill{background:linear-gradient(90deg,var(--brand),#3b8fd9);transition:width .45s cubic-bezier(.4,0,.2,1);}
+.bar-fill.ok{background:linear-gradient(90deg,#087443,#12b76a);}
+.meter-n{font-size:11.5px;color:var(--ink-500);margin-top:7px;line-height:1.6;}
+.step-dots{display:flex;align-items:center;gap:0;margin-top:11px;}
+.sd{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;}
+.sd .c{width:13px;height:13px;border-radius:50%;background:var(--white);border:2px solid var(--ink-300);z-index:2;}
+.sd.done .c{background:var(--ok);border-color:var(--ok);}
+.sd.cur .c{background:var(--brand);border-color:var(--brand);box-shadow:0 0 0 3.5px var(--brand-100);}
+.sd .l{font-size:10.5px;font-weight:700;color:var(--ink-400);font-style:normal;}
+.sd.done .l{color:var(--ok);}
+.sd.cur .l{color:var(--brand);}
+.sd::after{content:"";position:absolute;top:6px;left:50%;width:100%;height:2px;background:var(--ink-200);z-index:1;}
+.sd:last-child::after{display:none;}
+.sd.done::after{background:var(--ok);}
+
+/* group headings */
+.grp-h{
+  display:flex;align-items:center;gap:9px;margin:22px 0 11px;padding-bottom:7px;
+  border-bottom:1px solid var(--ink-200);
+}
+.grp-h h4{font-size:13.5px;color:var(--ink-900);}
+.grp-h .cnt{font-size:11px;font-weight:700;color:var(--ink-500);background:var(--ink-100);padding:1px 8px;border-radius:9px;font-family:var(--font-num);}
+.grp-h .hint{font-size:11.5px;color:var(--ink-400);margin-left:auto;}
+
+/* ---- 수기 업무 Phase 전환 추이 매트릭스 ---- */
+.trend{margin-top:4px;border:1px solid var(--ink-200);border-radius:6px;overflow:auto;}
+.trend table{font-size:12.2px;min-width:900px;}
+.trend th{
+  background:var(--ink-50);padding:7px 10px;font-size:11.5px;font-weight:700;color:var(--ink-600);
+  border-bottom:1px solid var(--ink-200);text-align:center;white-space:nowrap;
+}
+.trend th.lft{text-align:left;min-width:330px;}
+.trend td{padding:0;border-bottom:1px solid var(--ink-100);text-align:center;}
+.trend td.lft{text-align:left;padding:4px 10px;}
+.trend tr.stg td{
+  background:var(--ink-50);font-weight:700;color:var(--ink-700);font-size:11.5px;
+  padding:4px 10px;text-align:left;border-bottom:1px solid var(--ink-200);
+}
+.trend .tseq{font-family:var(--font-num);font-weight:700;color:var(--brand);font-size:11px;margin-right:6px;}
+.trend .cell{
+  display:block;height:23px;line-height:23px;font-size:10.5px;font-weight:700;
+  border-left:1px solid var(--ink-100);cursor:pointer;
+}
+.trend .cell.manual{background:#fff;color:var(--ink-300);}
+.trend .cell.kept{background:var(--ok-bg);color:var(--ok);}
+.trend .cell.now{color:#fff;}
+.trend .cell.now.P1{background:var(--p1);}
+.trend .cell.now.P15{background:var(--p15);}
+.trend .cell.now.P2{background:var(--p2);}
+.trend .cell.now.P3{background:var(--p3);}
+.trend .cell.now.P4{background:var(--p4);}
+.trend th.cur{background:var(--brand-100);color:var(--brand);}
+.trend tfoot td{
+  background:var(--ink-50);font-weight:700;font-size:11.5px;color:var(--ink-700);
+  border-top:1px solid var(--ink-200);padding:6px 10px;
+}
+.trend-legend{display:flex;gap:15px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-500);padding-top:8px;}
+.trend-legend span{display:flex;align-items:center;gap:5px;}
+
+/* ---- 본 Phase 변경분 (Delta) ---- */
+.delta{border:2px solid var(--brand);border-radius:8px;margin-bottom:16px;overflow:hidden;box-shadow:var(--shadow-md);}
+.delta-hd{padding:11px 16px;background:var(--brand);color:#fff;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.delta-hd h4{font-size:14px;color:#fff;}
+.delta-hd .c{font-size:11.5px;font-weight:700;background:rgba(255,255,255,.24);padding:1px 9px;border-radius:9px;}
+.delta-hd .sm{margin-left:auto;font-size:11.5px;font-weight:700;color:#dceafa;font-family:var(--font-num);}
+.delta-bd{padding:14px 16px;background:#fff;}
+.ditem{border:1px solid var(--ink-200);border-left:3px solid var(--brand);border-radius:6px;background:#fff;padding:12px 14px;}
+.ditem+.ditem{margin-top:10px;}
+.ditem-hd{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px;}
+.ditem-hd .sg{font-size:11.5px;font-weight:700;color:var(--ink-500);}
+.ditem-hd .sq{font-family:var(--font-num);font-size:11px;font-weight:700;color:#fff;background:var(--brand);padding:2px 7px;border-radius:4px;}
+.ditem-hd .tk{font-size:13.5px;font-weight:700;color:var(--ink-900);}
+.ditem-hd .mv{margin-left:auto;font-size:11.5px;font-weight:700;color:var(--ok);font-family:var(--font-num);}
+.dpair{display:grid;grid-template-columns:1fr 30px 1fr;gap:1px;background:var(--ink-200);border-radius:5px;overflow:hidden;}
+.dpair .p{background:#fdfdfd;padding:10px 13px;}
+.dpair .p.to{background:var(--brand-50);}
+.dpair .m{background:var(--brand-100);display:flex;align-items:center;justify-content:center;color:var(--brand);font-weight:700;font-size:13px;}
+.dpair .lb{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink-400);margin-bottom:5px;}
+.dpair .p.to .lb{color:var(--brand);}
+.dpair .tx{font-size:12.7px;color:var(--ink-800);line-height:1.55;}
+.deffect{margin-top:10px;padding-top:9px;border-top:1px dashed var(--ink-200);font-size:12.4px;color:var(--ink-700);line-height:1.6;white-space:pre-line;}
+.deffect b{font-size:10.5px;letter-spacing:.09em;color:var(--ok);margin-right:8px;}
+.deffect .na{color:var(--ink-400);}
+
+/* ---- 섹션 전체 접기 (Phase 상세) ---- */
+.fold-stub{
+  border:1px dashed var(--ink-300);border-radius:6px;background:var(--ink-50);
+  padding:14px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;cursor:pointer;transition:.15s;
+}
+.fold-stub:hover{background:var(--brand-50);border-color:var(--brand);}
+.fold-stub .ic{color:var(--brand);font-size:12px;font-weight:700;}
+.fold-stub .tx{font-size:13px;font-weight:700;color:var(--ink-800);}
+.fold-stub .sub{font-size:11.5px;color:var(--ink-500);margin-left:auto;}
+
+/* ---- 접기 섹션 ---- */
+.fold{border:1px solid var(--ink-200);border-radius:6px;margin-bottom:11px;background:#fff;overflow:hidden;}
+.fold>summary{
+  padding:10px 15px;background:var(--ink-50);cursor:pointer;font-size:12.8px;font-weight:700;
+  color:var(--ink-700);display:flex;align-items:center;gap:9px;list-style:none;
+}
+.fold>summary::-webkit-details-marker{display:none;}
+.fold>summary::before{content:"\25B8";color:var(--ink-400);font-size:11px;}
+.fold[open]>summary::before{content:"\25BE";}
+.fold>summary:hover{background:var(--ink-100);}
+.fold>summary .c{font-size:11px;font-weight:700;color:var(--ink-500);background:#fff;border:1px solid var(--ink-200);padding:1px 8px;border-radius:9px;}
+.fold>summary .h{margin-left:auto;font-size:11.5px;color:var(--ink-400);font-weight:400;}
+.fold-bd{padding:14px 15px;border-top:1px solid var(--ink-200);}
+
+/* ---- Phase별 단계 절차 비교 (Stage Diff) ---- */
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+.chips .lb{font-size:12px;font-weight:700;color:var(--ink-600);margin-right:2px;}
+.chip{
+  font-size:12px;font-weight:700;padding:3px 10px;border-radius:14px;
+  background:var(--brand-100);color:var(--brand);border:1px solid #b2ddff;
+}
+.chip.off{background:var(--ink-100);color:var(--ink-500);border-color:var(--ink-200);}
+
+.dfstage{border:1px solid var(--ink-200);border-radius:7px;overflow:hidden;margin-bottom:14px;background:#fff;box-shadow:var(--shadow-sm);}
+.dfstage.hasnow{border-color:#8fcbf7;box-shadow:0 0 0 2px var(--brand-50),var(--shadow-sm);}
+.dfs-hd{
+  padding:10px 15px;background:linear-gradient(180deg,#fbfcfe,#f4f7fb);border-bottom:1px solid var(--ink-200);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.dfstage.hasnow .dfs-hd{background:linear-gradient(180deg,#f4faff,#e9f3fd);}
+.dfs-n{
+  width:22px;height:22px;border-radius:5px;background:var(--navy);color:#fff;font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;font-family:var(--font-num);flex:none;
+}
+.dfs-t{font-size:14.5px;font-weight:700;color:var(--ink-900);}
+.dfs-m{font-size:12px;color:var(--ink-600);font-family:var(--font-num);font-weight:600;}
+.dfs-m em{font-style:normal;color:var(--ok);font-weight:700;}
+.dfs-r{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+
+.dfcols{display:grid;grid-template-columns:1fr 32px 1fr;background:var(--ink-200);gap:1px;}
+.dfhd{background:var(--ink-50);padding:7px 14px;font-size:10.5px;font-weight:700;letter-spacing:.1em;color:var(--ink-400);}
+.dfhd.tocol{color:var(--brand);}
+.dfc{background:#fff;padding:9px 14px;}
+.dfc.as{background:#fdfdfd;}
+.dfc.mid{background:var(--ink-100);display:flex;align-items:center;justify-content:center;color:var(--ink-300);font-size:12px;font-weight:700;}
+.dfc.mid.act{background:var(--brand-100);color:var(--brand);}
+.dfc.mid.prevact{background:var(--ok-bd);color:var(--ok);}
+.dfc.tocol.keep{background:#fff;}
+.dfc.tocol.pending{background:#fffdf5;}
+.dfc.tocol.prev{background:var(--ok-bg);}
+.dfc.tocol.now{background:#eaf4fd;box-shadow:inset 0 0 0 1px #b2ddff;}
+.dfseq{font-family:var(--font-num);font-size:10.5px;font-weight:700;color:var(--brand);margin-right:6px;}
+.dftxt{font-size:12.6px;color:var(--ink-800);line-height:1.5;}
+.dftxt.muted{color:var(--ink-500);}
+.dftags{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;}
+.dftags .bdg{font-size:10px;padding:0 5px;}
+.dfline+.dfline{margin-top:6px;padding-top:6px;border-top:1px dashed var(--ink-200);}
+.dfnochange{
+  padding:11px 15px;font-size:12.3px;color:var(--ink-500);background:var(--ink-50);
+  border:1px dashed var(--ink-300);border-radius:6px;margin-bottom:14px;
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+}
+
+/* Before / After card */
+.ba{
+  border:1px solid var(--ink-200);border-radius:7px;background:#fff;overflow:hidden;
+  box-shadow:var(--shadow-sm);margin-bottom:12px;
+}
+.ba.current{border-color:#b2ddff;box-shadow:0 0 0 2px var(--brand-50),var(--shadow-sm);}
+.ba.done{background:#fcfefd;}
+.ba.future{background:var(--ink-50);}
+.ba-hd{
+  padding:10px 15px;background:linear-gradient(180deg,#fbfcfe,#f5f7fa);border-bottom:1px solid var(--ink-200);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.ba.current .ba-hd{background:linear-gradient(180deg,#f4faff,#eaf4fd);}
+.ba.done .ba-hd{background:linear-gradient(180deg,#f6fefa,#eefbf3);}
+.ba-seq{
+  font-family:var(--font-num);font-size:11.5px;font-weight:700;color:#fff;background:var(--ink-600);
+  padding:2px 8px;border-radius:4px;flex:none;
+}
+.ba.current .ba-seq{background:var(--brand);}
+.ba.done .ba-seq{background:var(--ok);}
+.ba-stage{font-size:11.5px;color:var(--ink-500);font-weight:600;}
+.ba-task{font-size:14px;font-weight:700;color:var(--ink-900);}
+.ba-ctl{margin-left:auto;display:flex;align-items:center;gap:7px;}
+.ba-ctl label{font-size:11.5px;color:var(--ink-500);font-weight:600;}
+.ba-ctl select{
+  border:1px solid var(--ink-300);border-radius:5px;padding:4px 7px;font-size:12px;font-weight:700;
+  color:var(--ink-800);background:#fff;
+}
+.ba-ctl select:focus{outline:2px solid var(--brand-100);border-color:var(--brand);}
+.moved{font-size:10.5px;font-weight:700;color:var(--p3);background:#fffaeb;border:1px solid #fedf89;padding:1px 6px;border-radius:4px;}
+
+.ba-bd{display:grid;grid-template-columns:1fr 34px 1fr;align-items:stretch;}
+.ba-col{padding:14px 16px;}
+.ba-col.as{background:#fdfdfd;}
+.ba-col.to{background:var(--brand-50);border-left:1px solid var(--ink-200);}
+.ba.done .ba-col.to{background:var(--ok-bg);}
+.ba.future .ba-col.to{background:#fff;}
+.ba-lbl{
+  font-size:10.5px;font-weight:700;letter-spacing:.11em;color:var(--ink-400);margin-bottom:7px;
+  display:flex;align-items:center;gap:7px;
+}
+.ba-col.to .ba-lbl{color:var(--brand);}
+.ba.done .ba-col.to .ba-lbl{color:var(--ok);}
+.ba-txt{font-size:13px;color:var(--ink-800);line-height:1.65;white-space:pre-line;}
+.ba-txt.muted{color:var(--ink-500);}
+.ba-tags{display:flex;gap:5px;margin-top:9px;flex-wrap:wrap;}
+.ba-mid{
+  display:flex;align-items:center;justify-content:center;background:var(--ink-100);color:var(--ink-400);
+  font-size:16px;font-weight:700;
+}
+.ba.current .ba-mid{background:var(--brand-100);color:var(--brand);}
+.ba.done .ba-mid{background:var(--ok-bd);color:var(--ok);}
+.ba-ft{
+  padding:11px 16px;border-top:1px dashed var(--ink-200);background:#fff;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.ba-ft .k{font-size:10.5px;font-weight:700;letter-spacing:.09em;color:var(--ok);flex:none;padding-top:2px;}
+.ba-ft .v{font-size:12.7px;color:var(--ink-700);line-height:1.6;white-space:pre-line;}
+.ba-ft .v.na{color:var(--ink-400);}
+
+/* roadmap matrix */
+.matrix{margin-top:4px;border:1px solid var(--ink-200);border-radius:6px;overflow:auto;}
+.matrix table{font-size:12.3px;min-width:1180px;}
+.matrix th{background:var(--ink-50);padding:8px 10px;font-size:11.5px;font-weight:700;color:var(--ink-600);
+  border-bottom:1px solid var(--ink-200);text-align:center;white-space:nowrap;}
+.matrix th.lft{text-align:left;}
+.matrix td{padding:7px 10px;border-bottom:1px solid var(--ink-100);text-align:center;vertical-align:top;}
+.matrix td.lft{text-align:left;line-height:1.5;}
+.matrix select.mx-sel{
+  border:1px solid var(--ink-300);border-radius:5px;padding:3px 6px;font-size:11.5px;font-weight:700;
+  color:var(--ink-800);background:#fff;width:100%;
+}
+.matrix select.mx-sel:focus{outline:2px solid var(--brand-100);border-color:var(--brand);}
+.matrix tr:hover td{background:var(--brand-50);}
+.matrix tr:hover td.lft{background:var(--brand-50);}
+.mx-seq{font-family:var(--font-num);font-weight:700;color:var(--brand);font-size:11.5px;margin-right:6px;}
+.mx-task{color:var(--ink-800);}
+.mx-cell{display:inline-block;width:100%;height:16px;border-radius:3px;}
+.mx-cell.fill{box-shadow:inset 0 0 0 1px rgba(255,255,255,.5);}
+.mx-cell.fill.P1{background:var(--p1);}
+.mx-cell.fill.P15{background:var(--p15);}
+.mx-cell.fill.P2{background:var(--p2);}
+.mx-cell.fill.P3{background:var(--p3);}
+.mx-cell.fill.P4{background:var(--p4);}
+.matrix tfoot td{background:var(--ink-50);font-weight:700;font-size:11.5px;color:var(--ink-700);border-top:1px solid var(--ink-200);}
+
+/* change log */
+.log{border:1px solid var(--ink-200);border-radius:6px;overflow:hidden;}
+.log-hd{padding:9px 14px;background:var(--ink-50);border-bottom:1px solid var(--ink-200);display:flex;align-items:center;gap:9px;}
+.log-hd h4{font-size:12.5px;color:var(--ink-700);}
+.log-list{max-height:190px;overflow:auto;}
+.log-item{padding:8px 14px;border-bottom:1px solid var(--ink-100);font-size:12.3px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.log-item:last-child{border-bottom:none;}
+.log-ts{font-size:11px;color:var(--ink-400);font-family:var(--font-num);flex:none;}
+.log-empty{padding:16px 14px;font-size:12.3px;color:var(--ink-400);text-align:center;}
+
+/* ============================================================
+   Memo
+   ============================================================ */
+.memo{margin-top:16px;border:1px solid var(--ink-200);border-radius:6px;background:#fffdf6;overflow:hidden;}
+.memo-hd{
+  padding:8px 13px;background:#fefbf0;border-bottom:1px solid #f2e8cf;
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+}
+.memo-hd h4{font-size:12.3px;color:#93701a;letter-spacing:.01em;}
+.memo-hd .st{font-size:11px;color:var(--ink-400);margin-left:auto;}
+.memo textarea{
+  width:100%;border:none;background:transparent;padding:11px 13px;resize:vertical;min-height:74px;
+  font-size:13px;line-height:1.65;color:var(--ink-800);display:block;
+}
+.memo textarea:focus{outline:none;background:#fffef9;}
+
+/* ============================================================
+   Appendix
+   ============================================================ */
+.issue-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(288px,1fr));gap:12px;}
+.issue{
+  border:1px solid var(--ink-200);border-left:3px solid var(--warn);border-radius:6px;
+  padding:14px 16px;background:#fff;box-shadow:var(--shadow-sm);
+}
+.issue-no{font-size:10.5px;font-weight:700;color:var(--ink-400);font-family:var(--font-num);letter-spacing:.09em;}
+.issue-t{font-size:14px;font-weight:700;color:var(--ink-900);margin-top:3px;line-height:1.4;}
+.issue-d{display:flex;align-items:center;gap:6px;margin-top:9px;font-size:12px;color:var(--ink-600);}
+.issue-d b{color:var(--ink-800);font-weight:700;}
+
+/* ============================================================
+   Snapshot drawer
+   ============================================================ */
+.scrim{position:fixed;inset:0;background:rgba(16,24,40,.42);z-index:90;display:none;}
+.scrim.on{display:block;}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;width:min(460px,94vw);background:#fff;z-index:100;
+  box-shadow:-8px 0 28px rgba(16,24,40,.18);display:flex;flex-direction:column;
+  transform:translateX(102%);transition:transform .26s cubic-bezier(.4,0,.2,1);
+}
+.drawer.on{transform:translateX(0);}
+.dw-hd{padding:16px 20px;border-bottom:1px solid var(--ink-200);display:flex;align-items:center;gap:10px;}
+.dw-hd h3{font-size:15.5px;}
+.dw-hd .x{margin-left:auto;border:none;background:none;font-size:21px;color:var(--ink-400);line-height:1;padding:0 3px;}
+.dw-hd .x:hover{color:var(--ink-800);}
+.dw-bd{flex:1;overflow:auto;padding:18px 20px;}
+.dw-ft{padding:13px 20px;border-top:1px solid var(--ink-200);background:var(--ink-50);display:flex;gap:8px;flex-wrap:wrap;}
+.fld{margin-bottom:14px;}
+.fld label{display:block;font-size:11.8px;font-weight:700;color:var(--ink-600);margin-bottom:5px;}
+.fld input{width:100%;border:1px solid var(--ink-300);border-radius:6px;padding:8px 11px;font-size:13px;}
+.fld input:focus{outline:2px solid var(--brand-100);border-color:var(--brand);}
+.snap{
+  border:1px solid var(--ink-200);border-radius:6px;padding:11px 13px;margin-bottom:9px;background:#fff;
+}
+.snap-t{font-size:13px;font-weight:700;color:var(--ink-900);}
+.snap-m{font-size:11.5px;color:var(--ink-500);margin-top:2px;font-family:var(--font-num);}
+.snap-s{font-size:11.5px;color:var(--ink-500);margin-top:6px;}
+.snap-a{display:flex;gap:6px;margin-top:9px;}
+.empty{padding:26px 10px;text-align:center;color:var(--ink-400);font-size:12.5px;}
+
+/* toast */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--ink-900);color:#fff;padding:11px 20px;border-radius:7px;font-size:13px;font-weight:600;
+  z-index:200;opacity:0;transition:.26s;box-shadow:var(--shadow-lg);pointer-events:none;
+}
+.toast.on{transform:translateX(-50%) translateY(0);opacity:1;}
+
+/* footer */
+.foot{margin-top:34px;padding-top:16px;border-top:1px solid var(--ink-300);font-size:11.5px;color:var(--ink-400);
+  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+
+/* responsive */
+@media (max-width:1180px){
+  .prose-grid{grid-template-columns:1fr;}
+  .meter-row{grid-template-columns:1fr;}
+  .ba-bd{grid-template-columns:1fr;}
+  .ba-col.to{border-left:none;border-top:1px solid var(--ink-200);}
+  .ba-mid{display:none;}
+}
+@media (max-width:820px){
+  .wrap{padding:0 16px 60px;}
+  .topbar,.navbar{padding-left:16px;padding-right:16px;}
+}
+
+/* print */
+@media print{
+  body{background:#fff;font-size:10.5pt;}
+  .btn,.btn-lt,.navbar,.drawer,.scrim,.toast{display:none !important;}
+  .card,.fstep,.ba,.dfstage,.ditem{box-shadow:none;break-inside:avoid;}
+  .flowbar{overflow:visible;}
+  .matrix,.trend{overflow:visible;}
+  .fold>summary{background:#f2f2f2;}
+  .fold>.fold-bd{display:block !important;}
+  .fold-stub{display:none !important;}
+  #phaseSec{display:block !important;}
+  .delta{border-color:#888;}
+  .delta-hd{background:#f2f2f2 !important;color:#111 !important;}
+  .delta-hd h4,.delta-hd .sm{color:#111 !important;}
+  .memo textarea{border:1px solid #ddd;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════ HEADER ══════════════════════════ -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div>
+      <div class="doc-eyebrow">Affiliate Marketing · Process Review</div>
+      <h1 class="doc-title">어필리에이트 마케팅 업무 프로세스 진단 및 단계별 시스템화 추진(안)</h1>
+      <p class="doc-sub">현행 수기 운영 실태 진단 · Phase 기반 개선 로드맵 · 부서 간 협의 필요사항</p>
+      <div class="doc-meta">
+        <span>리뷰 대상 <b>유관부서</b></span>
+        <span>주관 <b>e-컨텐츠실</b></span>
+        <span>기준 자료 <b>어필리에이트 서비스 상세 업무 흐름도.xlsx</b></span>
+        <span>작성일 <b id="docDate">-</b></span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn" id="btnMemoJump">메모 현황</button>
+      <button class="btn" id="btnPrint">인쇄 / PDF</button>
+      <button class="btn btn-solid" id="btnDrawer">시점별 저장 · 이력</button>
+    </div>
+  </div>
+</header>
+
+<nav class="navbar" id="nav">
+  <a href="#sec-overview" class="on">개요 · 목적</a>
+  <a href="#sec-current">1. 현행 업무 상세</a>
+  <a href="#sec-improve">2. 개선 로드맵 (Phase)</a>
+  <a href="#sec-appendix">Appendix. 협의 필요사항</a>
+  <span class="nav-spacer"></span>
+  <span class="nav-note" id="saveState">자동 저장 대기</span>
+</nav>
+
+<div class="wrap">
+
+  <!-- ══════════════════════════ 개요 · 목적 ══════════════════════════ -->
+  <section class="section" id="sec-overview">
+    <div class="card">
+      <div class="card-hd">
+        <span class="sec-no">0</span>
+        <h2 class="sec-title">개요 및 추진 목적</h2>
+        <p class="sec-desc">현 시점 어필리에이트 마케팅 운영 현황과 본 보고의 목적</p>
+      </div>
+      <div class="card-bd">
+        <div class="kpi-row" id="kpiRow"></div>
+
+        <div class="prose-grid" style="margin-top:18px;">
+          <div class="prose-box">
+            <h4>1) 개요</h4>
+            <ul>
+              <li>현재 <b>소스링크</b>를 통해 어필리에이트 마케팅 집행이 가능한 상태입니다.</li>
+              <li>단, 현 버전은 <b>인플루언서가 바이럴한 링크를 통한 주문 발생 여부 추적</b>에 한정되며, 이를 운영하기 위한 <b>업무 프로세스 및 시스템 장치는 부재</b>합니다.</li>
+              <li>이에 따라 기획–섭외–링크 생성–정산 전 과정이 <b>수기(Manual)</b>로 운영되고 있습니다.</li>
+            </ul>
+          </div>
+          <div class="prose-box">
+            <h4>2) 추진 목적</h4>
+            <ul>
+              <li>현행 수기 업무를 <b>업무 흐름 단위로 가시화</b>하여 병목 구간과 리스크를 명확히 식별합니다.</li>
+              <li>어필리에이트 마케팅 특성에 부합하는 <b>신규 프로세스 및 서비스 구축 범위</b>를 정의합니다.</li>
+              <li>투입 대비 효과를 고려한 <b>Phase 기반 단계별 추진 로드맵</b>을 확정합니다.</li>
+              <li>추진에 선행되어야 할 <b>부서 간 협의 사항</b>에 대한 의사결정을 요청합니다.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="memo" data-memo="overview">
+          <div class="memo-hd"><h4>■ 메모 — 개요 · 목적</h4><span class="st"></span></div>
+          <textarea placeholder="리뷰 중 논의된 사항을 기록하십시오. 입력 내용은 자동 저장되며, '시점별 저장'을 통해 특정 시점으로 보존·복원할 수 있습니다."></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════ 1. 현행 업무 상세 ══════════════════════════ -->
+  <section class="section" id="sec-current">
+    <div class="card">
+      <div class="card-hd">
+        <span class="sec-no">1</span>
+        <h2 class="sec-title">현 시점에서의 어필리에이트 마케팅 업무 진행 상세</h2>
+        <p class="sec-desc">업무 흐름(기획 → 섭외 → 링크 생성 → 판매 → 정산) 기준 상세 업무 및 수행 체계</p>
+        <div class="hd-right">
+          <button class="btn-lt" id="btnAllStage">전체 단계 보기</button>
+        </div>
+      </div>
+      <div class="card-bd">
+        <div class="flowbar" id="flowbar"></div>
+        <div class="flow-legend">
+          <span><i class="lg-sw" style="background:var(--manual-bg);border:1px solid var(--manual-bd)"></i>수기 업무 건수</span>
+          <span><i class="lg-sw" style="background:#f4f3ff;border:1px solid #d9d6fe"></i>개선 대상 업무 포함 단계</span>
+          <span><i class="lg-sw" style="background:var(--ink-100);border:1px solid var(--ink-300)"></i>별도 수행 업무 없음</span>
+          <span style="margin-left:auto">순서를 클릭하면 해당 단계의 업무 장표가 하단에 표시됩니다.</span>
+        </div>
+
+        <div class="sheet-hd" id="sheetHd"></div>
+        <div class="tbl-wrap attached">
+          <table class="tbl" id="flowTbl">
+            <thead>
+              <tr>
+                <th style="width:76px">업무 순서</th>
+                <th style="width:104px">업무 타이틀</th>
+                <th style="width:82px">상세 순번</th>
+                <th>업무 상세 내용</th>
+                <th style="width:132px">사용 시스템</th>
+                <th style="width:84px">업무 성격</th>
+                <th style="width:116px">업무 주체</th>
+                <th style="width:118px">개선 계획</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="tbl-cap" id="flowCap"></p>
+
+        <div class="memo" data-memo="current">
+          <div class="memo-hd"><h4>■ 메모 — 현행 업무 상세</h4><span class="st"></span></div>
+          <textarea placeholder="현행 프로세스 관련 논의 사항을 기록하십시오."></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════ 2. 개선 로드맵 ══════════════════════════ -->
+  <section class="section" id="sec-improve">
+    <div class="card">
+      <div class="card-hd">
+        <span class="sec-no">2</span>
+        <h2 class="sec-title">수기 업무 개선 및 신규 서비스 구축 로드맵</h2>
+        <p class="sec-desc">Phase 진행에 따른 수기 업무의 시스템 전환 추이 · Phase 재배정 시 전체 장표에 즉시 반영</p>
+        <div class="hd-right">
+          <button class="btn-lt" id="btnResetPhase">희망 우선순위 원복</button>
+        </div>
+      </div>
+      <div class="card-bd">
+
+        <div class="grp-h" style="margin-top:0">
+          <h4>■ 전체 개선 항목 Phase 배정 현황</h4>
+          <span class="cnt" id="mxCount"></span>
+          <span class="hint">각 항목의 Phase는 아래 상세 카드에서 변경할 수 있습니다.</span>
+        </div>
+        <div class="matrix" id="matrix"></div>
+
+        <div class="grp-h">
+          <h4>■ 수기 업무 Phase 전환 추이</h4>
+          <span class="cnt" id="trCount"></span>
+          <span class="hint">현행 수기 업무 전건이 Phase 진행에 따라 어떻게 전환되는지 한 화면으로 표시합니다.</span>
+        </div>
+        <div class="trend" id="trend"></div>
+        <div class="trend-legend">
+          <span><i class="lg-sw" style="background:var(--p1)"></i>해당 Phase 개선</span>
+          <span><i class="lg-sw" style="background:var(--ok-bg);border:1px solid var(--ok-bd)"></i>기개선 상태 유지</span>
+          <span><i class="lg-sw" style="background:#fff;border:1px solid var(--ink-300)"></i>수기 운영 유지</span>
+          <span style="margin-left:auto">셀을 클릭하면 해당 Phase 상세로 이동합니다.</span>
+        </div>
+
+        <div class="grp-h">
+          <h4>■ Phase별 업무 변화 추이 (AS-IS → TO-BE)</h4>
+          <span class="cnt" id="phaseSecCnt"></span>
+          <span class="hint">Tab 진입 시 해당 Phase 변경분이 먼저 표시되며, 절차 비교·누적 내역은 접혀 있습니다.</span>
+          <button class="btn-lt mini" id="btnPhaseSec">펼쳐보기</button>
+        </div>
+        <div class="fold-stub" id="phaseStub">
+          <span class="ic">▸</span>
+          <span class="tx">Phase 1 ~ Phase 4 상세 내역이 접혀 있습니다.</span>
+          <span class="sub">[펼쳐보기]를 누르거나, 위 전환 추이표의 셀을 클릭하면 해당 Phase가 바로 열립니다.</span>
+        </div>
+        <div id="phaseSec">
+          <div class="phase-tabs" id="phaseTabs"></div>
+          <div class="phase-body" id="phaseBody"></div>
+        </div>
+
+        <div class="grp-h">
+          <h4>■ Phase 변경 이력</h4>
+          <span class="cnt" id="logCount">0건</span>
+          <span class="hint">리뷰 중 변경된 우선순위 내역이 기록됩니다.</span>
+        </div>
+        <div class="log">
+          <div class="log-hd">
+            <h4>변경 일시 · 대상 업무 · 변경 내용</h4>
+            <div style="margin-left:auto"><button class="btn-lt mini" id="btnClearLog">이력 비우기</button></div>
+          </div>
+          <div class="log-list" id="logList"></div>
+        </div>
+
+        <div class="memo" data-memo="improve">
+          <div class="memo-hd"><h4>■ 메모 — 개선 로드맵 (전체)</h4><span class="st"></span></div>
+          <textarea placeholder="로드맵 전반에 대한 논의 사항 및 의사결정 내용을 기록하십시오."></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════ Appendix ══════════════════════════ -->
+  <section class="section" id="sec-appendix">
+    <div class="card">
+      <div class="card-hd">
+        <span class="sec-no">A</span>
+        <h2 class="sec-title">Appendix. 협의 필요 사항</h2>
+        <p class="sec-desc">추진에 선행되어야 할 관계 부서 협의 및 의사결정 필요 항목</p>
+      </div>
+      <div class="card-bd">
+        <div class="issue-grid" id="issueGrid"></div>
+        <div class="memo" data-memo="appendix">
+          <div class="memo-hd"><h4>■ 메모 — 협의 필요 사항</h4><span class="st"></span></div>
+          <textarea placeholder="부서별 협의 진행 상황 및 결론을 기록하십시오."></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    <span>어필리에이트 마케팅 업무 프로세스 진단 및 단계별 시스템화 추진(안) · e-컨텐츠실</span>
+    <span>본 리포트의 수치 및 업무 내역은 「어필리에이트 서비스 상세 업무 흐름도.xlsx」 원본을 기준으로 산출되었습니다.</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════ Drawer ══════════════════════════ -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer">
+  <div class="dw-hd">
+    <h3>시점별 저장 및 이력 관리</h3>
+    <button class="x" id="btnDwClose" title="닫기">&times;</button>
+  </div>
+  <div class="dw-bd">
+    <div class="fld">
+      <label>저장 시점 명칭</label>
+      <input type="text" id="snapName" placeholder="예) 1차 실무 리뷰 반영본">
+    </div>
+    <button class="btn-lt primary" id="btnSnapSave" style="width:100%;padding:9px">현재 상태를 시점으로 저장</button>
+    <p style="font-size:11.5px;color:var(--ink-500);margin-top:9px;line-height:1.6">
+      저장 대상: 전체 메모, Phase 배정 현황, 변경 이력. 저장본은 브라우저에 보존되며 JSON 파일로 내보내어 타 PC·참석자와 공유할 수 있습니다.
+    </p>
+    <div class="grp-h" style="margin-top:22px"><h4>저장된 시점</h4><span class="cnt" id="snapCount">0건</span></div>
+    <div id="snapList"></div>
+  </div>
+  <div class="dw-ft">
+    <button class="btn-lt" id="btnExport">JSON 내보내기</button>
+    <button class="btn-lt" id="btnImport">JSON 가져오기</button>
+    <input type="file" id="fileImport" accept="application/json,.json" style="display:none">
+    <button class="btn-lt danger" id="btnWipe" style="margin-left:auto">전체 초기화</button>
+  </div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<!-- ============================================================
+     MODULE 1 : DataModule — 원본 엑셀 정규화 데이터
+     ============================================================ -->
+<script>
+const DataModule = (function(){
+  "use strict";
+
+  /* 1번 장표: 현행 업무 상세 (엑셀 B2:H24)
+     depth 1 = 실행 업무 / depth 0 = 업무 묶음(그룹) 행 */
+  const stages = [
+    { no:1, title:"기획", items:[
+      { seq:"1-1", detail:"프로모션 기획", system:"-", nature:"수기", owner:"e-컨텐츠실", depth:1 },
+      { seq:"1-2", detail:"섭외 대상 인플루언서 및 수수료 배부율 협의 (w.브랜드 사업부)", system:"-", nature:"수기", owner:"e-컨텐츠실", depth:1 }
+    ]},
+    { no:2, title:"섭외", items:[
+      { seq:"2-1",   detail:"섭외 대상 컨텍", system:"", nature:"", owner:"", depth:0 },
+      { seq:"2-1-1", detail:"어필리에이트 마케팅 진행 의사 확인", system:"인스타그램", nature:"수기", owner:"e-컨텐츠실", depth:1 },
+      { seq:"2-1-2", detail:"수수료 협의", system:"인스타그램", nature:"수기", owner:"e-컨텐츠실", depth:1 },
+      { seq:"2-2",   detail:"SNS 채널 정보 및 정산을 위한 정보 수집 (사업자등록증, 신분증, 통장사본)", system:"이메일", nature:"수기", owner:"e-컨텐츠실", depth:1 },
+      { seq:"2-3",   detail:"전자계약 체결", system:"CS Bill", nature:"수기", owner:"e-컨텐츠실", depth:1 },
+      { seq:"2-4",   detail:"PLAS 거래선 등록", system:"LF on > PLAS", nature:"수기", owner:"e-컨텐츠실", depth:1 }
+    ]},
+    { no:3, title:"링크 생성", items:[
+      { seq:"3-1", detail:"크리에이터 등록", system:"소스링크", nature:"수기", owner:"e-컨텐츠실", depth:1 },
+      { seq:"3-2", detail:"상품 등록", system:"소스링크", nature:"수기", owner:"e-컨텐츠실", depth:1 },
+      { seq:"3-3", detail:"캠페인 링크 생성", system:"소스링크", nature:"수기", owner:"e-컨텐츠실", depth:1 },
+      { seq:"3-4", detail:"링크 전달", system:"인스타그램", nature:"수기", owner:"e-컨텐츠실", depth:1 }
+    ]},
+    { no:4, title:"판매", items:[], idle:true, idleNote:"별도 수행 업무 없음 (LFmall 주문 발생 구간)" },
+    { no:5, title:"정산", items:[
+      { seq:"5-1",   detail:"수수료 대금 지급 정산 업무", system:"", nature:"", owner:"", depth:0 },
+      { seq:"5-1-1", detail:"LFmall 주문데이터 추출", system:"-", nature:"수기", owner:"e-커머스개발실", depth:1 },
+      { seq:"5-1-2", detail:"소스링크 판매데이터 다운로드", system:"소스링크", nature:"수기", owner:"e-컨텐츠실", depth:1 },
+      { seq:"5-1-3", detail:"대사 및 인플루언서 별 수수료 정산 금액 산출", system:"-", nature:"수기", owner:"e-컨텐츠실", depth:1 },
+      { seq:"5-1-4", detail:"기안서 작성 (대금지급 증빙용)", system:"LF on > 전자결재", nature:"수기", owner:"e-컨텐츠실", depth:1 },
+      { seq:"5-1-5", detail:"PLAS 전표 상신 (대금 지급 전표 상신)", system:"LF on > PLAS", nature:"수기", owner:"e-컨텐츠실", depth:1 },
+      { seq:"5-2",   detail:"수수료 내부 배분 (온라인사업부 : 브랜드사업부)", system:"", nature:"", owner:"", depth:0 },
+      { seq:"5-2-1", detail:"브랜드사업부 별 배분 금액 산출", system:"LF on > PLAS", nature:"수기", owner:"e-컨텐츠실", depth:1 },
+      { seq:"5-2-2", detail:"PLAS 전표 상신 (내부 배분용)", system:"LF on > PLAS", nature:"수기", owner:"e-컨텐츠실", depth:1 }
+    ]}
+  ];
+
+  /* Phase 정의 */
+  const phases = [
+    { id:"PHASE 1",   key:"P1",  label:"Phase 1",   cls:"P1",  desc:"어필리에이트 서비스 가입·계약 프로세스 시스템화" },
+    { id:"PHASE 1.5", key:"P15", label:"Phase 1.5", cls:"P15", desc:"가입자(회원) 대상 정보 제공 화면 확보 및 법무 검토 이행" },
+    { id:"PHASE 2",   key:"P2",  label:"Phase 2",   cls:"P2",  desc:"인플루언서 풀 조회 서비스 신설로 섭외 협의 체계화" },
+    { id:"PHASE 3",   key:"P3",  label:"Phase 3",   cls:"P3",  desc:"수수료 대금 지급 전표 생성 자동화" },
+    { id:"PHASE 4",   key:"P4",  label:"Phase 4",   cls:"P4",  desc:"수수료 내부 배분 전표 생성 자동화" }
+  ];
+
+  /* 2번 장표: 개선 항목 (엑셀 B28:K34) — originPhase = 원본 '희망 우선순위' */
+  const improvements = [
+    { id:"IMP-01", stageNo:1, stageTitle:"기획", seq:"1-2",
+      task:"섭외 대상 인플루언서 및 수수료 배부율 협의 (w.브랜드 사업부)",
+      direction:"인플루언서 풀 조회 서비스 신설 — 브랜드사업부 협의 기준 화면 제공",
+      asIs:"브랜드사업부와 별도 소통 채널을 통해 섭외 대상 및 수수료 배부율을 협의",
+      asIsSystem:"-", asIsNature:"수기", owner:"e-컨텐츠실",
+      toBe:"· LFmall 인플루언서 풀을 확인할 수 있는 서비스 신설\n  (브랜드사업부와 섭외 대상 소통 시 해당 화면을 기준으로 소통)",
+      toBeSystem:"신규 서비스", effect:"시스템을 이용한 원활한 섭외 대상 협의 가능",
+      originPhase:"PHASE 2" },
+
+    { id:"IMP-02", stageNo:2, stageTitle:"섭외", seq:"2-2",
+      task:"SNS 채널 정보 및 정산을 위한 정보 수집 (사업자등록증, 신분증, 통장사본)",
+      direction:"가입 신청 WEB 화면 신설 — 정산 자료 온라인 제출 및 DB화",
+      asIs:"이메일을 통해 인플루언서별 정산 필요 서류를 개별 수집",
+      asIsSystem:"이메일", asIsNature:"수기", owner:"e-컨텐츠실",
+      toBe:"· 어필리에이트 서비스 가입 신청용 WEB 화면 신설\n· 가입 신청 시 정산을 위한 자료 제출 (첨부파일)",
+      toBeSystem:"신규 WEB 화면", effect:"인플루언서 정산 정보의 DB화 가능\n수기 수집 업무 개선",
+      originPhase:"PHASE 1" },
+
+    { id:"IMP-03", stageNo:2, stageTitle:"섭외", seq:"2-3",
+      task:"전자계약 체결",
+      direction:"전자계약 → 이용약관 동의로 프로세스 전환",
+      asIs:"CS Bill을 통해 인플루언서별 전자계약을 개별 체결",
+      asIsSystem:"CS Bill", asIsNature:"수기", owner:"e-컨텐츠실",
+      toBe:"· 전자계약 대신 '이용약관' 동의로 프로세스 변경",
+      toBeSystem:"약관 동의", effect:"인플루언서 별 전자계약 업무 리소스 감소\n전자계약서 이용 비용 절감\n상호간(인플루언서 : LF) 업무 편의성 제공",
+      originPhase:"PHASE 1" },
+
+    { id:"IMP-04", stageNo:2, stageTitle:"섭외", seq:"2-3",
+      task:"전자계약 체결 — 가입자 정보 제공 화면",
+      direction:"LFmall 마이페이지에 약관·가입 승인 여부·지급 수수료 확인 화면 신설",
+      asIs:"약관·가입 승인 여부·지급 수수료를 이메일로 개별 안내",
+      asIsSystem:"이메일", asIsNature:"수기", owner:"e-컨텐츠실",
+      toBe:"· 어필리에이트 서비스 가입자(LFmall 회원)도 약관, 가입 승인 여부, 지급 수수료를 확인할 수 있는 화면 필요 (법무BSU 검토 내용)\n· LFmall 마이페이지 신규 메뉴로 검토\n\n※ PHASE 1 오픈 시, 1.5 진행 전까지 '약관 및 수수료'는 인플루언서 이메일로 발송",
+      toBeSystem:"LFmall 마이페이지", effect:"법무 검토 이행\n추후 '크리에이터 마켓' 기능 확대를 위한 발판 마련",
+      originPhase:"PHASE 1.5" },
+
+    { id:"IMP-05", stageNo:5, stageTitle:"정산", seq:"5-1-5",
+      task:"PLAS 전표 상신 (대금 지급 전표 상신)",
+      direction:"대금 지급 정산 전표 생성 자동화 프로세스 신설",
+      asIs:"산출된 수수료 정산 금액을 기준으로 PLAS 지급 전표를 수기 상신",
+      asIsSystem:"LF on > PLAS", asIsNature:"수기", owner:"e-컨텐츠실",
+      toBe:"· 정산 전표 생성 자동화 프로세스 신설",
+      toBeSystem:"LF on > PLAS (자동화)", effect:"", effectNote:"원본 장표 미기재 — 리뷰 시 보완 필요",
+      originPhase:"PHASE 3" },
+
+    { id:"IMP-06", stageNo:5, stageTitle:"정산", seq:"5-2-2",
+      task:"PLAS 전표 상신 (내부 배분용)",
+      direction:"내부 배분 정산 전표 생성 자동화 프로세스 신설",
+      asIs:"브랜드사업부별 배분 금액을 기준으로 PLAS 내부 배분 전표를 수기 상신",
+      asIsSystem:"LF on > PLAS", asIsNature:"수기", owner:"e-컨텐츠실",
+      toBe:"· 정산 전표 생성 자동화 프로세스 신설",
+      toBeSystem:"LF on > PLAS (자동화)", effect:"", effectNote:"원본 장표 미기재 — 리뷰 시 보완 필요",
+      originPhase:"PHASE 4" }
+  ];
+
+  /* 3번: 협의 필요 사항 (엑셀 B39:E43) */
+  const issues = [
+    { no:1, dept:"마케팅실 / 경영기획 BSU", issue:"온라인사업부 판직비 발생" },
+    { no:2, dept:"마케팅실", issue:"인플루언서 수수료 테이블" },
+    { no:3, dept:"마케팅실", issue:"인플루언서 수수료 지급 한도" },
+    { no:4, dept:"법무BSU", issue:"전자계약 / 약관동의 검토" }
+  ];
+
+  /* ---- 파생 지표 ---- */
+  function allTasks(){
+    const out=[];
+    stages.forEach(function(s){
+      s.items.forEach(function(i){
+        if(i.depth===1) out.push(Object.assign({stageNo:s.no,stageTitle:s.title},i));
+      });
+    });
+    return out;
+  }
+  const tasks = allTasks();
+  const manualCount = tasks.filter(function(t){ return t.nature==="수기"; }).length;
+  const systemsUsed = Array.from(new Set(tasks.map(function(t){return t.system;}).filter(function(s){ return s && s!=="-"; })));
+  const targetSeqs  = Array.from(new Set(improvements.map(function(i){return i.seq;})));
+
+  function phaseIndex(id){ return phases.findIndex(function(p){return p.id===id;}); }
+  function phaseCls(id){ const p=phases.find(function(x){return x.id===id;}); return p?p.cls:"P4"; }
+  function phaseLabel(id){ const p=phases.find(function(x){return x.id===id;}); return p?p.label:id; }
+
+  return { stages, phases, improvements, issues, tasks,
+           manualCount, systemsUsed, targetSeqs,
+           phaseIndex, phaseCls, phaseLabel };
+})();
+</script>
+
+<!-- ============================================================
+     MODULE 2 : Utils
+     ============================================================ -->
+<script>
+const Utils = (function(){
+  "use strict";
+  function esc(s){
+    return String(s==null?"":s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function p2(n){ return n<10?"0"+n:""+n; }
+  function fmtDT(d){
+    d = (d instanceof Date)?d:new Date(d);
+    return d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate())+" "+p2(d.getHours())+":"+p2(d.getMinutes());
+  }
+  function fmtDate(d){
+    d = (d instanceof Date)?d:new Date(d);
+    return d.getFullYear()+"년 "+(d.getMonth()+1)+"월 "+d.getDate()+"일";
+  }
+  function natureBadge(n){
+    if(n==="수기") return '<span class="bdg bdg-manual">수기</span>';
+    if(!n || n==="-") return '<span class="bdg bdg-none">-</span>';
+    return '<span class="bdg bdg-sys">'+esc(n)+'</span>';
+  }
+  function sysBadge(s){
+    if(!s || s==="-") return '<span class="bdg bdg-none">시스템 미사용</span>';
+    return '<span class="bdg bdg-sys">'+esc(s)+'</span>';
+  }
+  function download(name, text, mime){
+    const b = new Blob([text], {type:(mime||"application/json")+";charset=utf-8"});
+    const u = URL.createObjectURL(b);
+    const a = document.createElement("a");
+    a.href=u; a.download=name; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(u); a.remove(); },120);
+  }
+  return { esc, fmtDT, fmtDate, natureBadge, sysBadge, download };
+})();
+</script>
+
+<!-- ============================================================
+     MODULE 3 : StateStore — 상태 · 자동저장 · 스냅샷
+     ============================================================ -->
+<script>
+const StateStore = (function(D){
+  "use strict";
+  const KEY  = "affiliate_process_report_v1";
+  const SKEY = "affiliate_process_report_snapshots_v1";
+
+  const listeners = [];
+  let state = defaults();
+
+  function defaults(){
+    const pa = {};
+    D.improvements.forEach(function(i){ pa[i.id]=i.originPhase; });
+    return { phaseAssign:pa, memos:{}, log:[], activePhase:D.phases[0].id, phaseOpen:false, updatedAt:null };
+  }
+  function safeParse(s){ try{ return JSON.parse(s); }catch(e){ return null; } }
+
+  function load(){
+    let raw=null;
+    try{ raw = localStorage.getItem(KEY); }catch(e){ return; }
+    if(!raw) return;
+    const o = safeParse(raw);
+    if(!o) return;
+    const base = defaults();
+    state = {
+      phaseAssign: Object.assign(base.phaseAssign, o.phaseAssign||{}),
+      memos: o.memos||{},
+      log: Array.isArray(o.log)?o.log:[],
+      activePhase: o.activePhase||base.activePhase,
+      phaseOpen: (typeof o.phaseOpen==="boolean")?o.phaseOpen:base.phaseOpen,
+      updatedAt: o.updatedAt||null
+    };
+  }
+
+  let t=null;
+  function persist(){
+    state.updatedAt = new Date().toISOString();
+    clearTimeout(t);
+    t = setTimeout(function(){
+      try{
+        localStorage.setItem(KEY, JSON.stringify(state));
+        UI.flagSaved(state.updatedAt);
+      }catch(e){ UI.toast("브라우저 저장 공간에 기록하지 못했습니다."); }
+    },220);
+  }
+
+  function emit(reason){ listeners.forEach(function(f){ f(state,reason); }); }
+  function subscribe(f){ listeners.push(f); }
+
+  function setPhase(id, next){
+    const prev = state.phaseAssign[id];
+    if(prev===next) return;
+    state.phaseAssign[id]=next;
+    const imp = D.improvements.find(function(i){return i.id===id;});
+    state.log.unshift({ ts:new Date().toISOString(), id:id, seq:imp?imp.seq:"", task:imp?imp.task:"", from:prev, to:next });
+    if(state.log.length>200) state.log.length=200;
+    persist(); emit("phase");
+  }
+  function setMemo(k,v){ state.memos[k]=v; persist(); emit("memo-silent"); }
+  function setActivePhase(p){ state.activePhase=p; persist(); emit("tab"); }
+  function setPhaseOpen(v){ state.phaseOpen=!!v; persist(); emit("secfold"); }
+  function clearLog(){ state.log=[]; persist(); emit("log"); }
+  function resetPhases(){
+    const base = defaults();
+    state.phaseAssign = base.phaseAssign;
+    state.log.unshift({ ts:new Date().toISOString(), id:"*", seq:"", task:"전체 항목", from:"변경 상태", to:"원본 희망 우선순위" });
+    persist(); emit("phase");
+  }
+  function wipe(){
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    state = defaults();
+    emit("wipe");
+  }
+  function replace(obj){
+    const base = defaults();
+    state = {
+      phaseAssign: Object.assign(base.phaseAssign, obj.phaseAssign||{}),
+      memos: obj.memos||{},
+      log: Array.isArray(obj.log)?obj.log:[],
+      activePhase: obj.activePhase||base.activePhase,
+      phaseOpen: (typeof obj.phaseOpen==="boolean")?obj.phaseOpen:base.phaseOpen,
+      updatedAt: new Date().toISOString()
+    };
+    persist(); emit("replace");
+  }
+
+  function snapshots(){
+    let o=null;
+    try{ o = safeParse(localStorage.getItem(SKEY)); }catch(e){}
+    return Array.isArray(o)?o:[];
+  }
+  function writeSnapshots(a){ try{ localStorage.setItem(SKEY, JSON.stringify(a)); }catch(e){ UI.toast("저장 공간이 부족합니다."); } }
+  function saveSnapshot(name){
+    const list = snapshots();
+    list.unshift({
+      sid:"S"+Date.now(),
+      name:(name||"").trim() || ("무제 시점 " + Utils.fmtDT(new Date())),
+      ts:new Date().toISOString(),
+      data:JSON.parse(JSON.stringify({phaseAssign:state.phaseAssign, memos:state.memos, log:state.log, activePhase:state.activePhase}))
+    });
+    if(list.length>60) list.length=60;
+    writeSnapshots(list);
+    emit("snap");
+    return list[0];
+  }
+  function removeSnapshot(sid){
+    writeSnapshots(snapshots().filter(function(s){return s.sid!==sid;}));
+    emit("snap");
+  }
+  function restoreSnapshot(sid){
+    const s = snapshots().find(function(x){return x.sid===sid;});
+    if(!s) return false;
+    replace(s.data);
+    return true;
+  }
+  function wipeSnapshots(){ try{ localStorage.removeItem(SKEY); }catch(e){} emit("snap"); }
+  function mergeSnapshots(arr){
+    const cur = snapshots();
+    const ids = {};
+    cur.forEach(function(x){ ids[x.sid]=1; });
+    arr.forEach(function(s){ if(s && s.sid && !ids[s.sid]) cur.push(s); });
+    writeSnapshots(cur);
+  }
+
+  function get(){ return state; }
+  function bundle(){
+    return { meta:{ app:"affiliate-process-report", version:1, exportedAt:new Date().toISOString() },
+             current:state, snapshots:snapshots() };
+  }
+
+  return { load, get, subscribe, emit, setPhase, setMemo, setActivePhase, setPhaseOpen, clearLog, resetPhases,
+           wipe, replace, snapshots, saveSnapshot, removeSnapshot, restoreSnapshot,
+           wipeSnapshots, mergeSnapshots, bundle };
+})(DataModule);
+</script>
+
+<!-- ============================================================
+     MODULE 4 : MemoModule — 메모 자동 저장
+     ============================================================ -->
+<script>
+const MemoModule = (function(){
+  "use strict";
+  function paint(ta,st){
+    const v = ta.value.trim();
+    st.textContent = v ? (v.length+"자 · 자동 저장됨") : "미입력";
+  }
+  function bind(root){
+    (root||document).querySelectorAll(".memo[data-memo]").forEach(function(box){
+      const key = box.dataset.memo;
+      const ta  = box.querySelector("textarea");
+      const st  = box.querySelector(".st");
+      if(ta.dataset.bound){ paint(ta,st); return; }
+      ta.dataset.bound="1";
+      ta.value = StateStore.get().memos[key]||"";
+      paint(ta,st);
+      let t=null;
+      ta.addEventListener("input", function(){
+        st.textContent="입력 중…";
+        clearTimeout(t);
+        t=setTimeout(function(){ StateStore.setMemo(key, ta.value); paint(ta,st); },400);
+      });
+    });
+  }
+  function refreshAll(){
+    document.querySelectorAll(".memo[data-memo]").forEach(function(box){
+      const key=box.dataset.memo, ta=box.querySelector("textarea"), st=box.querySelector(".st");
+      ta.value = StateStore.get().memos[key]||"";
+      paint(ta,st);
+    });
+  }
+  function summary(){
+    const m = StateStore.get().memos;
+    const filled = Object.keys(m).filter(function(k){ return (m[k]||"").trim().length; });
+    return { count:filled.length, keys:filled };
+  }
+  return { bind, refreshAll, summary };
+})();
+</script>
+
+<!-- ============================================================
+     MODULE 5 : FlowView — 1번 장표 (수평 스윔레인 파이프라인)
+     ============================================================ -->
+<script>
+const FlowView = (function(D,U){
+  "use strict";
+  let activeStage = null;
+
+  function targetPhaseOf(seq){
+    const st = StateStore.get().phaseAssign;
+    const hits = D.improvements.filter(function(i){return i.seq===seq;}).map(function(i){return st[i.id];});
+    if(!hits.length) return null;
+    hits.sort(function(a,b){ return D.phaseIndex(a)-D.phaseIndex(b); });
+    return hits[0];
+  }
+
+  /* 단계 요약 지표 */
+  function statOf(s){
+    const exec   = s.items.filter(function(i){return i.depth===1;});
+    const manual = exec.filter(function(i){return i.nature==="수기";}).length;
+    const sys    = Array.from(new Set(exec.map(function(i){return i.system;})
+                     .filter(function(x){return x && x!=="-";})));
+    const owners = Array.from(new Set(exec.map(function(i){return i.owner;}).filter(Boolean)));
+    const tgt    = exec.filter(function(i){return !!targetPhaseOf(i.seq);}).length;
+    return { exec:exec.length, manual:manual, sys:sys, owners:owners, tgt:tgt };
+  }
+
+  /* 순서도 (Flowbar) — 단계 요약만 표시, 상세는 하단 장표에서 안내 */
+  function renderFlowbar(){
+    const host = document.getElementById("flowbar");
+    let html = "";
+    D.stages.forEach(function(s,idx){
+      const st  = statOf(s);
+      const cls = ["fstep", s.idle?"idle":"", activeStage===s.no?"on":""].join(" ");
+      html += '<button class="'+cls+'" data-stage="'+s.no+'" type="button">';
+      html +=   '<span class="fs-top"><span class="fs-n">'+s.no+'</span><span class="fs-t">'+U.esc(s.title)+'</span></span>';
+      html +=   '<span class="fs-m">'+(s.idle ? "수행 업무 없음" : ("상세 업무 "+st.exec+"건"))+'</span>';
+      html +=   '<span class="fs-b">';
+      if(s.idle){
+        html +=   '<span class="bdg bdg-none">주문 발생 구간</span>';
+      }else{
+        html +=   '<span class="bdg bdg-manual">수기 '+st.manual+'건</span>';
+        if(st.tgt) html += '<span class="bdg bdg-tgt">개선 '+st.tgt+'건</span>';
+      }
+      html +=   '</span>';
+      html += '</button>';
+      if(idx < D.stages.length-1) html += '<span class="fs-arrow">&#10148;</span>';
+    });
+    host.innerHTML = html;
+
+    host.querySelectorAll(".fstep").forEach(function(el){
+      el.addEventListener("click", function(){
+        const n = Number(el.dataset.stage);
+        activeStage = (activeStage===n)?null:n;
+        renderFlowbar(); renderTable();
+      });
+    });
+  }
+
+  /* 선택 단계의 장표 헤더 */
+  function renderSheetHead(){
+    const host = document.getElementById("sheetHd");
+    if(!activeStage){
+      host.innerHTML = '<span class="sn">全</span><span class="st2">전체 단계 업무 장표</span>'
+        + '<span class="sm">실행 업무 '+D.tasks.length+'건 · 전량 수기 운영</span>'
+        + '<span class="sr"><span class="bdg bdg-none">순서를 클릭하면 단계별 장표로 전환됩니다</span></span>';
+      return;
+    }
+    const s  = D.stages.find(function(x){return x.no===activeStage;});
+    const st = statOf(s);
+    let h = '<span class="sn">'+s.no+'</span><span class="st2">'+U.esc(s.title)+' 단계 업무 장표</span>';
+    if(s.idle){
+      h += '<span class="sm">'+U.esc(s.idleNote)+'</span>';
+    }else{
+      h += '<span class="sm">상세 업무 '+st.exec+'건 · 수기 '+st.manual+'건 · 수행 주체 '+U.esc(st.owners.join(", "))+'</span>';
+    }
+    h += '<span class="sr">';
+    if(st.tgt) h += '<span class="bdg bdg-tgt">개선 대상 '+st.tgt+'건</span>';
+    h += (st.sys.length ? st.sys.map(function(x){return '<span class="bdg bdg-sys">'+U.esc(x)+'</span>';}).join("")
+                        : '<span class="bdg bdg-none">시스템 미사용</span>');
+    h += '</span>';
+    host.innerHTML = h;
+  }
+
+  function renderTable(){
+    renderSheetHead();
+    const tb = document.querySelector("#flowTbl tbody");
+    let html="", shown=0;
+    D.stages.forEach(function(s){
+      if(activeStage && s.no!==activeStage) return;
+      if(s.idle){
+        shown++;
+        html += '<tr class="dim"><td class="c-ctr">'+s.no+'</td><td class="c-stage">'+U.esc(s.title)+'</td>'+
+                '<td class="c-seq">-</td><td>'+U.esc(s.idleNote)+'</td><td class="c-ctr">-</td>'+
+                '<td class="c-ctr">-</td><td class="c-ctr">-</td><td class="c-ctr">-</td></tr>';
+        return;
+      }
+      s.items.forEach(function(it,i){
+        shown++;
+        const tp = it.depth===1 ? targetPhaseOf(it.seq) : null;
+        const rc = it.depth===0 ? "grp-row" : (tp?"tgt-row":"");
+        html += '<tr class="'+rc+'">';
+        html +=   '<td class="c-ctr">'+(i===0?s.no:"")+'</td>';
+        html +=   '<td class="c-stage">'+(i===0?U.esc(s.title):"")+'</td>';
+        html +=   '<td class="c-seq">'+U.esc(it.seq)+'</td>';
+        html +=   '<td class="'+(/-\d-\d$/.test(it.seq)?"indent":"")+'">'+U.esc(it.detail)+'</td>';
+        if(it.depth===0){
+          html += '<td class="c-ctr" colspan="4" style="color:var(--ink-400)">하위 상세 업무 참조</td>';
+        }else{
+          html += '<td class="c-ctr">'+U.sysBadge(it.system)+'</td>';
+          html += '<td class="c-ctr">'+U.natureBadge(it.nature)+'</td>';
+          html += '<td class="c-ctr">'+U.esc(it.owner)+'</td>';
+          html += '<td class="c-ctr">'+(tp?'<span class="bdg bdg-p '+D.phaseCls(tp)+'">'+U.esc(D.phaseLabel(tp))+'</span>'
+                                          :'<span class="bdg bdg-none">해당 없음</span>')+'</td>';
+        }
+        html += '</tr>';
+      });
+    });
+    tb.innerHTML = html;
+    const cap = document.getElementById("flowCap");
+    if(activeStage){
+      const st = D.stages.find(function(s){return s.no===activeStage;});
+      cap.textContent = "'"+st.title+"' 단계 기준 "+shown+"행 표시 중 · 전체 보기는 우측 상단 버튼을 이용하십시오.";
+    }else{
+      cap.textContent = "전체 "+shown+"행 표시 · 실행 업무 "+D.tasks.length+"건(전량 수기), 업무 묶음 3건, 판매 단계 1행 포함";
+    }
+  }
+
+  function showAll(){ activeStage=null; renderFlowbar(); renderTable(); }
+  function render(){ renderFlowbar(); renderTable(); }
+  return { render, showAll };
+})(DataModule, Utils);
+</script>
+
+<!-- ============================================================
+     MODULE 6 : PhaseView — 2번 장표 (Phase Tab · Before/After · 재배정)
+     ============================================================ -->
+<script>
+const PhaseView = (function(D,U){
+  "use strict";
+
+  function assign(){ return StateStore.get().phaseAssign; }
+  function itemsOf(pid){
+    const a=assign();
+    return D.improvements.filter(function(i){ return a[i.id]===pid; });
+  }
+
+  function cumulative(pid){
+    const a=assign(), idx = D.phaseIndex(pid);
+    const done = D.improvements.filter(function(i){ return D.phaseIndex(a[i.id])<=idx; });
+    const seqs = Array.from(new Set(done.map(function(i){return i.seq;})));
+    return { doneItems:done.length, totalItems:D.improvements.length,
+             improvedTasks:seqs.length, manualLeft:D.manualCount-seqs.length };
+  }
+
+  function renderMatrix(){
+    const host = document.getElementById("matrix");
+    const a = assign();
+    let h = '<table><thead><tr>'
+          + '<th class="lft" style="width:64px">업무 단계</th>'
+          + '<th style="width:70px">상세 순번</th>'
+          + '<th class="lft" style="min-width:250px">개선 대상 업무</th>'
+          + '<th class="lft" style="min-width:280px">개선 방향</th>';
+    D.phases.forEach(function(p){ h+='<th style="width:74px">'+U.esc(p.label)+'</th>'; });
+    h += '<th style="width:118px">배정 Phase</th></tr></thead><tbody>';
+
+    const sorted = D.improvements.slice().sort(function(x,y){
+      const d = D.phaseIndex(a[x.id])-D.phaseIndex(a[y.id]);
+      return d!==0?d:x.id.localeCompare(y.id);
+    });
+    sorted.forEach(function(i){
+      const cur = a[i.id];
+      h += '<tr>';
+      h +=   '<td class="lft"><span style="font-weight:700;color:var(--ink-800)">'+i.stageNo+'. '+U.esc(i.stageTitle)+'</span></td>';
+      h +=   '<td><span class="mx-seq">'+U.esc(i.seq)+'</span></td>';
+      h +=   '<td class="lft"><span class="mx-task">'+U.esc(i.task)+'</span>'
+         +     (cur!==i.originPhase ? ' <span class="moved">변경</span>' : '')+'</td>';
+      h +=   '<td class="lft"><span style="color:var(--ink-700)">'+U.esc(i.direction)+'</span>'
+         +     '<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">'
+         +     U.sysBadge(i.asIsSystem)+'<span style="color:var(--ink-400);font-size:10.5px">&#10148;</span>'
+         +     '<span class="bdg bdg-sys">'+U.esc(i.toBeSystem)+'</span></div></td>';
+      D.phases.forEach(function(p){
+        h += '<td>'+(p.id===cur?'<span class="mx-cell fill '+p.cls+'"></span>':'<span class="mx-cell"></span>')+'</td>';
+      });
+      h +=   '<td><select class="mx-sel" data-imp="'+i.id+'">'
+         +     D.phases.map(function(p){
+                 return '<option value="'+p.id+'"'+(p.id===cur?" selected":"")+'>'+U.esc(p.label)+'</option>';
+               }).join("")
+         +     '</select></td>';
+      h += '</tr>';
+    });
+    h += '</tbody><tfoot><tr><td class="lft" colspan="4">Phase별 개선 항목 수</td>';
+    D.phases.forEach(function(p){ h+='<td>'+itemsOf(p.id).length+'건</td>'; });
+    h += '<td>'+D.improvements.length+'건</td></tr></tfoot></table>';
+    host.innerHTML = h;
+    document.getElementById("mxCount").textContent = "총 "+D.improvements.length+"항목 / 대상 업무 "+D.targetSeqs.length+"건";
+
+    host.querySelectorAll("select.mx-sel").forEach(function(sel){
+      sel.addEventListener("change", function(){
+        StateStore.setPhase(sel.dataset.imp, sel.value);
+        UI.toast(sel.dataset.imp+" 항목이 "+D.phaseLabel(sel.value)+"(으)로 재배정되었습니다.");
+      });
+    });
+  }
+
+  function renderTabs(){
+    const host = document.getElementById("phaseTabs");
+    const act = StateStore.get().activePhase;
+    host.innerHTML = D.phases.map(function(p){
+      return '<button class="ptab '+(p.id===act?"on":"")+'" data-p="'+p.id+'">'
+           + '<i class="dot"></i>'+U.esc(p.label)+'<span class="n">'+itemsOf(p.id).length+'</span></button>';
+    }).join("");
+    host.querySelectorAll(".ptab").forEach(function(b){
+      b.addEventListener("click", function(){ StateStore.setActivePhase(b.dataset.p); });
+    });
+  }
+
+  /* 접기 섹션 열림 상태 (렌더 간 유지) */
+  const openSec = { flow:false, cum:false, detail:false };
+
+  /* ---------- 수기 업무 Phase 전환 추이 매트릭스 ----------
+     행 = 현행 수기 실행 업무 전건, 열 = Phase. 스크롤 없이 전 구간 추이를 대비 */
+  function renderTrend(){
+    const host = document.getElementById("trend");
+    if(!host) return;
+    const a   = assign();
+    const act = StateStore.get().activePhase;
+
+    /* 업무별 개선 Phase(최초 시점) 산출 */
+    function ownerPhase(seq){
+      const hits = D.improvements.filter(function(x){return x.seq===seq;})
+                    .map(function(x){return a[x.id];});
+      if(!hits.length) return null;
+      hits.sort(function(p,q){ return D.phaseIndex(p)-D.phaseIndex(q); });
+      return hits[0];
+    }
+
+    let h = '<table><thead><tr><th class="lft">업무 단계 · 상세 업무 (현행 수기 '+D.manualCount+'건)</th>';
+    D.phases.forEach(function(p){
+      h += '<th class="'+(p.id===act?"cur":"")+'" style="width:92px">'+U.esc(p.label)+'</th>';
+    });
+    h += '</tr></thead><tbody>';
+
+    D.stages.forEach(function(s){
+      const exec = s.items.filter(function(i){return i.depth===1;});
+      if(!exec.length) return;
+      h += '<tr class="stg"><td colspan="'+(D.phases.length+1)+'">'+s.no+'. '+U.esc(s.title)
+         + ' <span style="font-weight:400;color:var(--ink-400)">· '+exec.length+'건</span></td></tr>';
+      exec.forEach(function(it){
+        const own = ownerPhase(it.seq);
+        const oi  = own ? D.phaseIndex(own) : -1;
+        h += '<tr><td class="lft"><span class="tseq">'+U.esc(it.seq)+'</span>'+U.esc(it.detail)+'</td>';
+        D.phases.forEach(function(p,k){
+          let cls="manual", txt="수기";
+          if(oi>=0 && k===oi){ cls="now "+p.cls; txt="개선"; }
+          else if(oi>=0 && k>oi){ cls="kept"; txt="✔"; }
+          h += '<td><span class="cell '+cls+'" data-p="'+p.id+'" title="'+U.esc(it.seq)+' · '+U.esc(p.label)+'">'+txt+'</span></td>';
+        });
+        h += '</tr>';
+      });
+    });
+
+    h += '</tbody><tfoot><tr><td class="lft">Phase 완료 시점 수기 업무 잔존</td>';
+    D.phases.forEach(function(p){
+      h += '<td>'+cumulative(p.id).manualLeft+'건</td>';
+    });
+    h += '</tr></tfoot></table>';
+    host.innerHTML = h;
+
+    const el = document.getElementById("trCount");
+    if(el) el.textContent = "수기 "+D.manualCount+"건 → 최종 "+cumulative(D.phases[D.phases.length-1].id).manualLeft+"건";
+
+    host.querySelectorAll(".cell").forEach(function(c){
+      c.addEventListener("click", function(){ openPhase(c.dataset.p); });
+    });
+  }
+
+  /* ---------- 본 Phase 변경분 (최상단 고정) ---------- */
+  function deltaBlock(pid){
+    const a      = assign();
+    const pd     = D.phases.find(function(p){return p.id===pid;});
+    const items  = D.improvements.filter(function(i){return a[i.id]===pid;});
+    const groups = stageDiff(pid);
+    const nowG   = groups.filter(function(g){return g.hasNow;});
+
+    let h = '<div class="delta"><div class="delta-hd">';
+    h +=   '<h4>&#9733; 본 Phase 변경분 — '+U.esc(pd.label)+'</h4>';
+    h +=   '<span class="c">'+items.length+'건</span>';
+    h +=   '<span class="sm">'+(nowG.length
+             ? nowG.map(function(g){ return g.stage.no+'. '+g.stage.title+' 수기 '+g.manualBefore+'건 → '+g.manualAfter+'건'; }).join("   |   ")
+             : '본 Phase 절차 변경 없음')+'</span>';
+    h += '</div><div class="delta-bd">';
+
+    if(!items.length){
+      h += '<div class="empty" style="padding:16px 10px">본 Phase에 배정된 개선 항목이 없습니다. 상단 배정 현황에서 항목을 이 Phase로 이동할 수 있습니다.</div>';
+    }else{
+      h += items.map(function(i){
+        const g = groups.find(function(x){ return x.stage.no===i.stageNo; });
+        let c = '<div class="ditem"><div class="ditem-hd">';
+        c +=   '<span class="sg">'+i.stageNo+'. '+U.esc(i.stageTitle)+'</span>';
+        c +=   '<span class="sq">'+U.esc(i.seq)+'</span>';
+        c +=   '<span class="tk">'+U.esc(i.task)+'</span>';
+        if(g) c += '<span class="mv">단계 수기 '+g.manualBefore+'건 &#10148; '+g.manualAfter+'건</span>';
+        c +=   '</div>';
+        c +=   '<div class="dpair">';
+        c +=     '<div class="p"><div class="lb">AS-IS · 현행</div><div class="tx">'+U.esc(i.asIs)+'</div>'
+           +     '<div class="dftags">'+U.natureBadge(i.asIsNature)+U.sysBadge(i.asIsSystem)+'</div></div>';
+        c +=     '<div class="m">&#10148;</div>';
+        c +=     '<div class="p to"><div class="lb">TO-BE · 개선 방향</div><div class="tx">'+U.esc(i.direction)+'</div>'
+           +     '<div class="dftags"><span class="bdg bdg-sys">'+U.esc(i.toBeSystem)+'</span>'
+           +     '<span class="bdg bdg-ok">시스템 전환</span></div></div>';
+        c +=   '</div>';
+        c +=   '<div class="deffect"><b>기대효과</b>'
+           +   (i.effect ? U.esc(i.effect) : '<span class="na">'+U.esc(i.effectNote||"원본 장표 미기재")+'</span>')
+           +   '</div>';
+        c += '</div>';
+        return c;
+      }).join("");
+    }
+    h += '</div></div>';
+    return h;
+  }
+
+  /* 접기 섹션 헬퍼 */
+  function fold(key, title, count, hint, body){
+    return '<details class="fold" data-sec="'+key+'"'+(openSec[key]?" open":"")+'>'
+         + '<summary>'+U.esc(title)+'<span class="c">'+U.esc(count)+'</span>'
+         + '<span class="h">'+U.esc(hint)+'</span></summary>'
+         + '<div class="fold-bd">'+body+'</div></details>';
+  }
+
+  /* ---------- 단계별 절차 비교 (핵심 뷰) ----------
+     각 업무 단계의 현행 절차와, 선택 Phase 완료 시점의 절차를 나란히 대비 */
+  function stageDiff(pid){
+    const a = assign(), idx = D.phaseIndex(pid);
+    return D.stages.map(function(s){
+      const rows = s.items.filter(function(i){return i.depth===1;}).map(function(it){
+        const imps  = D.improvements.filter(function(x){return x.seq===it.seq;});
+        const doneI = imps.filter(function(x){return D.phaseIndex(a[x.id])<=idx;});
+        const nowI  = imps.filter(function(x){return a[x.id]===pid;});
+        const pendI = imps.filter(function(x){return D.phaseIndex(a[x.id])>idx;});
+        let status = "keep";
+        if(!imps.length)      status = "keep";
+        else if(nowI.length)  status = "now";
+        else if(doneI.length) status = "prev";
+        else                  status = "pending";
+        return { it:it, imps:imps, doneI:doneI, nowI:nowI, pendI:pendI, status:status };
+      });
+      const manualBefore = rows.filter(function(r){return r.it.nature==="수기";}).length;
+      const manualAfter  = rows.filter(function(r){return !r.doneI.length;}).length;
+      const hasNow   = rows.some(function(r){return r.status==="now";});
+      const inScope  = rows.some(function(r){return r.imps.length>0;});
+      return { stage:s, rows:rows, manualBefore:manualBefore, manualAfter:manualAfter,
+               hasNow:hasNow, inScope:inScope,
+               nowCount:rows.filter(function(r){return r.status==="now";}).length };
+    });
+  }
+
+  function diffBlock(g, pid){
+    const s = g.stage;
+    let h = '<div class="dfstage'+(g.hasNow?" hasnow":"")+'">';
+    h +=   '<div class="dfs-hd"><span class="dfs-n">'+s.no+'</span><span class="dfs-t">'+U.esc(s.title)+'</span>';
+    h +=     '<span class="dfs-m">수기 '+g.manualBefore+'건 &#10148; <em>'+g.manualAfter+'건</em></span>';
+    h +=     '<span class="dfs-r">';
+    h +=       g.hasNow ? '<span class="bdg bdg-tgt">본 Phase 개선 '+g.nowCount+'건</span>'
+                        : '<span class="bdg bdg-none">본 Phase 변경 없음</span>';
+    h +=     '</span></div>';
+
+    h +=   '<div class="dfcols">';
+    h +=     '<div class="dfhd">AS-IS · 현행 업무 절차</div><div class="dfhd" style="text-align:center">&nbsp;</div>'
+       +     '<div class="dfhd tocol">TO-BE · '+U.esc(D.phaseLabel(pid))+' 완료 시 절차</div>';
+
+    g.rows.forEach(function(r){
+      /* 좌: 현행 */
+      h += '<div class="dfc as"><div class="dftxt"><span class="dfseq">'+U.esc(r.it.seq)+'</span>'+U.esc(r.it.detail)+'</div>'
+         + '<div class="dftags">'+U.natureBadge(r.it.nature)+U.sysBadge(r.it.system)+'</div></div>';
+
+      /* 중: 변화 표시 */
+      const midCls = r.status==="now" ? "act" : (r.status==="prev" ? "prevact" : "");
+      h += '<div class="dfc mid '+midCls+'">'+(r.status==="keep"?"=":"&#10148;")+'</div>';
+
+      /* 우: 해당 Phase 시점 절차 */
+      h += '<div class="dfc tocol '+r.status+'">';
+      if(r.status==="keep"){
+        h += '<div class="dftxt muted">현행 절차 유지</div>'
+           + '<div class="dftags"><span class="bdg bdg-manual">수기 유지</span></div>';
+      }else if(r.status==="pending"){
+        h += '<div class="dftxt muted">현행 절차 유지</div><div class="dftags"><span class="bdg bdg-manual">수기 유지</span>'
+           + r.pendI.map(function(x){
+               return '<span class="bdg bdg-p '+D.phaseCls(assign()[x.id])+'">'+U.esc(D.phaseLabel(assign()[x.id]))+' 개선 예정</span>';
+             }).join("")
+           + '</div>';
+      }else{
+        h += r.doneI.map(function(x){
+               const own = assign()[x.id];
+               const isNow = own===pid;
+               return '<div class="dfline"><div class="dftxt">'+U.esc(x.direction)+'</div>'
+                    + '<div class="dftags"><span class="bdg bdg-sys">'+U.esc(x.toBeSystem)+'</span>'
+                    + (isNow ? '<span class="bdg bdg-tgt">본 Phase 개선</span>'
+                             : '<span class="bdg bdg-ok">'+U.esc(D.phaseLabel(own))+' 기개선</span>')
+                    + '</div></div>';
+             }).join("");
+        if(r.pendI.length){
+          h += r.pendI.map(function(x){
+                 return '<div class="dfline"><div class="dftxt muted">'+U.esc(x.direction)+'</div>'
+                      + '<div class="dftags"><span class="bdg bdg-p '+D.phaseCls(assign()[x.id])+'">'
+                      + U.esc(D.phaseLabel(assign()[x.id]))+' 개선 예정</span></div></div>';
+               }).join("");
+        }
+      }
+      h += '</div>';
+    });
+    h +=   '</div></div>';
+    return h;
+  }
+
+  function renderDiff(pid){
+    const groups = stageDiff(pid);
+    const scope  = groups.filter(function(g){ return g.inScope; });
+    const out    = groups.filter(function(g){ return !g.inScope; });
+    let h = "";
+
+    /* 영향 단계 chips */
+    h += '<div class="chips"><span class="lb">본 Phase 영향 업무 단계</span>';
+    const nowStages = groups.filter(function(g){ return g.hasNow; });
+    h += nowStages.length
+       ? nowStages.map(function(g){ return '<span class="chip">'+g.stage.no+'. '+U.esc(g.stage.title)+'</span>'; }).join("")
+       : '<span class="chip off">해당 없음</span>';
+    h += '</div>';
+
+    h += scope.map(function(g){ return diffBlock(g, pid); }).join("");
+
+    if(out.length){
+      h += '<div class="dfnochange"><span style="font-weight:700;color:var(--ink-600)">개선 대상 외 단계</span>'
+         + out.map(function(g){
+             return '<span class="bdg bdg-none">'+g.stage.no+'. '+U.esc(g.stage.title)
+                  + (g.stage.idle ? '' : ' (수기 '+g.manualBefore+'건 유지)')+'</span>';
+           }).join("")
+         + '<span style="color:var(--ink-400)">전 Phase에 걸쳐 절차 변경이 계획되지 않은 단계입니다.</span></div>';
+    }
+    return h;
+  }
+
+  function card(i, status){
+    const cur = assign()[i.id];
+    const moved = cur!==i.originPhase;
+    const lblMap = { current:"본 Phase 개선", done:"기개선 완료", future:"후속 예정" };
+    const bcls = status==="done" ? "bdg-ok" : (status==="current" ? "bdg-tgt" : "bdg-none");
+
+    let h = '<div class="ba '+status+'" id="card-'+i.id+'">';
+    h += '<div class="ba-hd"><span class="ba-seq">'+U.esc(i.seq)+'</span>';
+    h += '<span class="ba-stage">'+i.stageNo+'. '+U.esc(i.stageTitle)+'</span>';
+    h += '<span class="ba-task">'+U.esc(i.task)+'</span>';
+    h += '<span class="bdg '+bcls+'">'+lblMap[status]+'</span>';
+    if(moved) h += '<span class="moved">우선순위 변경 (원 '+U.esc(D.phaseLabel(i.originPhase))+')</span>';
+    h += '<span class="ba-ctl"><label for="sel-'+i.id+'">Phase 배정</label>';
+    h += '<select id="sel-'+i.id+'" data-imp="'+i.id+'">';
+    D.phases.forEach(function(p){ h += '<option value="'+p.id+'"'+(p.id===cur?" selected":"")+'>'+U.esc(p.label)+'</option>'; });
+    h += '</select></span></div>';
+
+    h += '<div class="ba-bd">';
+    h +=   '<div class="ba-col as"><div class="ba-lbl">AS-IS · 현행</div>';
+    h +=     '<div class="ba-txt muted">'+U.esc(i.asIs)+'</div>';
+    h +=     '<div class="ba-tags">'+U.sysBadge(i.asIsSystem)+U.natureBadge(i.asIsNature)
+       +     '<span class="bdg bdg-none">'+U.esc(i.owner)+'</span></div></div>';
+    h +=   '<div class="ba-mid">&#10148;</div>';
+    h +=   '<div class="ba-col to"><div class="ba-lbl">TO-BE · 개선 희망 내용</div>';
+    h +=     '<div class="ba-txt">'+U.esc(i.toBe)+'</div>';
+    h +=     '<div class="ba-tags"><span class="bdg bdg-sys">'+U.esc(i.toBeSystem)+'</span>'
+       +     '<span class="bdg bdg-ok">시스템 전환</span></div></div>';
+    h += '</div>';
+
+    h += '<div class="ba-ft"><span class="k">기대효과</span><span class="v'+(i.effect?"":" na")+'">'
+       + (i.effect?U.esc(i.effect):U.esc(i.effectNote||"원본 장표 미기재"))+'</span></div>';
+    h += '</div>';
+    return h;
+  }
+
+  function renderBody(){
+    const host = document.getElementById("phaseBody");
+    const act  = StateStore.get().activePhase;
+    const pd   = D.phases.find(function(p){return p.id===act;});
+    const idx  = D.phaseIndex(act);
+    const a    = assign();
+    const c    = cumulative(act);
+
+    const curItems    = D.improvements.filter(function(i){ return a[i.id]===act; });
+    const doneItems   = D.improvements.filter(function(i){ return D.phaseIndex(a[i.id])<idx; });
+    const futureItems = D.improvements.filter(function(i){ return D.phaseIndex(a[i.id])>idx; });
+
+    const pctItem   = Math.round(c.doneItems/c.totalItems*100);
+    const pctManual = Math.round((c.improvedTasks/D.manualCount)*100);
+
+    let h = "";
+
+    h += '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px">';
+    h +=   '<span class="bdg bdg-p '+pd.cls+'" style="font-size:12.5px;padding:4px 11px">'+U.esc(pd.label)+'</span>';
+    h +=   '<span style="font-size:15px;font-weight:700;color:var(--ink-900)">'+U.esc(pd.desc)+'</span>';
+    h += '</div>';
+
+    h += '<div class="meter-row">';
+    h +=   '<div class="meter"><div class="meter-hd"><span class="meter-t">개선 항목 이행 현황 (누적)</span>'
+       +     '<span class="meter-v"><em>'+c.doneItems+'</em> / '+c.totalItems+'항목 · '+pctItem+'%</span></div>'
+       +     '<div class="bar"><div class="bar-fill ok" style="width:'+pctItem+'%"></div></div>'
+       +     '<div class="step-dots">'
+       +       D.phases.map(function(p,k){
+                 const st = k<idx?"done":(k===idx?"cur":"");
+                 return '<span class="sd '+st+'"><i class="c"></i><i class="l">'+U.esc(p.label)+'</i></span>';
+               }).join("")
+       +     '</div></div>';
+    h +=   '<div class="meter"><div class="meter-hd"><span class="meter-t">수기 업무 잔존 현황</span>'
+       +     '<span class="meter-v">'+D.manualCount+'건 → <em>'+c.manualLeft+'건</em></span></div>'
+       +     '<div class="bar"><div class="bar-fill" style="width:'+(100-pctManual)+'%"></div></div>'
+       +     '<div class="meter-n">현행 수기 실행 업무 '+D.manualCount+'건 중 '+c.improvedTasks+'건이 '+U.esc(pd.label)
+       +     ' 완료 시점까지 시스템으로 전환됩니다. (개선 대상 업무 총 '+D.targetSeqs.length+'건)</div></div>';
+    h += '</div>';
+
+    /* ① 본 Phase 변경분 — 최상단 고정 (스크롤 없이 즉시 확인) */
+    h += deltaBlock(act);
+
+    /* ② 전 단계 절차 대비 — 기본 접힘 */
+    h += fold("flow", "전 단계 절차 대비 (AS-IS ↔ TO-BE)",
+              stageDiff(act).filter(function(g){return g.inScope;}).length+"개 단계",
+              U.esc(pd.label)+" 완료 시점 기준 · 동일 순번 대비", renderDiff(act));
+
+    /* ③ 누적 개선 완료 / 후속 예정 — 기본 접힘 */
+    let cum = '';
+    cum += '<div style="margin-bottom:'+(futureItems.length?"11px":"0")+'">'
+        +  '<div style="font-size:11.5px;font-weight:700;letter-spacing:.08em;color:var(--ok);margin-bottom:6px">기개선 완료</div>';
+    cum += doneItems.length
+             ? doneItems.map(function(i){
+                 return '<span class="bdg bdg-ok" style="margin:0 4px 4px 0;display:inline-block">'
+                      + U.esc(D.phaseLabel(a[i.id]))+' · '+U.esc(i.seq)+' '+U.esc(i.direction)+'</span>';
+               }).join("")
+             : '<span style="color:var(--ink-400);font-size:12.3px">해당 없음 — 본 Phase가 최초 개선 단계입니다.</span>';
+    cum += '</div>';
+    if(futureItems.length){
+      cum += '<div><div style="font-size:11.5px;font-weight:700;letter-spacing:.08em;color:var(--p3);margin-bottom:6px">후속 예정</div>'
+          +  futureItems.map(function(i){
+               return '<span class="bdg bdg-p '+D.phaseCls(a[i.id])+'" style="margin:0 4px 4px 0;display:inline-block">'
+                    + U.esc(D.phaseLabel(a[i.id]))+' · '+U.esc(i.seq)+' '+U.esc(i.direction)+'</span>';
+             }).join("")
+          +  '</div>';
+    }
+    h += fold("cum", "누적 개선 완료 및 후속 예정",
+              "완료 "+doneItems.length+"건 · 예정 "+futureItems.length+"건",
+              "전 Phase 이행 현황 요약", cum);
+
+    /* ④ 본 Phase 개선 항목 상세 (원문 기준) — 기본 접힘 */
+    const detailBody = curItems.length
+      ? curItems.map(function(i){return card(i,"current");}).join("")
+      : '<div class="empty">본 Phase에 배정된 개선 항목이 없습니다.</div>';
+    h += fold("detail", "본 Phase 개선 항목 상세 (원문 · Phase 재배정)",
+              curItems.length+"건", "개선 희망 내용 원문 및 Phase 변경", detailBody);
+
+    const mk = "phase:"+act;
+    h += '<div class="memo" data-memo="'+mk+'"><div class="memo-hd"><h4>■ 메모 — '+U.esc(pd.label)+'</h4><span class="st"></span></div>'
+       + '<textarea placeholder="'+U.esc(pd.label)+' 관련 논의 사항, 일정, 담당 조직 등을 기록하십시오."></textarea></div>';
+
+    host.innerHTML = h;
+
+    host.querySelectorAll("select[data-imp]").forEach(function(sel){
+      sel.addEventListener("change", function(){
+        const id=sel.dataset.imp, to=sel.value;
+        StateStore.setPhase(id, to);
+        UI.toast(id+" 항목이 "+D.phaseLabel(to)+"(으)로 재배정되었습니다.");
+      });
+    });
+    /* 접기 상태를 재렌더 후에도 유지 */
+    host.querySelectorAll("details.fold[data-sec]").forEach(function(dt){
+      dt.addEventListener("toggle", function(){ openSec[dt.dataset.sec] = dt.open; });
+    });
+    MemoModule.bind(host);
+  }
+
+  /* ---------- Phase 상세 섹션 펼쳐보기 / 접기 ---------- */
+  function renderSection(){
+    const open = !!StateStore.get().phaseOpen;
+    const sec  = document.getElementById("phaseSec");
+    const stub = document.getElementById("phaseStub");
+    const btn  = document.getElementById("btnPhaseSec");
+    const cnt  = document.getElementById("phaseSecCnt");
+    if(!sec || !stub || !btn) return;
+
+    sec.style.display  = open ? "" : "none";
+    stub.style.display = open ? "none" : "";
+    btn.textContent    = open ? "접기" : "펼쳐보기";
+    btn.classList.toggle("primary", !open);
+
+    if(cnt){
+      const act = StateStore.get().activePhase;
+      const n   = itemsOf(act).length;
+      cnt.textContent = open ? (D.phaseLabel(act)+" 열람 중 · 변경분 "+n+"건")
+                             : ("Phase "+D.phases.length+"단계 · 개선 "+D.improvements.length+"항목");
+    }
+  }
+
+  /* 특정 Phase를 펼친 상태로 열고 해당 위치로 이동 */
+  function openPhase(pid){
+    const wasOpen = !!StateStore.get().phaseOpen;
+    StateStore.setActivePhase(pid);
+    if(!wasOpen) StateStore.setPhaseOpen(true);
+    setTimeout(function(){
+      const el = document.getElementById("phaseTabs");
+      if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
+    }, 60);
+  }
+
+  /* 인쇄 시 전 섹션 강제 전개 (상태는 변경하지 않음) */
+  function expandAll(){
+    document.querySelectorAll("details.fold").forEach(function(dt){ dt.open = true; });
+    const sec  = document.getElementById("phaseSec");
+    const stub = document.getElementById("phaseStub");
+    if(sec)  sec.style.display  = "";
+    if(stub) stub.style.display = "none";
+  }
+
+  function renderLog(){
+    const host=document.getElementById("logList");
+    const log=StateStore.get().log;
+    document.getElementById("logCount").textContent = log.length+"건";
+    if(!log.length){
+      host.innerHTML='<div class="log-empty">변경 이력이 없습니다. 우선순위를 조정하면 이력이 기록됩니다.</div>';
+      return;
+    }
+    host.innerHTML = log.map(function(l){
+      const fromB = D.phaseIndex(l.from)>=0 ? '<span class="bdg bdg-p '+D.phaseCls(l.from)+'">'+U.esc(D.phaseLabel(l.from))+'</span>'
+                                            : '<span class="bdg bdg-none">'+U.esc(l.from)+'</span>';
+      const toB   = D.phaseIndex(l.to)>=0   ? '<span class="bdg bdg-p '+D.phaseCls(l.to)+'">'+U.esc(D.phaseLabel(l.to))+'</span>'
+                                            : '<span class="bdg bdg-none">'+U.esc(l.to)+'</span>';
+      return '<div class="log-item"><span class="log-ts">'+U.fmtDT(l.ts)+'</span>'
+           + (l.seq?'<span class="bdg bdg-none">'+U.esc(l.seq)+'</span>':'')
+           + '<span style="color:var(--ink-800);font-weight:600">'+U.esc(l.task)+'</span>'
+           + '<span style="margin-left:auto;display:flex;gap:7px;align-items:center">'+fromB
+           + '<span style="color:var(--ink-400)">&#10148;</span>'+toB+'</span></div>';
+    }).join("");
+  }
+
+  function render(){ renderMatrix(); renderTrend(); renderTabs(); renderBody(); renderSection(); renderLog(); }
+  return { render, cumulative, expandAll, renderSection, openPhase };
+})(DataModule, Utils);
+</script>
+
+<!-- ============================================================
+     MODULE 7 : AppendixView
+     ============================================================ -->
+<script>
+const AppendixView = (function(D,U){
+  "use strict";
+  function render(){
+    document.getElementById("issueGrid").innerHTML = D.issues.map(function(x){
+      return '<div class="issue"><div class="issue-no">ISSUE '+(x.no<10?"0"+x.no:x.no)+'</div>'
+           + '<div class="issue-t">'+U.esc(x.issue)+'</div>'
+           + '<div class="issue-d">협의 부서 <b>'+U.esc(x.dept)+'</b></div>'
+           + '<div class="issue-d" style="color:var(--ink-400);font-size:11.5px">의사결정 필요 · 추진 선행 조건</div></div>';
+    }).join("");
+  }
+  return { render };
+})(DataModule, Utils);
+</script>
+
+<!-- ============================================================
+     MODULE 8 : UI · SnapshotUI · App bootstrap
+     ============================================================ -->
+<script>
+const UI = (function(D,U){
+  "use strict";
+  let tT=null;
+  function toast(msg){
+    const el=document.getElementById("toast");
+    if(!el) return;
+    el.textContent=msg; el.classList.add("on");
+    clearTimeout(tT); tT=setTimeout(function(){ el.classList.remove("on"); },2300);
+  }
+  function flagSaved(iso){
+    const el=document.getElementById("saveState");
+    if(el) el.textContent = "자동 저장 " + U.fmtDT(iso);
+  }
+  function renderKPI(){
+    const last = D.phases[D.phases.length-1].id;
+    const c = PhaseView.cumulative(last);
+    const items = [
+      { l:"업무 단계", v:D.stages.length, u:"단계", n:"기획 · 섭외 · 링크 생성 · 판매 · 정산", cls:"" },
+      { l:"현행 실행 업무", v:D.tasks.length, u:"건", n:"업무 묶음 3건은 별도 집계", cls:"" },
+      { l:"수기 운영 업무", v:D.manualCount, u:"건", n:"실행 업무 전량이 수기 운영", cls:"amber" },
+      { l:"개선 대상", v:D.targetSeqs.length, u:"업무", n:"개선 항목 "+D.improvements.length+"건 / "+D.phases.length+"개 Phase", cls:"violet" },
+      { l:"최종 Phase 완료 시", v:c.manualLeft, u:"건 잔존", n:"수기 "+D.manualCount+"건 → "+c.manualLeft+"건", cls:"violet" },
+      { l:"사용 시스템", v:D.systemsUsed.length, u:"종", n:D.systemsUsed.join(" · "), cls:"" },
+      { l:"협의 필요", v:D.issues.length, u:"건", n:"마케팅실 · 경영기획BSU · 법무BSU", cls:"red" }
+    ];
+    document.getElementById("kpiRow").innerHTML = items.map(function(k){
+      return '<div class="kpi '+k.cls+'"><div class="kpi-l">'+U.esc(k.l)+'</div>'
+           + '<div class="kpi-v">'+k.v+'<small>'+U.esc(k.u)+'</small></div>'
+           + '<div class="kpi-n">'+U.esc(k.n)+'</div></div>';
+    }).join("");
+  }
+  return { toast, flagSaved, renderKPI };
+})(DataModule, Utils);
+
+const SnapshotUI = (function(D,U){
+  "use strict";
+  function open(){
+    document.getElementById("drawer").classList.add("on");
+    document.getElementById("scrim").classList.add("on");
+    render();
+  }
+  function close(){
+    document.getElementById("drawer").classList.remove("on");
+    document.getElementById("scrim").classList.remove("on");
+  }
+
+  function render(){
+    const list = StateStore.snapshots();
+    document.getElementById("snapCount").textContent = list.length+"건";
+    const host = document.getElementById("snapList");
+    if(!list.length){
+      host.innerHTML='<div class="empty">저장된 시점이 없습니다.<br>상단에서 현재 상태를 시점으로 저장하십시오.</div>';
+      return;
+    }
+    host.innerHTML = list.map(function(s){
+      const memos = s.data.memos||{};
+      const memoN = Object.keys(memos).filter(function(k){ return (memos[k]||"").trim().length; }).length;
+      const pa = s.data.phaseAssign||{};
+      const chg = D.improvements.filter(function(i){ return pa[i.id] && pa[i.id]!==i.originPhase; }).length;
+      return '<div class="snap"><div class="snap-t">'+U.esc(s.name)+'</div>'
+           + '<div class="snap-m">'+U.fmtDT(s.ts)+'</div>'
+           + '<div class="snap-s">메모 '+memoN+'개 · Phase 변경 '+chg+'건 · 변경 이력 '+((s.data.log||[]).length)+'건</div>'
+           + '<div class="snap-a"><button class="btn-lt mini primary" data-restore="'+s.sid+'">이 시점으로 복원</button>'
+           + '<button class="btn-lt mini" data-dl="'+s.sid+'">파일로 저장</button>'
+           + '<button class="btn-lt mini danger" data-del="'+s.sid+'">삭제</button></div></div>';
+    }).join("");
+
+    host.querySelectorAll("[data-restore]").forEach(function(b){
+      b.addEventListener("click",function(){
+        if(!confirm("현재 작업 내용을 해당 시점 상태로 되돌립니다. 진행하시겠습니까?")) return;
+        if(StateStore.restoreSnapshot(b.dataset.restore)){ UI.toast("선택한 시점으로 복원되었습니다."); close(); }
+      });
+    });
+    host.querySelectorAll("[data-dl]").forEach(function(b){
+      b.addEventListener("click",function(){
+        const s=StateStore.snapshots().find(function(x){return x.sid===b.dataset.dl;});
+        if(!s) return;
+        U.download("어필리에이트_프로세스_리포트_"+s.name.replace(/[\\/:*?"<>|]/g,"_")+".json",
+          JSON.stringify({meta:{app:"affiliate-process-report",version:1,exportedAt:new Date().toISOString()},
+                          current:s.data, snapshots:[s]},null,2));
+        UI.toast("시점 파일을 내려받았습니다.");
+      });
+    });
+    host.querySelectorAll("[data-del]").forEach(function(b){
+      b.addEventListener("click",function(){
+        if(!confirm("해당 저장 시점을 삭제하시겠습니까?")) return;
+        StateStore.removeSnapshot(b.dataset.del); UI.toast("저장 시점이 삭제되었습니다.");
+      });
+    });
+  }
+
+  function init(){
+    document.getElementById("btnDrawer").addEventListener("click",open);
+    document.getElementById("btnDwClose").addEventListener("click",close);
+    document.getElementById("scrim").addEventListener("click",close);
+    document.addEventListener("keydown",function(e){ if(e.key==="Escape") close(); });
+
+    document.getElementById("btnSnapSave").addEventListener("click",function(){
+      const inp=document.getElementById("snapName");
+      const s=StateStore.saveSnapshot(inp.value);
+      inp.value="";
+      UI.toast("'"+s.name+"' 시점으로 저장되었습니다.");
+    });
+    document.getElementById("btnExport").addEventListener("click",function(){
+      U.download("어필리에이트_업무_프로세스_개선_리포트_"+U.fmtDT(new Date()).replace(/[: ]/g,"-")+".json",
+                 JSON.stringify(StateStore.bundle(),null,2));
+      UI.toast("현재 상태와 전체 저장 시점을 내려받았습니다.");
+    });
+    document.getElementById("btnImport").addEventListener("click",function(){
+      document.getElementById("fileImport").click();
+    });
+    document.getElementById("fileImport").addEventListener("change",function(e){
+      const f=e.target.files[0]; if(!f) return;
+      const r=new FileReader();
+      r.onload=function(){
+        try{
+          const o=JSON.parse(r.result);
+          if(!o || !o.current) throw new Error("형식 오류");
+          if(!confirm("가져온 파일의 내용으로 현재 상태를 대체합니다. 진행하시겠습니까?")){ e.target.value=""; return; }
+          StateStore.replace(o.current);
+          if(Array.isArray(o.snapshots) && o.snapshots.length) StateStore.mergeSnapshots(o.snapshots);
+          render(); UI.toast("파일을 정상적으로 가져왔습니다.");
+        }catch(err){ UI.toast("올바른 리포트 JSON 파일이 아닙니다."); }
+        e.target.value="";
+      };
+      r.readAsText(f,"utf-8");
+    });
+    document.getElementById("btnWipe").addEventListener("click",function(){
+      if(!confirm("모든 메모, Phase 변경 내역, 저장 시점이 삭제됩니다. 진행하시겠습니까?")) return;
+      StateStore.wipe(); StateStore.wipeSnapshots(); render(); UI.toast("전체 초기화되었습니다.");
+    });
+
+    StateStore.subscribe(function(s,reason){ if(reason==="snap") render(); });
+  }
+  return { init, render, open };
+})(DataModule, Utils);
+
+/* ---------------------------- App ---------------------------- */
+(function App(D,U){
+  "use strict";
+  function renderAll(){
+    UI.renderKPI();
+    FlowView.render();
+    PhaseView.render();
+    AppendixView.render();
+    MemoModule.bind(document);
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    document.getElementById("docDate").textContent = U.fmtDate(new Date());
+
+    StateStore.load();
+    renderAll();
+    SnapshotUI.init();
+
+    if(StateStore.get().updatedAt) UI.flagSaved(StateStore.get().updatedAt);
+
+    StateStore.subscribe(function(s,reason){
+      if(reason==="memo-silent") return;
+      if(reason==="secfold"){ PhaseView.renderSection(); return; }
+      if(reason==="tab"){ PhaseView.render(); return; }
+      if(reason==="phase" || reason==="log"){ UI.renderKPI(); FlowView.render(); PhaseView.render(); return; }
+      renderAll();
+    });
+
+    /* Phase 상세 섹션 펼쳐보기 / 접기 */
+    document.getElementById("btnPhaseSec").addEventListener("click", function(){
+      StateStore.setPhaseOpen(!StateStore.get().phaseOpen);
+    });
+    document.getElementById("phaseStub").addEventListener("click", function(){
+      StateStore.setPhaseOpen(true);
+    });
+
+    document.getElementById("btnAllStage").addEventListener("click", FlowView.showAll);
+    document.getElementById("btnResetPhase").addEventListener("click", function(){
+      if(!confirm("원본 장표의 '희망 우선순위' 상태로 되돌립니다. 진행하시겠습니까?")) return;
+      StateStore.resetPhases(); UI.toast("원본 희망 우선순위로 원복되었습니다.");
+    });
+    document.getElementById("btnClearLog").addEventListener("click", function(){
+      if(!confirm("Phase 변경 이력을 모두 삭제하시겠습니까? (현재 배정 상태는 유지됩니다)")) return;
+      StateStore.clearLog(); UI.toast("변경 이력을 비웠습니다.");
+    });
+    document.getElementById("btnPrint").addEventListener("click", function(){
+      PhaseView.expandAll(); window.print();
+    });
+    window.addEventListener("beforeprint", function(){ PhaseView.expandAll(); });
+    document.getElementById("btnMemoJump").addEventListener("click", function(){
+      const s=MemoModule.summary();
+      UI.toast(s.count ? ("메모 "+s.count+"개가 입력되어 있습니다. 자동 저장 상태입니다.")
+                       : "입력된 메모가 없습니다. 각 장표 하단에서 기록하실 수 있습니다.");
+    });
+
+    /* nav highlight */
+    const links=Array.prototype.slice.call(document.querySelectorAll("#nav a"));
+    const secs=links.map(function(a){ return document.querySelector(a.getAttribute("href")); })
+                    .filter(function(x){ return !!x; });
+    window.addEventListener("scroll", function(){
+      const y=window.scrollY+130; let cur=0;
+      secs.forEach(function(s,i){ if(s.offsetTop<=y) cur=i; });
+      links.forEach(function(a,i){ a.classList.toggle("on", i===cur); });
+    }, {passive:true});
+  });
+})(DataModule, Utils);
+</script>
+</body>
+</html>
