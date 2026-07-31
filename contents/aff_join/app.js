@@ -321,6 +321,10 @@ function validateForm() {
   let ok = true;
   const focusTargets = [];
 
+  const lfmallIdOk = $("#lfmallId").value.trim().length > 0;
+  setFieldError("field-lfmallId", !lfmallIdOk);
+  if (!lfmallIdOk) { ok = false; focusTargets.push($("#lfmallId")); }
+
   const email = $("#email").value.trim();
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
   setFieldError("field-email", !emailOk);
@@ -358,7 +362,7 @@ function validateForm() {
 }
 
 /* 입력 시 에러 표시 해제 */
-["email", "name", "nickname", "phone"].forEach((id) => {
+["lfmallId", "email", "name", "nickname", "phone"].forEach((id) => {
   document.getElementById(id).addEventListener("input", () => setFieldError("field-" + id, false));
 });
 $("#categoryChips").addEventListener("change", () => setFieldError("field-category", false));
@@ -374,6 +378,7 @@ $("#applyForm").addEventListener("submit", async (e) => {
 
   const payload = {
     recipients: CONFIG.RECIPIENTS,
+    lfmallId: $("#lfmallId").value.trim(),
     email: $("#email").value.trim(),
     name: $("#name").value.trim(),
     nickname: $("#nickname").value.trim(),
