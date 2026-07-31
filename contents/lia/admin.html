@@ -378,12 +378,13 @@
           <div class="toolbar">
             <select id="searchField">
               <option value="all">전체</option>
+              <option value="lfmallId">LFmall ID</option>
               <option value="nickname">활동명</option>
               <option value="name">이름</option>
               <option value="email">이메일</option>
               <option value="phone">휴대폰번호</option>
             </select>
-            <input type="text" id="searchInput" placeholder="검색어를 입력하세요 (활동명 / 이름 / 이메일 / 휴대폰번호)" />
+            <input type="text" id="searchInput" placeholder="검색어를 입력하세요 (LFmall ID / 활동명 / 이름 / 이메일 / 휴대폰번호)" />
             <button type="button" class="btn btn-outline" id="btnSearch">🔍 조회</button>
             <button type="button" class="btn btn-primary" id="btnAdd">+ 신청 추가</button>
           </div>
@@ -398,7 +399,7 @@
             <table>
               <thead>
                 <tr>
-                  <th>No.</th><th>신청일시</th><th>활동명</th><th>이름</th><th>이메일</th><th>휴대폰</th>
+                  <th>No.</th><th>신청일시</th><th>LFmall ID</th><th>활동명</th><th>이름</th><th>이메일</th><th>휴대폰</th>
                   <th>사업자</th><th>SNS 채널</th><th>첨부</th><th>PLAS 거래선</th><th>관리 메모</th>
                 </tr>
               </thead>
@@ -538,6 +539,7 @@
     <div class="modal__body">
       <input type="hidden" id="f-id" />
       <div class="grid2">
+        <div><label class="f-label">LFmall ID</label><input type="text" id="f-lfmallId" /></div>
         <div><label class="f-label">이름</label><input type="text" id="f-name" /></div>
         <div><label class="f-label">활동명</label><input type="text" id="f-nickname" /></div>
         <div><label class="f-label">이메일</label><input type="email" id="f-email" /></div>

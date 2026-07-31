@@ -285,6 +285,12 @@ function renderList() {
     tdDt.textContent = r.submittedAt || "-";
     tr.appendChild(tdDt);
 
+    /* LFmall ID */
+    const tdLf = document.createElement("td");
+    tdLf.style.fontWeight = "700";
+    tdLf.textContent = r.lfmallId || "-";
+    tr.appendChild(tdLf);
+
     [r.nickname || "-", disp.name(r.name), disp.email(r.email), disp.phone(r.phone)].forEach((text) => {
       const td = document.createElement("td");
       td.textContent = text;
@@ -377,6 +383,7 @@ $$(".modal-overlay").forEach((overlay) => {
 
 function fillForm(r) {
   $("#f-id").value = r.id || "";
+  $("#f-lfmallId").value = r.lfmallId || "";
   $("#f-name").value = r.name || "";
   $("#f-nickname").value = r.nickname || "";
   $("#f-email").value = r.email || "";
@@ -426,6 +433,7 @@ $("#btnAdd").addEventListener("click", () => {
 $("#btnSave").addEventListener("click", async () => {
   const id = $("#f-id").value;
   const payload = {
+    lfmallId: $("#f-lfmallId").value.trim(),
     name: $("#f-name").value.trim(),
     nickname: $("#f-nickname").value.trim(),
     email: $("#f-email").value.trim(),
