@@ -928,7 +928,7 @@ const DataModule = (function(){
       { seq:"5-1-3", detail:"대사 및 인플루언서 별 수수료 정산 금액 산출", system:"-", nature:"수기", owner:"e-컨텐츠실", depth:1 },
       { seq:"5-1-4", detail:"기안서 작성 (대금지급 증빙용)", system:"LF on > 전자결재", nature:"수기", owner:"e-컨텐츠실", depth:1 },
       { seq:"5-1-5", detail:"PLAS 전표 상신 (대금 지급 전표 상신)", system:"LF on > PLAS", nature:"수기", owner:"e-컨텐츠실", depth:1 },
-      { seq:"5-2",   detail:"수수료 내부 배분 (온라인사업부 : 브랜드사업부)", system:"", nature:"", owner:"", depth:0 },
+      { seq:"5-2",   detail:"사업부간 수수료 비용 배분 (온라인사업부 : 브랜드사업부)", system:"", nature:"", owner:"", depth:0 },
       { seq:"5-2-1", detail:"브랜드사업부 별 배분 금액 산출", system:"LF on > PLAS", nature:"수기", owner:"e-컨텐츠실", depth:1 },
       { seq:"5-2-2", detail:"PLAS 전표 상신 (내부 배분용)", system:"LF on > PLAS", nature:"수기", owner:"e-컨텐츠실", depth:1 }
     ]}
@@ -940,13 +940,13 @@ const DataModule = (function(){
     { id:"PHASE 1.5", key:"P15", label:"Phase 1.5", cls:"P15", desc:"가입자(회원) 대상 정보 제공 화면 확보 및 법무 검토 이행" },
     { id:"PHASE 2",   key:"P2",  label:"Phase 2",   cls:"P2",  desc:"인플루언서 풀 조회 서비스 신설로 섭외 협의 체계화" },
     { id:"PHASE 3",   key:"P3",  label:"Phase 3",   cls:"P3",  desc:"수수료 대금 지급 전표 생성 자동화" },
-    { id:"PHASE 4",   key:"P4",  label:"Phase 4",   cls:"P4",  desc:"수수료 내부 배분 전표 생성 자동화" }
+    { id:"PHASE 4",   key:"P4",  label:"Phase 4",   cls:"P4",  desc:"사업부 간 수수료 비용 배분 전표 생성 자동화" }
   ];
 
   /* 2번 장표: 개선 항목 (엑셀 B28:K34) — originPhase = 원본 '희망 우선순위' */
   const improvements = [
     { id:"IMP-01", stageNo:1, stageTitle:"기획", seq:"1-2",
-      task:"섭외 대상 인플루언서 및 수수료 배부율 협의 (w.브랜드 사업부)",
+      task:"(SPOT성) 브랜드 사업부와 '섭외 대상 인플루언서' 선정 및 '수수료 배분율' 협의",
       direction:"LF 인플루언서 풀 공유 시스템 신규 구축",
       asIs:"브랜드사업부와 별도 소통 채널을 통해 섭외 대상 및 수수료 배부율을 협의",
       asIsSystem:"-", asIsNature:"수기", owner:"e-컨텐츠실",
@@ -964,7 +964,7 @@ const DataModule = (function(){
       originPhase:"PHASE 1" },
 
     { id:"IMP-03", stageNo:2, stageTitle:"섭외", seq:"2-3-1",
-      task:"전자계약 체결",
+      task:"전자계약 체결 [지급수수료 500백만원 초과 시]",
       direction:"어필리에이트 서비스 가입 신청 페이지에서 약관 동의 대체",
       asIs:"CS Bill을 통해 인플루언서별 전자계약을 개별 체결",
       asIsSystem:"CS Bill", asIsNature:"수기", owner:"e-컨텐츠실",
@@ -992,7 +992,7 @@ const DataModule = (function(){
       originPhase:"PHASE 3" },
 
     { id:"IMP-06", stageNo:5, stageTitle:"정산", seq:"5-2-2",
-      task:"PLAS 전표 상신 (내부 배분용)",
+      task:"PLAS 전표 상신 (수수료 배분용)",
       direction:"내부 배분 정산 전표 생성 자동화 프로세스 신설",
       asIs:"브랜드사업부별 배분 금액을 기준으로 PLAS 내부 배분 전표를 수기 상신",
       asIsSystem:"LF on > PLAS", asIsNature:"수기", owner:"e-컨텐츠실",
