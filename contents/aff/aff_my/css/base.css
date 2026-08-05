@@ -1,0 +1,368 @@
+@charset "utf-8";
+/* ==========================================================================
+   LFmall 어필리에이트 서비스 활동 내역 - Base Stylesheet (v2.0)
+   --------------------------------------------------------------------------
+   v1.x 의 iPhone 디바이스 목업 관련 스타일
+   (.stage / .device / .screen / .statusbar / .home-indicator /
+    .stage-caption / .demo-tools) 은 전면 제거되었습니다.
+   일반 반응형 웹 레이아웃 : 콘텐츠 max-width 640px 중앙 정렬,
+   앱바 sticky, 하단 CTA sticky, safe-area 대응.
+   ========================================================================== */
+
+/* 1. Design Tokens ------------------------------------------------------- */
+:root {
+  --ink:          #111111;
+  --ink-strong:   #000000;
+  --accent:       #D9232E;
+  --accent-light: #FCEDEE;
+  --info:         #1B62C9;
+  --info-light:   #EAF1FC;
+  --ok:           #1F7A3D;
+  --gray-700:     #444444;
+  --gray-500:     #888888;
+  --gray-400:     #AAAAAA;
+  --gray-300:     #DDDDDD;
+  --line:         #EEEEEE;
+  --gray-100:     #F5F5F5;
+  --gray-50:      #FAFAFA;
+  --white:        #FFFFFF;
+
+  --radius:       2px;
+  --radius-card:  6px;
+
+  --appbar-h:     56px;
+  --row-h:        56px;
+  --gutter:       16px;
+  --maxw:         640px;
+  --tap:          44px;
+
+  --safe-top:     env(safe-area-inset-top, 0px);
+  --safe-bottom:  env(safe-area-inset-bottom, 0px);
+  --safe-left:    env(safe-area-inset-left, 0px);
+  --safe-right:   env(safe-area-inset-right, 0px);
+
+  --font: Pretendard, -apple-system, "SF Pro Text", "Apple SD Gothic Neo",
+          Roboto, "Noto Sans KR", "Malgun Gothic", sans-serif;
+}
+
+/* 2. Reset --------------------------------------------------------------- */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: -0.3px;
+  color: var(--ink);
+  background: var(--white);
+  word-break: keep-all;
+}
+ul, ol { list-style: none; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; letter-spacing: inherit; }
+/* iOS 자동 확대 방지 : 입력 폰트 16px 고정 */
+input, select, textarea { font-family: inherit; font-size: 16px; color: inherit; letter-spacing: inherit; }
+img, svg { display: block; }
+strong, b { font-weight: 700; }
+em { font-style: normal; }
+table { border-collapse: collapse; width: 100%; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* data-icon 으로 주입되는 인라인 SVG 기본 규격 */
+[data-icon] { display: inline-flex; align-items: center; justify-content: center; }
+[data-icon] > svg { width: 20px; height: 20px; }
+
+/* 3. App Shell (반응형 웹) ----------------------------------------------- */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+  background: var(--white);
+}
+.view { flex: 1 1 auto; }
+/* 하단 CTA 영역 : 모바일에서 화면 하단에 붙고, 문서 끝에서 자연스럽게 정지 */
+.foot { position: sticky; bottom: 0; z-index: 20; }
+.foot:empty { display: none; }
+
+/* 4. App Bar ------------------------------------------------------------- */
+.appbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: var(--appbar-h);
+  padding: var(--safe-top) 8px 0;
+  background: var(--white);
+  border-bottom: 1px solid var(--line);
+}
+.appbar__btn {
+  width: var(--tap); height: var(--tap); flex: 0 0 var(--tap);
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius);
+}
+.appbar__btn:active { background: var(--gray-100); }
+.appbar__btn svg { width: 22px; height: 22px; }
+.appbar__title {
+  flex: 1 1 auto;
+  padding: 0 4px;
+  font-size: 17px; font-weight: 700; letter-spacing: -0.5px;
+  color: var(--ink-strong);
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+.appbar__title--lead { padding-left: 12px; }
+.appbar__logout {
+  flex: 0 0 auto;
+  display: inline-flex; align-items: center; gap: 5px;
+  min-height: var(--tap); padding: 0 12px;
+  font-size: 14px; font-weight: 600; letter-spacing: -0.3px;
+  color: var(--gray-700);
+  background: var(--white);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius);
+}
+.appbar__logout svg { width: 17px; height: 17px; }
+.appbar__logout:active { background: var(--gray-100); }
+
+@media (min-width: 768px) {
+  .appbar { padding-left: 8px; padding-right: 8px; }
+  .appbar__title { font-size: 18px; }
+}
+
+/* 4-1. Background Refresh Indicator --------------------------------------
+   캐시로 화면을 먼저 그린 뒤 서버 값을 다시 확인하는 동안만 노출되는 2px 진행 바.
+   스켈레톤과 달리 콘텐츠를 가리지 않는다. */
+/*
+ * 백그라운드 갱신 진행 바.
+ * 갱신이 시작·종료될 때마다 요소가 나타났다 사라지면 아래 콘텐츠가 2px 씩 밀려
+ * 모든 페이지 진입에서 레이아웃 이동(CLS)이 발생한다.
+ * → 트랙(2px)은 '항상' 자리를 차지하게 두고 색만 켰다 끈다.
+ *   자리 이동 0, 콘텐츠를 덮지도 않는다.
+ */
+.refresh-bar {
+  position: sticky;
+  top: calc(var(--safe-top) + var(--appbar-h));
+  z-index: 29;
+  height: 2px;
+  overflow: hidden;
+  background: transparent;
+  transition: background-color .18s;
+}
+.refresh-bar.is-on { background: var(--accent-light); }
+.refresh-bar__fill {
+  display: block;
+  width: 40%;
+  height: 100%;
+  background: var(--accent);
+  opacity: 0;
+  animation: refreshSlide 1.1s ease-in-out infinite;
+  animation-play-state: paused;
+}
+.refresh-bar.is-on .refresh-bar__fill {
+  opacity: 1;
+  animation-play-state: running;
+}
+@keyframes refreshSlide {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .refresh-bar__fill { width: 100%; animation: none; }
+}
+
+/* 5. Content Blocks ------------------------------------------------------ */
+.spacer-24 { height: 24px; }
+.spacer-40 { height: 40px; }
+.band { height: 8px; background: var(--gray-100); }
+
+.sect-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 24px var(--gutter) 12px;
+}
+.sect-head h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.4px; color: var(--ink-strong); }
+.sect-head > span { flex: 0 0 auto; font-size: 12px; color: var(--gray-500); }
+.sect-head .more { display: flex; align-items: center; gap: 2px; font-size: 12px; color: var(--gray-500); }
+.sect-head .more svg { width: 13px; height: 13px; }
+
+/* 6. Menu List Row ------------------------------------------------------- */
+.menu-list { background: var(--white); }
+.menu-list > li + li { border-top: 1px solid var(--line); }
+.menu-list > li > a {
+  position: relative; display: block;
+  min-height: var(--row-h); line-height: var(--row-h);
+  padding-left: 53px; padding-right: 42px;
+  font-size: 15px; font-weight: 400; letter-spacing: -0.3px;
+  color: var(--ink-strong);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.menu-list > li > a:active { background: var(--gray-50); }
+.menu-list .ico {
+  position: absolute; left: 10px; top: 50%;
+  width: 40px; height: 40px; margin-top: -20px;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.menu-list .ico svg { width: 24px; height: 24px; }
+.menu-list .chev {
+  position: absolute; right: 11px; top: 50%;
+  width: 22px; height: 22px; margin-top: -11px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gray-400);
+  pointer-events: none;
+}
+.menu-list .chev svg { width: 18px; height: 18px; }
+.badge-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  margin-left: 6px; vertical-align: middle;
+  font-size: 10px; font-weight: 700; line-height: 1; letter-spacing: 0;
+  color: var(--white); background: var(--accent);
+  border-radius: 9px;
+}
+
+/* 7. Buttons ------------------------------------------------------------- */
+.btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 52px;
+  font-size: 15px; font-weight: 700; letter-spacing: -0.4px;
+  border-radius: var(--radius);
+  transition: opacity .15s;
+}
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+.btn:not(:disabled):active { opacity: .8; }
+.btn--primary { background: var(--ink-strong); color: var(--white); }
+.btn--line    { background: var(--white); color: var(--ink); border: 1px solid var(--ink); }
+.btn--ghost   { background: var(--white); color: var(--gray-500); border: 1px solid var(--gray-300); }
+.btn--danger  { background: var(--accent); color: var(--white); }
+.btn--sm { min-height: var(--tap); font-size: 14px; }
+.btn-area { padding: 20px var(--gutter) 32px; display: flex; flex-direction: column; gap: 8px; }
+.btn-area--row { flex-direction: row; }
+.btn-area--row .btn { flex: 1 1 0; }
+
+.sticky-cta {
+  padding: 10px var(--gutter) calc(16px + var(--safe-bottom));
+  background: var(--white);
+  border-top: 1px solid var(--line);
+}
+
+/* 8. Modal --------------------------------------------------------------- */
+.modal {
+  position: fixed; inset: 0;
+  display: none; align-items: center; justify-content: center;
+  padding: 20px;
+  background: rgba(0,0,0,.55);
+  z-index: 100;
+}
+.modal.is-open { display: flex; animation: fadeIn .18s ease-out; }
+.modal__box {
+  width: 100%; max-width: 420px;
+  max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); overflow-y: auto;
+  background: var(--white);
+  border-radius: 4px;
+  animation: popIn .2s ease-out;
+}
+.modal__body { padding: 28px 20px 22px; text-align: center; }
+.modal__body--form { text-align: left; }
+.modal__title { font-size: 17px; font-weight: 700; letter-spacing: -0.4px; margin-bottom: 8px; }
+.modal__desc { font-size: 14px; color: var(--gray-700); line-height: 1.6; }
+.modal__desc b { color: var(--accent); }
+.modal__foot { display: flex; border-top: 1px solid var(--line); }
+.modal__foot button { flex: 1 1 0; min-height: 50px; font-size: 15px; font-weight: 700; letter-spacing: -0.4px; }
+.modal__foot button + button { border-left: 1px solid var(--line); }
+.modal__foot .is-primary { background: var(--ink-strong); color: var(--white); border-left: 0; }
+.modal__foot button:disabled { opacity: .4; cursor: not-allowed; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
+
+/* 폼 필드 (연락처 수정 등) */
+.field + .field { margin-top: 14px; }
+.field > label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--gray-700); }
+.field input {
+  width: 100%; min-height: var(--tap); padding: 0 12px;
+  border: 1px solid var(--gray-300); border-radius: var(--radius);
+  outline: none; background: var(--white);
+}
+.field input:focus { border-color: var(--ink-strong); }
+.field .msg { margin-top: 6px; font-size: 12px; color: var(--accent); min-height: 16px; }
+
+/* 9. Toast --------------------------------------------------------------- */
+.toast {
+  position: fixed; left: 50%; bottom: calc(24px + var(--safe-bottom));
+  width: calc(100% - 32px); max-width: 560px;
+  padding: 14px 16px;
+  background: rgba(17,17,17,.92); color: var(--white);
+  font-size: 14px; letter-spacing: -0.3px; text-align: center;
+  border-radius: 4px;
+  opacity: 0; transform: translateX(-50%) translateY(8px);
+  transition: opacity .22s, transform .22s;
+  pointer-events: none; z-index: 110;
+}
+.toast.is-on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* 10. 상태 UI : 스켈레톤 / 빈 상태 / 오류 -------------------------------- */
+.skel { background: var(--gray-100); border-radius: var(--radius); animation: skelPulse 1.2s ease-in-out infinite; }
+@keyframes skelPulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) {
+  .skel { animation: none; }
+}
+.skel-wrap { padding: 20px var(--gutter); }
+.skel-line { height: 14px; margin-bottom: 10px; }
+.skel-line.is-sm { height: 11px; width: 40%; }
+.skel-line.is-lg { height: 30px; width: 65%; margin-bottom: 16px; }
+.skel-line.is-full { width: 100%; }
+.skel-line.is-3q { width: 75%; }
+.skel-line.is-half { width: 50%; }
+.skel-box { height: 84px; margin-bottom: 12px; }
+.skel-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.skel-circle { width: 44px; height: 44px; border-radius: 50%; flex: 0 0 44px; }
+.skel-row > div { flex: 1 1 auto; }
+
+.state {
+  padding: 64px 24px; text-align: center;
+}
+.state__ico { display: flex; justify-content: center; margin-bottom: 14px; color: var(--gray-300); }
+.state__ico svg { width: 40px; height: 40px; }
+.state__ico--warn { color: var(--accent); }
+.state__title { font-size: 16px; font-weight: 700; letter-spacing: -0.4px; color: var(--ink-strong); }
+.state__desc { margin-top: 8px; font-size: 14px; line-height: 1.7; color: var(--gray-500); white-space: pre-line; }
+.state__act { margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.state__act .btn { max-width: 260px; }
+
+/* 이전 버전 호환용 빈 상태 */
+.empty { padding: 64px 24px; text-align: center; }
+.empty [data-icon] { display: flex; justify-content: center; margin-bottom: 14px; color: var(--gray-300); }
+.empty svg { width: 40px; height: 40px; }
+.empty p { font-size: 14px; line-height: 1.7; color: var(--gray-500); }
+
+/* 11. Utility ------------------------------------------------------------ */
+.u-hidden { display: none !important; }
+.u-num { font-variant-numeric: tabular-nums; letter-spacing: -0.2px; }
+.u-accent { color: var(--accent); }
+.u-gray { color: var(--gray-500); }
+.u-center { text-align: center; }
+.u-right { text-align: right; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.note {
+  padding: 14px 16px;
+  background: var(--gray-100);
+  font-size: 13px; line-height: 1.7; color: var(--gray-700);
+  border-radius: var(--radius);
+}
+.note li { position: relative; padding-left: 10px; }
+.note li::before {
+  content: ""; position: absolute; left: 0; top: 10px;
+  width: 3px; height: 3px; background: var(--gray-400); border-radius: 50%;
+}
+.note li + li { margin-top: 4px; }
+.pad { padding: 20px var(--gutter) 36px; }
+.pad-b { padding: 4px var(--gutter) 36px; }
