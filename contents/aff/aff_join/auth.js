@@ -7,6 +7,11 @@
  *   03_활동내역/js/auth.js
  *   04_로그인/js/auth.js
  *
+ * [로드 순서] ★ site-config.js → auth.js → 화면 스크립트
+ *   화면 이동 경로(loginUrl/homeUrl/applyUrl)는 site-config.js 의 window.LFSite 가
+ *   단독으로 소유합니다. 이 파일에도, 화면 코드에도 경로를 하드코딩하지 마세요.
+ *   (로컬 폴더명과 배포 경로가 다릅니다 — site-config.js 주석의 매핑표 참고)
+ *
  * [설계 원칙]
  *  - HTML과 완전히 분리된 순수 JS. 전역 window.LFAuth 로만 노출합니다.
  *  - ES Module(import/export) 미사용 → 구형 브라우저 및 정적 호스팅 호환.
@@ -25,15 +30,37 @@
   /* ---------------------------------------------------------
    * 0. 설정
    * --------------------------------------------------------- */
+  /**
+   * 화면 이동 경로를 site-config.js(window.LFSite) 에서 가져온다.
+   * LFSite 가 없거나(로드 실패·구버전 배포) 키를 모르면 폴백 값을 쓴다. — 안전장치
+   * @param {string} key      'login' | 'my' | 'apply' | 'admin'
+   * @param {string} fallback LFSite 가 없을 때 쓸 기존 상대경로
+   * @returns {string}
+   */
+  function sitePath(key, fallback) {
+    var S = global.LFSite;
+    if (S && typeof S.resolve === 'function') {
+      try {
+        var v = S.resolve(key);
+        if (v) return v;
+      } catch (e) { /* 폴백으로 진행 */ }
+    }
+    return fallback;
+  }
+
   var CFG = {
     /* Apps Script 웹앱 URL (4개 화면 모두 동일 값 사용) */
     apiUrl: 'https://script.google.com/macros/s/AKfycbwVjfkUZPKJfF7Ma6AriDgkbMISNTH7qaCh_Os5TgLkF5hx7rYFNocDLmZl3LyEr1J6Ug/exec',
-    /* 미인증 시 이동할 로그인 페이지 (각 화면에서 상대경로로 재설정) */
-    loginUrl: '../04_로그인/login.html',
+    /* ★ 화면 이동 경로 — LFSite(site-config.js) 가 환경(local/deploy)에 맞춰 계산한다.
+       화면 코드에서 LFAuth.config({loginUrl:...}) 로 덮어쓰지 마세요. */
+    /* 미인증 시 이동할 로그인 페이지 */
+    loginUrl: sitePath('login', '../04_로그인/login.html'),
     /* 로그인 성공 후 이동할 활동내역 페이지 */
-    homeUrl: '../03_활동내역/affiliate.html',
+    homeUrl: sitePath('my', '../03_활동내역/affiliate.html'),
     /* 가입 신청 페이지 */
-    applyUrl: '../01_신청화면/index.html',
+    applyUrl: sitePath('apply', '../01_신청화면/index.html'),
+    /* ADMIN 페이지 */
+    adminUrl: sitePath('admin', '../02_ADMIN/admin.html'),
     /* 세션 토큰 저장 키 (sessionStorage: 탭 종료 시 자동 소멸) */
     tokenKey: 'lf_user_token',
     profileKey: 'lf_user_profile',
@@ -53,8 +80,14 @@
   /**
    * 이 클라이언트가 요구하는 서버 API 레벨.
    * 서버(apps-script.gs)의 API_LEVEL 이 이 값보다 낮으면 '구버전 배포' 로 판정한다.
+   *
+   * [v2.2] 2 → 3. 01_신청화면이 emailCheck 액션에 실제로 의존하기 시작했다.
+   *   emailCheck 가 없는 서버(API_LEVEL 2 이하)에서는 이메일 중복확인이
+   *   영원히 통과되지 않아 신청 자체가 불가능하므로, 클릭 시점이 아니라
+   *   **화면 진입 즉시** 구버전으로 판정하고 재배포 안내를 띄운다.
+   *   ★ 반드시 서버(API_LEVEL=3) 를 먼저 재배포한 뒤 이 파일들을 올린다.
    */
-  var EXPECTED_API_LEVEL = 2;
+  var EXPECTED_API_LEVEL = 3;
 
   /* 구버전 서버가 배포돼 있을 때 화면에 그대로 노출할 안내 문구 */
   var OUTDATED_MSG =
@@ -358,6 +391,30 @@
     try { return JSON.parse(s.getItem(CFG.profileKey) || 'null'); } catch (e) { return null; }
   }
 
+  /**
+   * [v2.2] 세션에 보관 중인 프로필의 일부 필드만 갱신한다. (토큰은 그대로)
+   *
+   * 이메일을 바꾸면 회원ID(profile.id)가 바뀐다. 세션 프로필의 id 를 갱신하지 않으면
+   * 활동내역 캐시 엔트리의 memberId 와 어긋나 화면 진입마다 캐시가 폐기된다.
+   *
+   * @param {Object} patch 병합할 필드 (예: { id: 'new@example.com', email: 'New@Example.com' })
+   * @returns {Object|null} 갱신된 프로필
+   */
+  function updateSessionProfile(patch) {
+    if (!patch || typeof patch !== 'object') return getProfile();
+    var prof = getProfile() || {};
+    var next = {};
+    var k;
+    for (k in prof) { if (Object.prototype.hasOwnProperty.call(prof, k)) next[k] = prof[k]; }
+    for (k in patch) { if (Object.prototype.hasOwnProperty.call(patch, k)) next[k] = patch[k]; }
+    _memory.profile = next;
+    var s = store();
+    if (s) {
+      try { s.setItem(CFG.profileKey, JSON.stringify(next)); } catch (e) { /* 메모리로만 유지 */ }
+    }
+    return next;
+  }
+
   function isAuthed() { return !!getToken(); }
 
   /* ---------------------------------------------------------
@@ -544,6 +601,7 @@
     getToken: getToken,
     getProfile: getProfile,
     setSession: setSession,
+    updateSessionProfile: updateSessionProfile,
     clearSession: clearSession,
     isAuthed: isAuthed,
     requireAuth: requireAuth,

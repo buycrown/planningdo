@@ -80,6 +80,130 @@ function moveSnsRowUp(list, index) {
 }
 /* @pure:sns-end */
 
+/* =========================================================
+ * 이메일 중복 확인 - 순수 상태머신 (DOM 비의존)
+ * ---------------------------------------------------------
+ * 회원의 기본키(PK)가 이메일이므로(SPEC §1-7) 신청 전에 반드시 중복 확인을 통과해야 합니다.
+ *
+ *   미확인(idle) --[중복 확인 클릭]--> 확인중(checking) --+--> 사용가능(available)
+ *        ^                                                +--> 중복(duplicate)
+ *        |                                                +--> 형식오류(invalid)
+ *        |                                                +--> 통신오류(error)
+ *        +-------- 이메일 값 변경(input) / [변경] 클릭(reset) -----------+
+ *
+ * - available 상태에서만 신청이 가능하며, 이때 이메일 입력란을 readonly 로 잠급니다.
+ * - '값이 바뀌면 즉시 미확인' 은 정규화(trim+소문자) 기준으로 판정합니다.
+ *   서버가 대소문자·앞뒤공백이 다른 이메일을 같은 계정으로 취급하므로(SPEC §1-7)
+ *   'A@x.com' -> 'a@x.com' 은 확인 결과가 그대로 유효한 같은 계정입니다.
+ * - reqId 로 응답을 봉인합니다. 확인 중에 값이 바뀌면 reqId 가 올라가고,
+ *   뒤늦게 도착한 옛 응답은 버려집니다. (느린 네트워크에서 엉뚱한 이메일이 통과되는 것을 막음)
+ *
+ * 아래 @pure 구간은 DOM 없이 그대로 실행할 수 있어야 합니다.
+ * (공용_서버_문서/_테스트하네스/email-check.js 가 이 구간만 잘라내 Node 에서 검증)
+ * ========================================================= */
+/* @pure:emailcheck-start */
+/** 서버와 동일한 정규화 규칙 : trim + 소문자 (SPEC §1-7) */
+function normalizeEmail(v) {
+  return String(v == null ? "" : v).trim().toLowerCase();
+}
+
+/** 화면 1차 형식 검사. 최종 판정은 서버(isValidEmail)가 하며 여기서는 헛된 호출만 걸러낸다. */
+function isEmailFormatOk(v) {
+  const e = normalizeEmail(v);
+  if (!e || e.length > 254) return false;
+  if (/\s/.test(e)) return false;          // 공백 불가
+  if (e.indexOf("..") !== -1) return false; // 연속 점 불가
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
+}
+
+/** 상태별 안내 문구 (화면은 이 문구를 textContent 로만 넣는다) */
+const EMAIL_CHECK_MSG = {
+  idle:      "이메일 입력 후 [중복 확인]을 눌러 주세요.",
+  checking:  "확인 중…",
+  available: "사용할 수 있는 이메일입니다.",
+  duplicate: "이미 가입된 이메일입니다.",
+  invalid:   "이메일 형식을 확인해 주세요.",
+  error:     "확인에 실패했습니다. 다시 시도해 주세요."
+};
+
+/** 초기 상태 = 미확인 */
+function emailCheckInitial() {
+  return { status: "idle", email: "", normalized: "", reqId: 0, message: EMAIL_CHECK_MSG.idle };
+}
+
+function emailCheckMake(status, email, normalized, reqId) {
+  return { status: status, email: email, normalized: normalized, reqId: reqId, message: EMAIL_CHECK_MSG[status] };
+}
+
+/**
+ * 상태 전이. 상태를 바꾸지 않는 이벤트는 '같은 객체'를 그대로 돌려준다.
+ * @param {Object} state 현재 상태 (null 이면 초기 상태로 간주)
+ * @param {Object} ev   { type:'input'|'start'|'result'|'fail'|'reset', ... }
+ * @returns {Object} 다음 상태
+ */
+function emailCheckReduce(state, ev) {
+  const s = state || emailCheckInitial();
+  const type = ev && ev.type;
+
+  /* 값 변경 : 확인 상태를 즉시 무효화한다. (브라우저 자동완성 포함) */
+  if (type === "input") {
+    const email = ev.email == null ? "" : String(ev.email);
+    const norm = normalizeEmail(email);
+    if (norm === s.normalized) return s;                 // 정규화 기준으로 같은 값 = 상태 유지
+    return emailCheckMake("idle", email, norm, s.reqId + 1); // reqId++ → 진행 중이던 응답 폐기
+  }
+
+  /* [중복 확인] 클릭 */
+  if (type === "start") {
+    const email = ev.email == null ? "" : String(ev.email);
+    const norm = normalizeEmail(email);
+    if (s.status === "checking") return s;               // 연타 방지 (요청 중복 발사 금지)
+    if (!isEmailFormatOk(norm)) return emailCheckMake("invalid", email, norm, s.reqId + 1);
+    return emailCheckMake("checking", email, norm, s.reqId + 1);
+  }
+
+  /* 서버 응답 : 확인 중이면서 reqId 가 일치할 때만 반영한다 */
+  if (type === "result") {
+    if (s.status !== "checking" || ev.reqId !== s.reqId) return s;
+    const norm = ev.normalized ? normalizeEmail(ev.normalized) : s.normalized;
+    return emailCheckMake(ev.available === true ? "available" : "duplicate", s.email, norm, s.reqId);
+  }
+
+  /* 오류 응답 : 형식 오류만 따로 안내하고 나머지는 재시도 가능한 통신 오류로 묶는다 */
+  if (type === "fail") {
+    if (s.status !== "checking" || ev.reqId !== s.reqId) return s;
+    const invalid = ev.code === "INVALID_EMAIL" || ev.code === "EMAIL_REQUIRED";
+    return emailCheckMake(invalid ? "invalid" : "error", s.email, s.normalized, s.reqId);
+  }
+
+  /* [변경] 클릭 · 서버가 최종 제출에서 중복을 알린 경우 → 잠금 해제 + 미확인 */
+  if (type === "reset") {
+    return emailCheckMake("idle", s.email, s.normalized, s.reqId + 1);
+  }
+
+  return s;
+}
+
+/** 지금 입력란에 들어있는 값이 '중복 확인을 통과한 그 이메일' 인가 */
+function isEmailVerified(state, currentEmail) {
+  return !!state && state.status === "available" && state.normalized === normalizeEmail(currentEmail);
+}
+
+/** 입력란을 readonly 로 잠글 상태인가 (확인 통과 시에만 잠근다) */
+function isEmailLocked(state) {
+  return !!state && state.status === "available";
+}
+
+/**
+ * 신청하기 버튼 활성 조건. 5가지가 모두 충족되어야 한다.
+ * (약관 전체 동의 · 비밀번호 완성 · 이메일 중복확인 통과 · 보안 컨텍스트 · 서버 최신 배포)
+ */
+function canSubmit(f) {
+  if (!f) return false;
+  return !!(f.agreed && f.passwordReady && f.emailVerified && f.secureOk && !f.serverOutdated);
+}
+/* @pure:emailcheck-end */
+
 /* ---------- 공통 헬퍼 ---------- */
 const $  = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
@@ -427,7 +551,116 @@ function fileToBase64(file) {
 }
 
 /* =========================================================
- * 4. 비밀번호 (표시 토글 · 실시간 정책 검증 · 강도 인디케이터)
+ * 4. 이메일 중복 확인 (중복 확인 버튼 · 상태머신 연결)
+ * ---------------------------------------------------------
+ * 위 @pure:emailcheck 구간의 순수 상태머신을 화면에 연결하는 얇은 층입니다.
+ * 이 모듈은 초기화 시점에 refreshSubmitState() 를 호출하지 않습니다.
+ *   → refreshSubmitState 가 참조하는 agreeAll/agreeItems/btnSubmit 은
+ *     아래 '6. 약관 동의' 에서 const 로 선언되므로, 여기서 부르면 TDZ 오류가 납니다.
+ *     초기 버튼 상태는 6번 섹션 끝의 refreshSubmitState() 한 번이 책임집니다.
+ * ========================================================= */
+/* @dom:emailcheck-start */
+const emailInput = $("#email");
+const btnEmailCheck = $("#btnEmailCheck");
+const btnEmailChange = $("#btnEmailChange");
+const emailCheckSpin = $("#emailCheckSpin");
+const btnEmailCheckTxt = $("#btnEmailCheckTxt");
+const emailCheckMsgEl = $("#emailCheckMsg");
+const emailDupLogin = $("#emailDupLogin");
+
+let emailCheck = emailCheckInitial();
+
+/* 상태 -> 화면. 서버가 보낸 문자열은 textContent 로만 넣습니다(innerHTML 금지). */
+function renderEmailCheck() {
+  const st = emailCheck.status;
+  const locked = isEmailLocked(emailCheck);
+  const busy = st === "checking";
+
+  emailCheckMsgEl.textContent = emailCheck.message;
+  emailCheckMsgEl.dataset.state = st;
+  emailDupLogin.hidden = st !== "duplicate";      // 이미 가입됨 → 로그인 화면 링크 노출
+
+  emailInput.readOnly = locked;                   // 확인 통과 시 입력란 잠금
+  btnEmailCheck.hidden = locked;
+  btnEmailChange.hidden = !locked;                // 잠금 상태에서만 [변경] 노출
+  btnEmailCheck.disabled = busy;
+  btnEmailCheck.setAttribute("aria-busy", busy ? "true" : "false");
+  emailCheckSpin.hidden = !busy;
+  btnEmailCheckTxt.textContent = busy ? "확인 중…" : "중복 확인";
+
+  /* 상태가 바뀌면 붉은 테두리는 걷어낸다. 사유는 아래 결과 메시지가 이미 말하고 있다.
+     (미확인 제출 시도 시에는 promptEmailCheck() 가 다시 켠다) */
+  setFieldError("field-email", false);
+}
+
+/** 상태 전이 + 렌더. 상태가 실제로 바뀐 경우에만 true 를 돌려준다. */
+function dispatchEmailCheck(ev) {
+  const next = emailCheckReduce(emailCheck, ev);
+  if (next === emailCheck) return false;
+  emailCheck = next;
+  renderEmailCheck();
+  return true;
+}
+
+/** 미확인 상태로 제출을 시도한 경우의 안내 (포커스 · 스크롤) */
+function promptEmailCheck() {
+  const formatOk = isEmailFormatOk(emailInput.value);
+  setFieldError("field-email", true);
+  showToast(formatOk
+    ? "이메일 중복 확인을 먼저 해주세요."
+    : "이메일을 입력한 뒤 [중복 확인]을 눌러 주세요.");
+  $("#field-email").scrollIntoView({ behavior: "smooth", block: "center" });
+  /* 값이 있으면 바로 누를 수 있도록 버튼에, 비어 있으면 입력란에 포커스를 준다 */
+  (formatOk && !btnEmailCheck.hidden ? btnEmailCheck : emailInput).focus();
+}
+
+function runEmailCheck() {
+  if (emailCheck.status === "checking") return;             // 연타 방지
+  dispatchEmailCheck({ type: "start", email: emailInput.value });
+  refreshSubmitState();
+  if (emailCheck.status !== "checking") { emailInput.focus(); return; }  // 형식 오류에서 멈춤
+
+  const reqId = emailCheck.reqId;                            // 이 요청의 봉인 번호
+  const settle = (ev) => { dispatchEmailCheck(ev); refreshSubmitState(); };
+
+  /* 데모 모드(서버 URL 미설정) : 실제 호출 없이 '사용 가능'으로 진행 */
+  if (!AUTH_READY || !CONFIG.APPS_SCRIPT_URL) {
+    settle({ type: "result", reqId: reqId, available: true, normalized: normalizeEmail(emailInput.value) });
+    return;
+  }
+
+  LFAuth.config({ apiUrl: CONFIG.APPS_SCRIPT_URL });
+  LFAuth.api("emailCheck", { email: emailInput.value.trim() }).then(
+    (res) => settle({ type: "result", reqId: reqId, available: res && res.available === true,
+                      normalized: res && res.normalized }),
+    (err) => {
+      const code = err && err.code;
+      /* emailCheck 액션이 없는 구버전 배포 : 원인이 코드가 아니라 배포임을 배너로 알린다 */
+      if (code === "OUTDATED_SERVER") {
+        serverOutdated = true;
+        $("#secureWarnText").textContent = (AUTH_READY && LFAuth.OUTDATED_MSG) || err.message;
+        $("#secureWarn").hidden = false;
+      }
+      settle({ type: "fail", reqId: reqId, code: code });
+    }
+  );
+}
+
+btnEmailCheck.addEventListener("click", runEmailCheck);
+btnEmailChange.addEventListener("click", () => {
+  dispatchEmailCheck({ type: "reset" });
+  refreshSubmitState();
+  emailInput.focus();
+});
+/* readonly 로 잠가 두어도 브라우저 자동완성 등으로 값이 바뀔 수 있으므로 input 으로도 감시한다 */
+emailInput.addEventListener("input", () => {
+  if (dispatchEmailCheck({ type: "input", email: emailInput.value })) refreshSubmitState();
+});
+renderEmailCheck();   /* 초기 문구 렌더 (refreshSubmitState 는 6번 섹션이 담당) */
+/* @dom:emailcheck-end */
+
+/* =========================================================
+ * 5. 비밀번호 (표시 토글 · 실시간 정책 검증 · 강도 인디케이터)
  * ---------------------------------------------------------
  * - 정책 검증은 공용 모듈 LFAuth.validatePassword() 로 단일화합니다.
  * - 평문 비밀번호는 화면 밖으로 나가지 않습니다.
@@ -549,7 +782,7 @@ pwConfirmInput.addEventListener("input", () => {
 });
 
 /* =========================================================
- * 5. 약관 동의 (전체 동의 + 개별 동의 + 버튼 활성화)
+ * 6. 약관 동의 (전체 동의 + 개별 동의 + 버튼 활성화)
  * ========================================================= */
 const agreeAll = $("#agreeAll");
 const agreeItems = [...$$(".agree-item")];
@@ -558,8 +791,14 @@ const btnSubmit = $("#btnSubmit");
 function refreshSubmitState() {
   const allChecked = agreeItems.every((c) => c.checked);
   agreeAll.checked = allChecked;
-  /* 필수 약관 미동의 · 비밀번호 미완성 · 보안 컨텍스트 불가 · 서버 구버전 시 신청하기 비활성화 */
-  btnSubmit.disabled = !allChecked || !isPasswordReady() || !SECURE_OK || serverOutdated;
+  /* 활성 조건은 순수 함수 canSubmit() 한 곳에만 둔다 (하네스가 전수 테스트) */
+  btnSubmit.disabled = !canSubmit({
+    agreed: allChecked,
+    passwordReady: isPasswordReady(),
+    emailVerified: isEmailVerified(emailCheck, emailInput.value),
+    secureOk: SECURE_OK,
+    serverOutdated: serverOutdated
+  });
 }
 
 agreeAll.addEventListener("change", () => {
@@ -573,7 +812,7 @@ refreshSubmitState();
 checkServerVersion();
 
 /* =========================================================
- * 6. 약관 '자세히 보기' 모달
+ * 7. 약관 '자세히 보기' 모달
  * ========================================================= */
 $$(".btn-terms-view").forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -600,16 +839,18 @@ document.addEventListener("keydown", (e) => {
 });
 
 /* =========================================================
- * 7. 입력 검증
+ * 8. 입력 검증
  * ========================================================= */
 function validateForm() {
   let ok = true;
   const focusTargets = [];
 
-  const email = $("#email").value.trim();
-  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
-  setFieldError("field-email", !emailOk);
-  if (!emailOk) { ok = false; focusTargets.push($("#email")); }
+  const email = emailInput.value.trim();
+  const emailOk = isEmailFormatOk(email);
+  /* 형식이 맞아도 '중복 확인 통과' 가 아니면 신청할 수 없다 (이메일 = 회원 PK) */
+  const emailVerified = emailOk && isEmailVerified(emailCheck, email);
+  setFieldError("field-email", !emailVerified);
+  if (!emailVerified) { ok = false; focusTargets.push(emailOk ? btnEmailCheck : emailInput); }
 
   const nameOk = $("#name").value.trim().length > 0;
   setFieldError("field-name", !nameOk);
@@ -643,21 +884,25 @@ function validateForm() {
   if (!snsOk) ok = false;
 
   if (!ok) {
-    showToast("입력하지 않은 항목이 있습니다. 확인해 주세요.");
-    if (focusTargets[0]) focusTargets[0].focus();
+    /* 이메일 형식은 맞는데 중복 확인만 남은 경우는 전용 문구로 안내한다 */
+    if (emailOk && !emailVerified) promptEmailCheck();
+    else {
+      showToast("입력하지 않은 항목이 있습니다. 확인해 주세요.");
+      if (focusTargets[0]) focusTargets[0].focus();
+    }
   }
   return ok;
 }
 
-/* 입력 시 에러 표시 해제 */
-["email", "name", "nickname", "phone"].forEach((id) => {
+/* 입력 시 에러 표시 해제 (email 은 중복확인 상태가 관리하므로 4번 섹션에서 처리) */
+["name", "nickname", "phone"].forEach((id) => {
   document.getElementById(id).addEventListener("input", () => setFieldError("field-" + id, false));
 });
 $("#categoryChips").addEventListener("change", () => setFieldError("field-category", false));
 $("#snsList").addEventListener("input", () => setFieldError("field-sns", false));
 
 /* =========================================================
- * 8. 제출 (Google Apps Script로 전송)
+ * 9. 제출 (Google Apps Script로 전송)
  * ========================================================= */
 const dupNotice = $("#dupNotice");
 
@@ -686,6 +931,8 @@ function maskPayloadForLog(payload) {
 
 $("#applyForm").addEventListener("submit", async (e) => {
   e.preventDefault();
+  /* 버튼이 비활성이어도 Enter 키로 submit 이 발생할 수 있으므로 여기서 먼저 안내한다 */
+  if (!isEmailVerified(emailCheck, emailInput.value)) { promptEmailCheck(); return; }
   if (btnSubmit.disabled) return;
   if (!validateForm()) return;
 
@@ -773,10 +1020,23 @@ $("#applyForm").addEventListener("submit", async (e) => {
     finishSubmit(result.attachmentWarning === true);
   } catch (err) {
     console.error(err);
-    /* 중복 가입 : 로그인 화면으로 유도 */
+    /* 중복 가입 : 로그인 화면으로 유도 (중복확인 통과 후 남이 먼저 가입한 경우 포함) */
     if (err && err.code === "DUPLICATE") {
+      dispatchEmailCheck({ type: "reset" });   // 잠금 해제 + 미확인으로 되돌린다
       showDuplicateNotice();
       showToast("이미 신청된 이메일 또는 휴대폰번호입니다.");
+      refreshSubmitState();
+      return;
+    }
+    /* 이메일 = 회원 기본키 : 미입력 · 형식 오류는 이메일 필드로 되돌린다 (SPEC §3-0) */
+    if (err && (err.code === "EMAIL_REQUIRED" || err.code === "INVALID_EMAIL")) {
+      dispatchEmailCheck({ type: "reset" });
+      setFieldError("field-email", true);
+      showToast(err.code === "EMAIL_REQUIRED"
+        ? "이메일을 입력한 뒤 중복 확인을 진행해 주세요."
+        : "이메일 형식을 확인해 주세요.");
+      $("#field-email").scrollIntoView({ behavior: "smooth", block: "center" });
+      emailInput.focus();
       refreshSubmitState();
       return;
     }
@@ -826,6 +1086,11 @@ $("#applyForm").addEventListener("submit", async (e) => {
   } finally {
     loading.classList.remove("show");
   }
+});
+
+/* 비활성 버튼은 브라우저에 따라 click 이벤트를 내지 않으므로 감싼 영역에서 받아 안내한다 */
+$(".submit-bar").addEventListener("click", () => {
+  if (btnSubmit.disabled && !isEmailVerified(emailCheck, emailInput.value)) promptEmailCheck();
 });
 
 function finishSubmit(attachmentWarning) {

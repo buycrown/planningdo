@@ -131,6 +131,45 @@
   .pw-match.err { color: var(--accent); }
   .pw-match.ok { color: #1E9E5A; }
 
+  /* ---------- 이메일 중복 확인 (입력란 + 중복 확인 버튼) ---------- */
+  /* 좁은 화면에서 버튼이 입력란을 압박하지 않도록 380px 이하에서는 버튼을 아래 줄로 내린다 */
+  .email-row { display: flex; gap: 8px; align-items: stretch; }
+  .email-row input { flex: 1 1 auto; min-width: 0; }
+  .email-row input[readonly] { background: var(--gray-100); color: var(--gray-700); }
+  .btn-email-check, .btn-email-change {
+    flex: 0 0 auto; min-width: 88px; height: 50px; min-height: 44px; padding: 0 12px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    border: 1px solid #111; border-radius: var(--radius);
+    background: var(--white); color: #111; font-size: 14px; font-weight: 700;
+    white-space: nowrap; cursor: pointer; transition: all .12s;
+  }
+  .btn-email-check:hover:not(:disabled), .btn-email-change:hover { background: #FAFAFA; }
+  .btn-email-check:focus-visible, .btn-email-change:focus-visible { outline: 2px solid #111; outline-offset: 1px; }
+  .btn-email-check:disabled { border-color: var(--gray-300); color: var(--gray-400); cursor: default; }
+  .btn-email-change { border-color: var(--gray-300); color: var(--gray-700); font-weight: 600; }
+  /* 확인 중 스피너 (버튼 안) */
+  .mini-spin {
+    flex: 0 0 14px; width: 14px; height: 14px;
+    border: 2px solid var(--gray-300); border-top-color: #111; border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  /* 결과 메시지 : 색상만으로 상태를 구분하지 않도록 기호(✓ / !)를 함께 표기 */
+  .email-check-msg { font-size: 12px; font-weight: 600; line-height: 1.5; margin-top: 6px; }
+  .email-check-msg[data-state="idle"] { color: var(--gray-500); font-weight: 400; }
+  .email-check-msg[data-state="checking"] { color: var(--gray-700); }
+  .email-check-msg[data-state="available"] { color: #1E9E5A; }
+  .email-check-msg[data-state="available"]::before { content: "\2713 "; }
+  .email-check-msg[data-state="duplicate"],
+  .email-check-msg[data-state="invalid"],
+  .email-check-msg[data-state="error"] { color: var(--accent); }
+  .email-check-msg[data-state="duplicate"]::before,
+  .email-check-msg[data-state="invalid"]::before,
+  .email-check-msg[data-state="error"]::before { content: "! "; }
+  .email-dup-login {
+    display: inline-flex; align-items: center; min-height: 44px; margin-top: 2px;
+    font-size: 13px; font-weight: 700; color: #111; text-decoration: underline;
+  }
+
   /* ---------- 보안 컨텍스트 경고 배너 ---------- */
   .warn-banner {
     background: var(--accent-light); border-bottom: 1px solid #F0C5C8; color: #8E1219;
@@ -366,6 +405,13 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-overlay p { font-size: 14px; font-weight: 700; color: var(--ink); }
 
+  /* 320~380px : [중복 확인] 버튼을 아래 줄 전체 폭으로 내려 입력란을 확보한다 */
+  @media (max-width: 380px) {
+    .email-row { flex-wrap: wrap; }
+    .email-row input { flex: 1 1 100%; }
+    .btn-email-check, .btn-email-change { flex: 1 1 100%; height: 46px; }
+  }
+
   @media (max-width: 420px) {
     .sns-row__ctrl { flex-wrap: wrap; }
     .sns-row select { flex: 1 1 100%; }
@@ -428,45 +474,24 @@
       <section class="card">
         <h2 class="card__title">기본 정보</h2>
 
+        <!-- 1. 이메일 = 회원의 기본키(로그인 아이디). 중복 확인을 통과해야 신청할 수 있다. -->
         <div class="field" id="field-email">
           <label class="field__label required" for="email">이메일</label>
-          <input type="email" id="email" name="email" placeholder="example@email.com" autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" />
-          <p class="error-msg">올바른 이메일 주소를 입력해 주세요.</p>
-        </div>
-
-        <div class="field" id="field-name">
-          <label class="field__label required" for="name">이름</label>
-          <input type="text" id="name" name="name" placeholder="홍길동" autocomplete="name" enterkeyhint="next" />
-          <p class="error-msg">이름을 입력해 주세요.</p>
-        </div>
-
-        <div class="field" id="field-nickname">
-          <label class="field__label required" for="nickname">활동명</label>
-          <input type="text" id="nickname" name="nickname" placeholder="채널에서 사용하는 활동명을 입력해 주세요" autocomplete="nickname" enterkeyhint="next" />
-          <p class="error-msg">활동명을 입력해 주세요.</p>
-        </div>
-
-        <div class="field" id="field-category">
-          <label class="field__label required">관심 카테고리 <span style="font-weight:400;font-size:12px;color:#8A8A8A;">(복수 선택 가능)</span></label>
-          <div class="chips" id="categoryChips">
-            <label class="chip"><input type="checkbox" name="category" value="여성패션"/><span>여성패션</span></label>
-            <label class="chip"><input type="checkbox" name="category" value="남성패션"/><span>남성패션</span></label>
-            <label class="chip"><input type="checkbox" name="category" value="뷰티"/><span>뷰티</span></label>
-            <label class="chip"><input type="checkbox" name="category" value="스포츠·아웃도어"/><span>스포츠·아웃도어</span></label>
-            <label class="chip"><input type="checkbox" name="category" value="리빙·라이프스타일"/><span>리빙·라이프스타일</span></label>
-            <label class="chip"><input type="checkbox" name="category" value="잡화·슈즈"/><span>잡화·슈즈</span></label>
-            <label class="chip"><input type="checkbox" name="category" value="골프"/><span>골프</span></label>
-            <label class="chip"><input type="checkbox" name="category" value="키즈"/><span>키즈</span></label>
+          <div class="email-row">
+            <input type="email" id="email" name="email" placeholder="example@email.com" autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-describedby="emailCheckMsg" />
+            <button type="button" class="btn-email-check" id="btnEmailCheck" aria-describedby="emailCheckMsg">
+              <span class="mini-spin" id="emailCheckSpin" aria-hidden="true" hidden></span>
+              <span id="btnEmailCheckTxt">중복 확인</span>
+            </button>
+            <button type="button" class="btn-email-change" id="btnEmailChange" aria-describedby="emailCheckMsg" hidden>변경</button>
           </div>
-          <p class="error-msg">관심 카테고리를 1개 이상 선택해 주세요.</p>
+          <p class="hint">로그인 아이디로 사용됩니다. [중복 확인]을 통과해야 신청할 수 있습니다.</p>
+          <p class="error-msg">이메일을 입력하고 중복 확인을 완료해 주세요.</p>
+          <p class="email-check-msg" id="emailCheckMsg" data-state="idle" aria-live="polite">이메일 입력 후 [중복 확인]을 눌러 주세요.</p>
+          <a class="email-dup-login" id="emailDupLogin" data-lf-link="login" hidden>로그인 화면으로 이동</a>
         </div>
 
-        <div class="field" id="field-phone">
-          <label class="field__label required" for="phone">휴대폰번호</label>
-          <input type="tel" id="phone" name="phone" placeholder="010-0000-0000" inputmode="numeric" maxlength="13" autocomplete="tel" enterkeyhint="done" />
-          <p class="error-msg">올바른 휴대폰번호를 입력해 주세요.</p>
-        </div>
-
+        <!-- 2~3. 비밀번호는 로그인 아이디(이메일) 바로 아래에 둔다. -->
         <div class="field" id="field-password">
           <label class="field__label required" for="password">비밀번호</label>
           <div class="pw-row">
@@ -492,6 +517,45 @@
           <p class="pw-match" id="pwMatchMsg" aria-live="polite"></p>
         </div>
 
+
+        <!-- 4. 이름 -->
+        <div class="field" id="field-name">
+          <label class="field__label required" for="name">이름</label>
+          <input type="text" id="name" name="name" placeholder="홍길동" autocomplete="name" enterkeyhint="next" />
+          <p class="error-msg">이름을 입력해 주세요.</p>
+        </div>
+
+        <!-- 5. 활동명 -->
+        <div class="field" id="field-nickname">
+          <label class="field__label required" for="nickname">활동명</label>
+          <input type="text" id="nickname" name="nickname" placeholder="채널에서 사용하는 활동명을 입력해 주세요" autocomplete="nickname" enterkeyhint="next" />
+          <p class="error-msg">활동명을 입력해 주세요.</p>
+        </div>
+
+        <!-- 6. 관심 카테고리 -->
+        <div class="field" id="field-category">
+          <label class="field__label required">관심 카테고리 <span style="font-weight:400;font-size:12px;color:#8A8A8A;">(복수 선택 가능)</span></label>
+          <div class="chips" id="categoryChips">
+            <label class="chip"><input type="checkbox" name="category" value="여성패션"/><span>여성패션</span></label>
+            <label class="chip"><input type="checkbox" name="category" value="남성패션"/><span>남성패션</span></label>
+            <label class="chip"><input type="checkbox" name="category" value="뷰티"/><span>뷰티</span></label>
+            <label class="chip"><input type="checkbox" name="category" value="스포츠·아웃도어"/><span>스포츠·아웃도어</span></label>
+            <label class="chip"><input type="checkbox" name="category" value="리빙·라이프스타일"/><span>리빙·라이프스타일</span></label>
+            <label class="chip"><input type="checkbox" name="category" value="잡화·슈즈"/><span>잡화·슈즈</span></label>
+            <label class="chip"><input type="checkbox" name="category" value="골프"/><span>골프</span></label>
+            <label class="chip"><input type="checkbox" name="category" value="키즈"/><span>키즈</span></label>
+          </div>
+          <p class="error-msg">관심 카테고리를 1개 이상 선택해 주세요.</p>
+        </div>
+
+        <!-- 7. 휴대폰번호 -->
+        <div class="field" id="field-phone">
+          <label class="field__label required" for="phone">휴대폰번호</label>
+          <input type="tel" id="phone" name="phone" placeholder="010-0000-0000" inputmode="numeric" maxlength="13" autocomplete="tel" enterkeyhint="done" />
+          <p class="error-msg">올바른 휴대폰번호를 입력해 주세요.</p>
+        </div>
+
+        <!-- 8. 사업자 유무 -->
         <div class="field" id="field-biz" style="margin-bottom:0;">
           <label class="field__label required">사업자 유무</label>
           <div class="chips" id="bizChips">
@@ -570,7 +634,7 @@
       <div class="dup-notice" id="dupNotice" role="alert" hidden>
         <p>이미 신청된 이메일 또는 휴대폰번호입니다.</p>
         <p class="sub">기존에 신청하신 계정으로 로그인해 주세요. 비밀번호 초기화가 필요하면 담당자에게 문의해 주세요.</p>
-        <a class="btn-login-link" href="../04_로그인/login.html">로그인 화면으로 이동</a>
+        <a class="btn-login-link" data-lf-link="login">로그인 화면으로 이동</a>
       </div>
 
       <div class="submit-bar">
@@ -587,7 +651,7 @@
     <p style="margin-top:14px;">설정하신 비밀번호로 로그인하면<br/>활동 내역을 확인할 수 있습니다.</p>
     <!-- 첨부파일 업로드만 실패한 경우 노출 (신청 자체는 접수됨) -->
     <p class="attach-warn" id="attachWarn" role="alert" hidden>첨부파일 업로드에 실패했습니다. 담당자에게 별도 전달해 주세요.</p>
-    <a class="btn-go-login" href="../04_로그인/login.html">로그인하러 가기</a>
+    <a class="btn-go-login" data-lf-link="login">로그인하러 가기</a>
   </div>
 
 </main>
@@ -649,7 +713,8 @@
 <!-- 토스트 메시지 -->
 <div class="toast" id="toast"></div>
 
-<!-- 공용 인증 모듈(LFAuth) → 화면 로직 순서로 로드해야 합니다. -->
+<!-- 경로 설정(LFSite) → 공용 인증 모듈(LFAuth) → 화면 로직 순서로 로드해야 합니다. -->
+<script src="site-config.js"></script>
 <script src="auth.js"></script>
 <script src="app.js"></script>
 </body>
