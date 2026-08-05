@@ -1,0 +1,378 @@
+/* =========================================================
+ * LFmall 어필리에이트 - 로그인 화면 스타일 (login.css) v2.0
+ * ---------------------------------------------------------
+ * 톤 : 01_신청화면과 동일한 화이트/블랙 미니멀 + 레드 포인트(#D9232E)
+ *      radius 2px (LFmall 각진 사각형), Pretendard
+ * 모바일 : 카드 max-width 420px, 좌우 20px 여백,
+ *          입력 16px(iOS 자동 확대 방지), 터치 타겟 44px 이상,
+ *          env(safe-area-inset-*) 대응
+ * ========================================================= */
+
+/* ---------- 디자인 토큰 ---------- */
+:root {
+  --bg: #FFFFFF;
+  --ink: #111111;            /* 기본 텍스트 (블랙) */
+  --fg: #111111;
+  --primary: #111111;        /* 인터랙션 활성색 */
+  --accent: #D9232E;         /* LFmall 레드 포인트 */
+  --accent-light: #FCEDEE;
+  --gray-700: #444444;
+  --gray-500: #888888;
+  --gray-400: #AAAAAA;
+  --gray-300: #DDDDDD;       /* 입력 테두리 */
+  --gray-200: #EEEEEE;       /* 구분선 */
+  --gray-100: #F5F5F5;
+  --white: #FFFFFF;
+  --line: #E5E5E5;
+  --muted: #8A8A8A;
+  --radius: 2px;
+}
+
+/* ---------- 리셋 ---------- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  min-height: 100%;
+  background: var(--bg);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Pretendard Variable", "Pretendard", -apple-system, "SF Pro Text",
+               "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+button, a, label, input { -webkit-tap-highlight-color: transparent; }
+
+/* 포커스 링은 항상 유지 (접근성) */
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* ---------- 상단 로고 헤더 ---------- */
+.header {
+  flex: 0 0 auto;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+}
+.header__inner {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;              /* 터치 타겟 확보 */
+  text-decoration: none;
+}
+.logo__img { height: 34px; width: auto; display: block; }
+
+/* ---------- 페이지 (세로 중앙 정렬) ---------- */
+.page {
+  flex: 1 1 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 32px 20px calc(32px + env(safe-area-inset-bottom, 0px));
+}
+
+/* ---------- 로그인 카드 ---------- */
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 32px 24px 28px;
+}
+
+.card__head { text-align: center; margin-bottom: 24px; }
+.badge-brand {
+  display: inline-block;
+  background: var(--ink);
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  padding: 5px 12px;
+  border-radius: 0;
+  margin-bottom: 12px;
+}
+.card__title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  line-height: 1.35;
+  color: var(--ink);
+}
+.card__desc {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--gray-500);
+  line-height: 1.6;
+}
+
+/* ---------- 경고 배너 (HTTPS 미지원 등) ---------- */
+.notice-insecure {
+  margin-bottom: 18px;
+  padding: 14px;
+  border: 1px solid var(--accent);
+  border-left-width: 3px;
+  border-radius: var(--radius);
+  background: var(--accent-light);
+  color: #8E1219;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.65;
+  white-space: pre-line;   /* INSECURE_MSG 의 줄바꿈(\n) 유지 */
+  word-break: keep-all;
+}
+.notice-insecure[hidden] { display: none; }
+
+/* ---------- 폼 상단 에러 영역 (토스트 아님 · 계속 노출) ---------- */
+.form-alert {
+  margin-bottom: 18px;
+  padding: 13px 14px;
+  border: 1px solid var(--gray-300);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--gray-100);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.6;
+  /* OUTDATED_SERVER / SCHEMA_MISMATCH / INSECURE 안내는 여러 줄(\n) 문구다.
+     pre-line 이 없으면 320px 화면에서 한 문단으로 뭉쳐 읽기 어렵다. */
+  white-space: pre-line;
+  word-break: keep-all;
+}
+.form-alert[hidden] { display: none; }
+
+/* 사용자가 스스로 해결할 수 없는 안내(정지 계정 / 스키마 오류 등).
+   잠금과 달리 '🔒 계정 잠금' 헤더를 붙이지 않는다. */
+.form-alert.is-notice {
+  border: 1px solid var(--accent);
+  border-left-width: 3px;
+  background: var(--accent-light);
+  color: #8E1219;
+}
+
+/* 잠금(LOCKED) 상태 강조 스타일 */
+.form-alert.is-locked {
+  border: 1px solid var(--accent);
+  border-left-width: 3px;
+  background: var(--accent-light);
+  color: #8E1219;
+}
+.form-alert.is-locked::before {
+  content: "🔒 계정 잠금";
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  margin-bottom: 4px;
+  color: var(--accent);
+}
+
+/* ---------- 필드 ---------- */
+.form { display: block; }
+.field { margin-bottom: 16px; }
+
+.field__labelrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.field__label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.field__labelrow .field__label { margin-bottom: 0; }
+
+/* 입력 유형 배지 (이메일로 로그인 / 휴대폰번호로 로그인) */
+.id-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  padding: 3px 8px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius);
+  background: var(--gray-100);
+  color: var(--gray-700);
+  white-space: nowrap;
+}
+.id-badge.is-email { border-color: var(--ink); background: var(--ink); color: var(--white); }
+.id-badge.is-phone { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+.id-badge[hidden] { display: none; }
+
+/* 입력창 : 16px 이상이어야 iOS Safari 자동 확대가 발생하지 않음 */
+.input {
+  width: 100%;
+  height: 52px;               /* 터치 타겟 44px 이상 */
+  padding: 0 14px;
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius);
+  transition: border-color .15s;
+}
+.input::placeholder { color: #B8B8B8; }
+.input:focus { outline: none; border-color: var(--ink); }
+.input:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+.input:disabled { background: var(--gray-100); color: var(--gray-400); cursor: not-allowed; }
+
+/* 오류로 표시된 입력 */
+.field.is-invalid .input { border-color: var(--accent); }
+
+/* 비밀번호 입력 + 토글 버튼 */
+.input-wrap { position: relative; }
+.input--pw { padding-right: 52px; }
+.pw-toggle {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;               /* 터치 타겟 44x44 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--gray-500);
+  transition: opacity .12s;
+}
+.pw-toggle__icon { font-size: 18px; line-height: 1; opacity: .45; transition: opacity .12s; }
+.pw-toggle:hover .pw-toggle__icon { opacity: .8; }
+.pw-toggle[aria-pressed="true"] .pw-toggle__icon { opacity: 1; }
+.pw-toggle:disabled { cursor: not-allowed; }
+
+.field__hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--gray-500);
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+/* ---------- 버튼 ---------- */
+.actions { margin-top: 22px; display: flex; flex-direction: column; gap: 10px; }
+
+.btn {
+  width: 100%;
+  min-height: 54px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  text-decoration: none;
+  border-radius: var(--radius);   /* 각진 사각 */
+  cursor: pointer;
+  transition: opacity .15s, background-color .12s, border-color .12s;
+}
+
+/* 솔리드 블랙 (로그인) */
+.btn--solid {
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  color: var(--white);
+}
+.btn--solid:hover:not(:disabled) { opacity: .88; }
+.btn--solid:disabled { background: #CFCFCF; border-color: #CFCFCF; color: var(--white); cursor: not-allowed; opacity: 1; }
+
+/* 아웃라인 (가입 신청) */
+.btn--outline {
+  background: var(--white);
+  border: 1px solid var(--ink);
+  color: var(--ink);
+}
+.btn--outline:hover { background: #FAFAFA; }
+.btn--outline.is-disabled { border-color: var(--gray-300); color: var(--gray-400); pointer-events: none; }
+
+/* 버튼 내 스피너 */
+.btn__spinner {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  border: 2px solid rgba(255, 255, 255, .35);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: lf-spin .8s linear infinite;
+}
+.btn__spinner[hidden] { display: none; }
+@keyframes lf-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn__spinner { animation-duration: 2.4s; }
+  * { transition-duration: .01ms !important; }
+}
+
+/* ---------- 하단 안내 문구 ---------- */
+.foot-notice {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--gray-200);
+  font-size: 12.5px;
+  color: var(--gray-500);
+  line-height: 1.7;
+  text-align: center;
+  word-break: keep-all;
+}
+.foot-notice__mail {
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-all;
+}
+.foot-notice__mail:hover { color: var(--accent); }
+
+.copyright {
+  font-size: 11px;
+  color: var(--gray-400);
+  letter-spacing: -0.1px;
+}
+
+/* ---------- 폼 비활성(보안 컨텍스트 아님) ---------- */
+.page.is-blocked .form { opacity: .5; }
+
+/* ---------- 모바일 미세 조정 ---------- */
+@media (max-width: 420px) {
+  .header__inner { padding: 12px 20px; }
+  .logo__img { height: 30px; }
+  .page { padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 0px)); gap: 16px; }
+  .card { padding: 26px 20px 24px; }
+  .card__title { font-size: 20px; }
+}
+
+/* 낮은 높이의 가로 모드 등에서는 상단 정렬로 전환 */
+@media (max-height: 620px) {
+  .page { justify-content: flex-start; }
+}

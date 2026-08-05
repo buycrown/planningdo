@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LFmall 어필리에이트 서비스 관리자</title>
+<!-- =========================================================
+   엑셀 라이브러리 (SheetJS) — admin.js / auth.js 보다 먼저 로드합니다.
+   ★ CDN 차단·오프라인 등으로 로드에 실패해도 ADMIN 의 기존 기능은 그대로 동작합니다.
+     admin.js 가 typeof XLSX === 'undefined' 를 확인해(xlsxReady)
+     엑셀 버튼만 비활성화하고 화면에 안내 문구(.excel-na)를 노출합니다.
+   ========================================================= -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    /* ===== LF Onesphere 디자인 토큰 ===== */
+    --font: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    --text: #1F2224;          /* 기본 텍스트 */
+    --text-strong: #181D1F;   /* 강조 텍스트 */
+    --muted: #898D8F;         /* 보조/플레이스홀더 */
+    --label-ink: #454B4F;
+    --page: #F2F4F7;          /* 콘텐츠 배경 */
+    --surface: #FFFFFF;
+    --sidebar: #171717;       /* 다크 사이드바 */
+    --sidebar-text: #F4F6F7;
+    --sidebar-idle: #B5B9BE;
+    --sidebar-group: #7E848A;
+    --border: #E2E5E9;        /* 라이트 보더 */
+    --border-strong: #C1C4C6; /* 인풋/아웃라인 보더 */
+    --field-bg: #ECF0F8;      /* 테이블 헤더 · 라벨 셀 */
+    --primary: #2163F2;       /* 프라이머리 블루 */
+    --primary-hover: #1A54D6;
+    --primary-soft: #F0F5FF;  /* 소프트 블루 버튼/배지 */
+    --dark-btn: #1F2224;      /* 로그인/토글 액티브 블랙 */
+    --success: #067A57; --success-bg: #E4F5EE;
+    --danger: #E5484D; --danger-soft: #FCEDED; --danger-border: #F1C7C8;
+    --radius: 8px; --radius-lg: 12px;
+    --shadow-card: 0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.04);
+    --shadow-pop: 0 20px 55px rgba(16,24,40,.22);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: var(--page); color: var(--text); font-family: var(--font);
+    font-size: 14px; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+
+  /* ===================== 버튼 ===================== */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    height: 40px; padding: 0 16px; border-radius: var(--radius); font-size: 14px; font-weight: 500;
+    border: 1px solid transparent; cursor: pointer; transition: background .14s, border-color .14s, color .14s;
+    font-family: inherit; white-space: nowrap; }
+  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+  .btn-outline { background: #fff; color: var(--text); border-color: var(--border-strong); }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+  .btn-soft { background: var(--primary-soft); color: var(--primary); border-color: var(--primary-soft); }
+  .btn-soft:hover { background: #E1EBFF; }
+  .btn-danger { background: #fff; color: var(--danger); border-color: var(--danger-border); }
+  .btn-danger:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
+  .btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* ===================== 입력 ===================== */
+  input[type="text"], input[type="password"], input[type="email"], select, textarea {
+    height: 40px; padding: 0 12px; font-size: 14px; border: 1px solid var(--border-strong);
+    border-radius: var(--radius); background: #fff; color: var(--text); width: 100%;
+    transition: border-color .14s, box-shadow .14s; font-family: inherit; }
+  textarea { height: auto; padding: 10px 12px; resize: vertical; line-height: 1.6; }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(33,99,242,.15); }
+  select { -webkit-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23898D8F' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; padding-right: 32px; }
+  label.f-label { display: block; font-size: 13px; font-weight: 600; color: var(--label-ink); margin: 14px 0 6px; }
+
+  /* ===================== 로그인 (Onesphere 스플릿) ===================== */
+  .login-split { display: flex; min-height: 100vh; }
+  .login-form-panel { flex: 1 1 62%; background: #fff; display: flex; align-items: center;
+    justify-content: center; padding: 40px clamp(24px, 5vw, 80px); }
+  .login-inner { width: min(100%, 400px); }
+  .login-inner .f-label { margin: 0 0 6px; }
+  .login-inner .field { margin-bottom: 16px; }
+  .login-inner input { height: 52px; font-size: 15px; border-radius: var(--radius); }
+  .btn-login { width: 100%; height: 56px; margin-top: 6px; background: var(--dark-btn); color: #fff;
+    border: 1px solid var(--dark-btn); border-radius: var(--radius); font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: background .14s; font-family: inherit; }
+  .btn-login:hover { background: #000; }
+  .login-notice { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--muted); line-height: 1.7; }
+  .login-notice b { color: var(--text); font-weight: 600; }
+
+  .login-brand-panel { flex: 1 1 38%; position: relative; overflow: hidden;
+    padding: 56px clamp(32px, 4vw, 64px); display: flex; flex-direction: column;
+    background:
+      radial-gradient(130% 120% at 100% 0%, #F7E7F0 0%, rgba(247,231,240,0) 46%),
+      radial-gradient(120% 120% at 0% 100%, #E4EAFB 0%, rgba(228,234,251,0) 52%),
+      linear-gradient(140deg, #EEF1FB 0%, #F4EEF8 58%, #FBEEF3 100%); }
+  .login-brand-panel::after { content: ""; position: absolute; right: -140px; top: 50%;
+    width: 460px; height: 460px; transform: translateY(-50%); border-radius: 50%;
+    background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.75), rgba(255,255,255,0) 60%),
+      linear-gradient(135deg, rgba(160,140,235,.28), rgba(240,150,190,.24));
+    filter: blur(2px); pointer-events: none; }
+  .brand-copy { position: relative; z-index: 1; margin-top: auto; }
+  .brand-copy h2 { font-size: clamp(22px, 2.3vw, 30px); font-weight: 800; color: var(--text-strong);
+    line-height: 1.32; letter-spacing: -.02em; }
+  .brand-copy p { margin-top: 14px; color: #5A616B; font-size: 14px; line-height: 1.7; }
+  .brand-chip { position: relative; z-index: 1; margin-top: 22px; display: inline-flex; align-items: center;
+    gap: 7px; align-self: flex-start; background: #fff; color: var(--primary); font-size: 13px; font-weight: 600;
+    padding: 9px 16px; border-radius: 100px; box-shadow: 0 6px 18px rgba(80,70,140,.14); }
+  @media (max-width: 860px) {
+    .login-brand-panel { display: none; }
+    .login-form-panel { flex: 1 1 100%; }
+  }
+
+  /* ===================== 앱 셸 (다크 사이드바 + 콘텐츠) ===================== */
+  .app-shell { display: flex; min-height: 100vh; align-items: stretch; }
+  .app-sidebar { flex: 0 0 240px; width: 240px; background: var(--sidebar); color: var(--sidebar-text);
+    position: sticky; top: 0; height: 100vh; align-self: flex-start; overflow-y: auto;
+    display: flex; flex-direction: column; padding: 20px 12px; }
+  .side-brand { display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+    padding: 4px 10px 20px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,.08); }
+  /* Onesphere 어드민 로고(우주 행성) 그라데이션: #8AB2FE → #D9B2FF */
+  .side-logo { font-size: 17px; font-weight: 800; letter-spacing: -.02em; line-height: 1.3;
+    background: linear-gradient(150deg, #8AB2FE 0%, #D9B2FF 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: #B9B2FF; }
+  .side-group-label { font-size: 11.5px; font-weight: 600; color: var(--sidebar-group);
+    padding: 14px 12px 8px; letter-spacing: .04em; }
+  .nav-item { display: flex; align-items: center; gap: 10px; width: 100%;
+    padding: 10px 12px; margin-bottom: 2px; border: none; border-radius: var(--radius);
+    background: transparent; color: var(--sidebar-idle); font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: background .14s, color .14s; text-align: left; font-family: inherit; }
+  .nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+  .nav-item.active { background: rgba(33,99,242,.20); color: #fff; }
+  .nav-item .cnt { margin-left: auto; font-size: 12px; font-weight: 700;
+    background: rgba(255,255,255,.12); color: #fff; padding: 1px 8px; border-radius: 100px; min-width: 22px; text-align: center; }
+  .nav-item.active .cnt { background: rgba(255,255,255,.22); }
+  .side-foot { margin-top: auto; padding: 14px 12px 4px; font-size: 11px; color: var(--sidebar-group); line-height: 1.6; }
+
+  .app-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .app-topbar { position: sticky; top: 0; z-index: 40; height: 64px; background: #fff;
+    border-bottom: 1px solid var(--border); display: flex; align-items: center;
+    justify-content: space-between; padding: 0 28px; }
+  .tb-title { font-size: 16px; font-weight: 700; color: var(--text-strong); }
+  .tb-title small { font-weight: 500; color: var(--muted); font-size: 13px; margin-left: 8px; }
+  .header__actions { display: flex; gap: 8px; align-items: center; }
+  .app-content { flex: 1; padding: 24px 28px 60px; max-width: 1680px; width: 100%; }
+
+  @media (max-width: 900px) {
+    .app-shell { flex-direction: column; }
+    .app-sidebar { flex: none; width: 100%; height: auto; position: static; flex-direction: row;
+      align-items: center; flex-wrap: wrap; gap: 6px; padding: 12px 14px; }
+    .side-brand { border: none; padding: 0 8px 0 4px; margin: 0 8px 0 0; }
+    .side-group-label, .side-foot { display: none; }
+    .nav-item { width: auto; margin: 0; }
+    .app-content { padding: 18px 16px 48px; }
+    .app-topbar { padding: 0 16px; }
+  }
+
+  /* ===================== 카드 ===================== */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow-card); }
+
+  /* ===================== 대시보드 스탯 타일 ===================== */
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 16px; }
+  .stat-tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 18px 20px; box-shadow: var(--shadow-card); }
+  .stat-tile .label { font-size: 13px; font-weight: 500; color: var(--muted); }
+  .stat-tile .value { margin-top: 8px; font-size: 30px; font-weight: 700; color: var(--text-strong); line-height: 1.1; }
+  .stat-tile .value small { font-size: 14px; font-weight: 500; color: var(--muted); margin-left: 4px; }
+  .stat-tile.wide { grid-column: span 2; }
+  .stat-sns { display: flex; gap: 18px; margin-top: 12px; flex-wrap: wrap; }
+  .stat-sns .item { display: flex; align-items: center; gap: 8px; }
+  .stat-sns .item b { font-size: 20px; font-weight: 700; color: var(--text-strong); }
+  @media (max-width: 700px) { .stat-tile.wide { grid-column: span 1; } }
+
+  /* ===================== 툴바 / 섹션 헤더 ===================== */
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .toolbar select { width: 140px; flex: 0 0 auto; }
+  .toolbar input { flex: 1; min-width: 200px; }
+  .section-title { font-size: 15px; font-weight: 700; color: var(--text-strong); }
+  .stat { font-size: 13px; color: var(--muted); margin-left: auto; white-space: nowrap; }
+
+  /* 서버 배포 상태 뱃지 (헤더) */
+  .server-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 30px; padding: 0 10px; border-radius: 999px; cursor: default;
+    border: 1px solid var(--border); background: var(--surface-2, #f5f5f7);
+    color: var(--muted); font-size: 12px; font-weight: 600; white-space: nowrap;
+  }
+  .server-badge[hidden] { display: none; }
+  .server-badge.is-outdated {
+    cursor: pointer; border-color: #E4002B; background: #FDECEE; color: #B3001F; font-weight: 700;
+  }
+
+  /* 비밀번호 미설정 요약 칩 */
+  .pw-none-chip {
+    display: inline-flex; align-items: center; height: 26px; padding: 0 10px;
+    margin-left: 10px; border-radius: 999px; cursor: pointer;
+    border: 1px solid #F0C7CB; background: #FDF3F4; color: #B3001F;
+    font-size: 12px; font-weight: 700; white-space: nowrap;
+  }
+  .pw-none-chip[hidden] { display: none; }
+  .pw-none-chip.is-on { background: #B3001F; border-color: #B3001F; color: #fff; }
+  .stat b { color: var(--primary); font-weight: 700; }
+
+  /* ===================== 테이블 ===================== */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
+  .table-wrap.scrollable { max-height: 54vh; overflow: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; padding: 11px 12px; background: var(--field-bg); color: var(--text-strong);
+    font-size: 13px; font-weight: 500; white-space: nowrap; position: sticky; top: 0; z-index: 2; }
+  td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text); }
+  tbody tr { cursor: pointer; transition: background .1s; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #F5F8FF; }
+  td.dt { white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 12.5px; }
+  td.no { color: var(--muted); font-weight: 600; }
+  td.memo-cell { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--label-ink); }
+
+  .badge { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 3px 10px; border-radius: 6px; }
+  .badge-yes { background: var(--success-bg); color: var(--success); }
+  .badge-no { background: #F0F2F4; color: var(--muted); }
+  .badge-file { background: var(--primary-soft); color: var(--primary); cursor: pointer; transition: background .12s; }
+  .badge-file:hover { background: var(--primary); color: #fff; }
+
+  /* SNS 채널 아이콘 */
+  .sns-icons { display: inline-flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+  .sns-ico { width: 30px; height: 30px; border-radius: var(--radius); display: inline-flex;
+    align-items: center; justify-content: center; text-decoration: none;
+    background: #F0F2F4; color: var(--label-ink); transition: transform .12s, box-shadow .12s; }
+  .sns-ico:hover { transform: translateY(-2px); box-shadow: 0 3px 8px rgba(0,0,0,.14); }
+  .sns-ico svg { width: 16px; height: 16px; fill: currentColor; }
+  .sns-ico.instagram { background: #FDEEF6; color: #D6249F; }
+  .sns-ico.youtube  { background: #FDECEC; color: #FF0000; }
+  .sns-ico.x        { background: #ECECEE; color: #14171A; }
+  .sns-ico.tiktok   { background: #E8E8EA; color: #010101; }
+  .sns-ico.link     { background: #EAF0FB; color: var(--primary); }
+  .empty { text-align: center; padding: 46px 0; color: var(--muted); font-size: 14px; }
+
+  /* ===================== 페이징 ===================== */
+  .pager { display: flex; align-items: center; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .pager .page-size { width: 110px; height: 36px; font-size: 13px; flex: 0 0 auto; }
+  .pg-btn { height: 36px; min-width: 36px; padding: 0 12px; border-radius: var(--radius);
+    border: 1px solid var(--border-strong); background: #fff; color: var(--text);
+    font-size: 13px; font-weight: 500; cursor: pointer; transition: background .12s, border-color .12s, color .12s;
+    font-family: inherit; }
+  .pg-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .pg-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+  .pager .pg-info { font-size: 13px; color: var(--muted); font-weight: 500;
+    font-variant-numeric: tabular-nums; margin-left: auto; }
+
+  .privacy-note { font-size: 12px; color: var(--muted); line-height: 1.7;
+    background: #F7F9FB; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-top: 14px; }
+
+  /* ===================== 초대 폼 ===================== */
+  .invite-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px 14px; }
+  @media (max-width: 760px) { .invite-grid { grid-template-columns: 1fr; } }
+  .invite-grid .fld .f-label { margin-top: 0; }
+  .at-input { position: relative; }
+  .at-input::before { content: "@"; position: absolute; left: 12px; top: 50%;
+    transform: translateY(-50%); font-weight: 700; color: var(--muted); z-index: 1; }
+  .at-input input { padding-left: 28px; }
+  .dm-preview { margin-top: 12px; padding: 13px 15px; border-radius: var(--radius);
+    background: var(--primary-soft); border: 1px solid #D7E3FF;
+    font-size: 12.5px; color: var(--label-ink); line-height: 1.7; }
+  .dm-preview b { color: var(--primary); }
+
+  /* ===================== 모달 ===================== */
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 100;
+    background: rgba(23,23,23,.48); align-items: flex-start; justify-content: center;
+    padding: 44px 20px; overflow-y: auto; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg);
+    max-width: 640px; width: 100%; box-shadow: var(--shadow-pop); }
+  .modal__head { display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 22px; border-bottom: 1px solid var(--border); }
+  .modal__head h3 { font-size: 17px; font-weight: 700; color: var(--text-strong); }
+  .modal__close { border: none; background: none; font-size: 20px; color: var(--muted); cursor: pointer; line-height: 1; }
+  .modal__close:hover { color: var(--text); }
+  .modal__body { padding: 18px 22px 22px; }
+  .modal__foot { padding: 14px 22px 20px; display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  @media (max-width: 560px) { .grid2 { grid-template-columns: 1fr; } }
+  .file-links a { display: inline-flex; align-items: center; gap: 5px; font-size: 13px;
+    color: var(--primary); text-decoration: none; background: var(--primary-soft); padding: 6px 10px;
+    border-radius: var(--radius); margin: 3px 4px 3px 0; }
+  .file-links a:hover { background: #E1EBFF; }
+  .plas-box { margin-top: 14px; padding: 14px; background: var(--primary-soft);
+    border: 1px solid #D7E3FF; border-radius: var(--radius); }
+  .plas-box .f-label { margin-top: 0; color: var(--primary); }
+
+  /* ===================== 토스트 / 로딩 ===================== */
+  .toast { position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%) translateY(20px);
+    background: var(--text-strong); color: #fff; font-size: 14px; font-weight: 500;
+    padding: 13px 22px; border-radius: 100px; opacity: 0; pointer-events: none;
+    transition: opacity .25s, transform .25s; z-index: 300; max-width: 90vw; text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .loading-overlay { display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(242,244,247,.72); align-items: center; justify-content: center; flex-direction: column; gap: 14px; }
+  .loading-overlay.show { display: flex; }
+  .spinner { width: 42px; height: 42px; border: 4px solid #DDE3EC;
+    border-top-color: var(--primary); border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* =========================================================
+   * v2.0 확장 : 수수료 · 링크 · 수익 · 비밀번호
+   * ========================================================= */
+
+  /* ----- 선택 체크박스 / 일괄 작업 툴바 ----- */
+  th.check-cell, td.check-cell { width: 44px; text-align: center; padding-left: 10px; padding-right: 10px; }
+  .row-check, .check-all { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; vertical-align: middle; }
+  .bulk-bar { display: none; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
+    padding: 10px 14px; border-radius: var(--radius); background: var(--primary-soft); border: 1px solid #D7E3FF; }
+  .bulk-bar.show { display: flex; }
+  .bulk-bar .bulk-count { font-size: 13.5px; font-weight: 700; color: var(--primary); margin-right: 4px; }
+  .bulk-bar .bulk-count b { font-size: 15px; }
+  tbody tr.row-selected { background: #EFF4FF; }
+  tbody tr.row-selected:hover { background: #E5EDFF; }
+
+  /* ----- 수수료율 / 상태 뱃지 ----- */
+  td.rate-cell { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  td.rate-cell.none { color: var(--muted); font-weight: 500; }
+  .badge-active    { background: var(--success-bg); color: var(--success); }
+  .badge-scheduled { background: #EAF0FB; color: var(--primary); }
+  .badge-closed    { background: #F0F2F4; color: var(--muted); }
+
+  /* ----- 링크 관리 ----- */
+  .table-plain tbody tr { cursor: default; }
+  .table-plain tbody tr:hover { background: #FAFBFD; }
+  td.url-cell { max-width: 300px; }
+  .url-inline { display: flex; align-items: center; gap: 6px; }
+  .url-inline a { color: var(--primary); text-decoration: none; font-size: 13px;
+    max-width: 236px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; }
+  .url-inline a:hover { text-decoration: underline; }
+  /* http(s) 가 아닌 위험 URL 은 링크로 만들지 않고 경고색 텍스트로만 표기 */
+  .url-inline .url-invalid { color: #C0392B; font-size: 13px; max-width: 236px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; }
+  .icon-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .icon-btn { border: 1px solid var(--border-strong); background: #fff; border-radius: 6px;
+    height: 26px; min-width: 28px; padding: 0 6px; cursor: pointer; font-size: 12px; line-height: 1;
+    color: var(--label-ink); font-family: inherit; transition: border-color .12s, color .12s, background .12s; }
+  .icon-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+  .icon-btn.danger:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-soft); }
+  td.period-cell { white-space: nowrap; font-variant-numeric: tabular-nums; font-size: 12.5px; color: var(--label-ink); }
+  .row-actions { display: flex; gap: 6px; }
+  .member-cell b { display: block; font-weight: 600; }
+  .member-cell small { color: var(--muted); font-size: 11.5px; }
+
+  /* ----- 수익 관리 ----- */
+  .money-input { height: 34px; text-align: right; font-variant-numeric: tabular-nums;
+    max-width: 150px; font-size: 13.5px; }
+  td.money-cell { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tbody tr.row-changed { background: #FFFBEC; }
+  tbody tr.row-changed:hover { background: #FFF6DC; }
+  tbody tr.row-changed td:first-child { box-shadow: inset 3px 0 0 #F5A524; }
+  .rev-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 14px; }
+  .rev-summary .box { border: 1px solid var(--border); border-radius: var(--radius);
+    background: #F7F9FB; padding: 12px 14px; }
+  .rev-summary .box .label { font-size: 12.5px; color: var(--muted); }
+  .rev-summary .box .value { margin-top: 4px; font-size: 20px; font-weight: 700; color: var(--text-strong);
+    font-variant-numeric: tabular-nums; }
+  .rev-summary .box .value small { font-size: 13px; font-weight: 500; color: var(--muted); margin-left: 3px; }
+  .progress-text { font-size: 13px; color: var(--primary); font-weight: 600;
+    font-variant-numeric: tabular-nums; }
+  input[type="month"], input[type="date"], input[type="number"] {
+    height: 40px; padding: 0 12px; font-size: 14px; border: 1px solid var(--border-strong);
+    border-radius: var(--radius); background: #fff; color: var(--text); width: 100%;
+    font-family: inherit; transition: border-color .14s, box-shadow .14s; }
+  input[type="month"]:focus, input[type="date"]:focus, input[type="number"]:focus {
+    outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(33,99,242,.15); }
+
+  /* ----- Legacy 필드 (LFmall ID) ----- */
+  .legacy input { background: #F0F2F4; color: var(--muted); border-color: var(--border); }
+  .legacy .f-label { color: var(--muted); }
+  .hint { display: block; margin-top: 5px; font-size: 11.5px; color: var(--muted); line-height: 1.6; }
+
+  /* ----- 비밀번호 변경 섹션 ----- */
+  .pw-box { margin-top: 18px; padding: 14px 16px 16px; border: 1px solid var(--border);
+    border-radius: var(--radius); background: #F7F9FB; }
+  .pw-box .f-label { margin-top: 12px; }
+  .pw-box .sec-title { font-size: 14px; font-weight: 700; color: var(--text-strong); }
+  .pw-state { margin-top: 6px; font-size: 12.5px; color: var(--label-ink); }
+  .pw-input { position: relative; }
+  .pw-input input { padding-right: 62px; }
+  .pw-toggle { position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    height: 28px; padding: 0 10px; border: 1px solid var(--border-strong); background: #fff;
+    border-radius: 6px; font-size: 12px; color: var(--label-ink); cursor: pointer; font-family: inherit; }
+  .pw-toggle:hover { border-color: var(--primary); color: var(--primary); }
+  .pw-meter { margin-top: 10px; height: 6px; border-radius: 100px; background: #E4E7EB; overflow: hidden; }
+  .pw-meter i { display: block; height: 100%; width: 0; border-radius: 100px; transition: width .18s, background .18s; }
+  .pw-meter i.lv1 { width: 33%; background: var(--danger); }
+  .pw-meter i.lv2 { width: 66%; background: #F5A524; }
+  .pw-meter i.lv3 { width: 100%; background: var(--success); }
+  .pw-msg { margin-top: 7px; font-size: 12px; line-height: 1.7; color: var(--danger); min-height: 16px; }
+  .pw-msg.ok { color: var(--success); }
+  .pw-warn { margin-top: 8px; padding: 10px 12px; border-radius: var(--radius);
+    background: var(--danger-soft); border: 1px solid var(--danger-border);
+    font-size: 12px; color: #9B2C2F; line-height: 1.7; white-space: pre-line; }
+  .pw-box.disabled .pw-input input, .pw-box.disabled button { opacity: .5; pointer-events: none; }
+
+  /* =========================================================
+   * v2.1 확장 : 엑셀(양식·업로드·다운로드) · 인플루언서 자동완성 · SNS 유형별
+   * ========================================================= */
+
+  /* ----- 엑셀 모듈 미로드 안내 ----- */
+  .excel-na { display: none; width: 100%; margin-top: 10px; padding: 10px 12px;
+    border-radius: var(--radius); background: #FFF7E6; border: 1px solid #F5D48A;
+    font-size: 12px; color: #8A5A00; line-height: 1.7; }
+  .btn.excel-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+  /* ----- 엑셀 업로드 모달 ----- */
+  .modal.modal-wide { max-width: 1060px; }
+  .xl-drop { border: 1px dashed var(--border-strong); border-radius: var(--radius);
+    background: #FAFBFD; padding: 18px; text-align: center; }
+  .xl-drop input[type="file"] { border: none; height: auto; padding: 0; width: auto;
+    background: none; font-size: 13px; }
+  .xl-note { font-size: 13px; color: var(--label-ink); line-height: 1.8; }
+  .xl-note b { color: var(--primary); }
+  .xl-warn { margin-top: 12px; padding: 10px 12px; border-radius: var(--radius);
+    background: #FFF7E6; border: 1px solid #F5D48A; font-size: 12.5px; color: #8A5A00; line-height: 1.7; }
+  .xl-warn b { color: #7A3E00; }
+  .xl-summary { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  .xl-pill { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 12px;
+    border-radius: 999px; font-size: 12.5px; font-weight: 700; }
+  .xl-pill.total { background: #F0F2F4; color: var(--label-ink); }
+  .xl-pill.ok { background: var(--success-bg); color: var(--success); }
+  .xl-pill.ng { background: var(--danger-soft); color: var(--danger); }
+  .xl-preview-wrap { max-height: 44vh; overflow: auto; }
+  .xl-preview-wrap table { font-size: 12.5px; }
+  .xl-preview-wrap th, .xl-preview-wrap td { padding: 8px 10px; white-space: nowrap; }
+  .xl-preview-wrap td.xl-reason { white-space: normal; max-width: 280px; color: var(--danger); }
+  tbody tr.xl-row-ng { background: var(--danger-soft); }
+  tbody tr.xl-row-ng:hover { background: #FAE3E3; }
+  tbody tr.xl-row-ok:hover { background: #F1FAF6; }
+  .xl-state { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 6px; }
+  .xl-state.ok { background: var(--success-bg); color: var(--success); }
+  .xl-state.ng { background: var(--danger-soft); color: var(--danger); }
+  .xl-bar { height: 8px; border-radius: 999px; background: #E4E7EB; overflow: hidden; margin: 12px 0 8px; }
+  .xl-bar i { display: block; height: 100%; width: 0; background: var(--primary); transition: width .2s; }
+  .xl-log { margin-top: 12px; max-height: 28vh; overflow: auto; border: 1px solid var(--border);
+    border-radius: var(--radius); background: #FAFBFD; padding: 10px 12px;
+    font-size: 12.5px; line-height: 1.8; color: var(--label-ink); }
+  .xl-log .ng { color: var(--danger); font-weight: 600; }
+
+  /* ----- 인플루언서 자동완성 ----- */
+  .ac-row { display: flex; gap: 8px; align-items: flex-start; }
+  .ac-row .ac { flex: 1; min-width: 0; }
+  .ac { position: relative; }
+  .ac-list { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 20;
+    display: none; max-height: 264px; overflow: auto; background: #fff;
+    border: 1px solid var(--border-strong); border-radius: var(--radius); box-shadow: var(--shadow-pop); }
+  .ac-list.show { display: block; }
+  .ac-opt { padding: 9px 12px; font-size: 13.5px; cursor: pointer; border-bottom: 1px solid var(--border); }
+  .ac-opt:last-child { border-bottom: none; }
+  .ac-opt small { display: block; color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+  .ac-opt.active, .ac-opt:hover { background: var(--primary-soft); }
+  .ac-empty { padding: 12px; font-size: 13px; color: var(--muted); }
+  .chip { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 6px 0 12px;
+    border-radius: 999px; background: var(--primary-soft); border: 1px solid #D7E3FF;
+    color: var(--primary); font-size: 13.5px; font-weight: 600; max-width: 100%; }
+  .chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip button { border: none; background: rgba(33,99,242,.14); color: var(--primary);
+    width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: 12px;
+    line-height: 1; font-family: inherit; flex: 0 0 auto; }
+  .chip button:hover { background: var(--primary); color: #fff; }
+
+  /* ----- SNS 유형별 표기 ----- */
+  td.primary-cell { white-space: nowrap; font-size: 12.5px; }
+  .primary-tag { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+  .primary-tag .sns-ico { width: 22px; height: 22px; }
+  .primary-tag .sns-ico svg { width: 12px; height: 12px; }
+  .sns-bytype { margin-top: 8px; display: grid; gap: 6px; }
+  .sns-bytype .row { display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; }
+  .sns-bytype .k { flex: 0 0 132px; color: var(--muted); font-weight: 600; padding-top: 1px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sns-bytype .v { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .sns-bytype .v a { color: var(--primary); text-decoration: none; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap; }
+  .sns-bytype .v a:hover { text-decoration: underline; }
+  .sns-bytype .none { color: var(--muted); font-size: 12.5px; }
+  .sns-bytype .pri { display: inline-block; margin-left: 6px; font-size: 11px; font-weight: 700;
+    color: var(--primary); background: var(--primary-soft); border-radius: 5px; padding: 1px 6px; }
+
+  /* ----- 데스크톱 기준(1280px 이하는 가로 스크롤로 대응) ----- */
+  @media (max-width: 1280px) {
+    .app-content { max-width: 100%; }
+    .table-wrap { overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== 로그인 화면 (Onesphere 스플릿) ===================== -->
+<div class="login-split" id="loginArea">
+  <!-- 좌측: 로그인 폼 (화이트) -->
+  <div class="login-form-panel">
+    <div class="login-inner">
+      <form id="loginForm">
+        <div class="field">
+          <label class="f-label" for="loginId">아이디</label>
+          <input type="text" id="loginId" autocomplete="username" placeholder="아이디를 입력하세요" />
+        </div>
+        <div class="field">
+          <label class="f-label" for="loginPw">패스워드</label>
+          <input type="password" id="loginPw" autocomplete="current-password" placeholder="패스워드를 입력하세요" />
+        </div>
+        <button type="submit" class="btn-login" id="btnLogin">로그인</button>
+      </form>
+      <div class="login-notice">
+        본 시스템은 개인정보를 처리하는 관리자 전용 화면입니다.
+        모든 접속 및 처리 이력은 접근로그에 기록되며, 권한 없는 접근 시도는 차단됩니다.
+        <b>(로그인 5회 실패 시 10분간 잠금)</b>
+      </div>
+    </div>
+  </div>
+  <!-- 우측: 브랜드 패널 (그라데이션) -->
+  <div class="login-brand-panel">
+    <div class="brand-copy">
+      <h2>이 시스템은 LFmall<br />어필리에이트 서비스 전용 관리자입니다.</h2>
+      <p>인증되지 않은 사용자의 접근은 허용되지 않습니다.<br />
+         신청 접수부터 PLAS 거래선 관리, 크리에이터 초대까지 한 곳에서.</p>
+      <span class="brand-chip">🔒 LFmall Affiliate Service Administrator</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 관리 화면 (Onesphere 셸) ===================== -->
+<div class="app-shell" id="adminArea" style="display:none;">
+
+  <!-- 다크 사이드바 -->
+  <aside class="app-sidebar">
+    <div class="side-brand">
+      <span class="side-logo">어필리에이터 서비스 관리자</span>
+    </div>
+    <div class="side-group-label">관리 메뉴</div>
+    <nav class="side-nav">
+      <button type="button" class="nav-item active" id="navApplications" data-view="applications">
+        📋 신청 내역 <span class="cnt" id="navAppCnt"></span>
+      </button>
+      <button type="button" class="nav-item" id="navInvites" data-view="invites">
+        ✉️ 초대 내역 <span class="cnt" id="navInvCnt"></span>
+      </button>
+      <button type="button" class="nav-item" id="navLinks" data-view="links">
+        🔗 링크 관리 <span class="cnt" id="navLinkCnt"></span>
+      </button>
+      <button type="button" class="nav-item" id="navRevenue" data-view="revenue">
+        💰 수익 관리 <span class="cnt" id="navRevCnt"></span>
+      </button>
+    </nav>
+    <div class="side-foot">LFmall 어필리에이트 서비스<br />POC · Onesphere UI</div>
+  </aside>
+
+  <!-- 콘텐츠 -->
+  <div class="app-body">
+    <header class="app-topbar">
+      <div class="tb-title">어필리에이트 서비스 <small>관리자 콘솔</small></div>
+      <div class="header__actions" id="headerActions" style="display:none;">
+        <!-- 서버 배포 상태 뱃지 : 구버전 배포를 헤더에서 즉시 알아채기 위한 자가 진단 표시 -->
+        <button type="button" class="server-badge" id="serverBadge" hidden
+                title="서버 배포 상태">서버 확인 중…</button>
+        <button type="button" class="btn btn-outline btn-sm" id="btnMask">🔒 마스킹 해제</button>
+        <button type="button" class="btn btn-outline btn-sm" id="btnLogout">로그아웃</button>
+      </div>
+    </header>
+
+    <main class="app-content">
+
+      <!-- ===== 페이지 1: 신청 내역 ===== -->
+      <section id="viewApplications">
+        <div class="stat-row">
+          <div class="stat-tile">
+            <div class="label">총 신청 인원</div>
+            <div class="value" id="tileAppTotal">0<small>명</small></div>
+          </div>
+          <div class="stat-tile">
+            <div class="label">PLAS 거래선 등록</div>
+            <div class="value" id="tilePlas">0<small>건</small></div>
+          </div>
+          <div class="stat-tile wide">
+            <div class="label">SNS 채널별 가입 인원</div>
+            <div class="stat-sns" id="tileSns"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar">
+            <select id="searchField">
+              <option value="all">전체</option>
+              <option value="lfmallId">LFmall ID</option>
+              <option value="nickname">활동명</option>
+              <option value="name">이름</option>
+              <option value="email">이메일</option>
+              <option value="phone">휴대폰번호</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="검색어를 입력하세요 (LFmall ID / 활동명 / 이름 / 이메일 / 휴대폰번호)" />
+            <button type="button" class="btn btn-primary" id="btnSearch">🔍 조회</button>
+            <button type="button" class="btn btn-soft" id="btnAdd">+ 신청 추가</button>
+            <button type="button" class="btn btn-outline excel-btn" id="btnExcelApps"
+                    title="현재 조회·필터된 결과 전체를 엑셀로 내려받습니다. (페이징과 무관)">⬇ 엑셀 다운로드</button>
+          </div>
+          <div class="excel-na"></div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="margin-bottom:14px;">
+            <span class="section-title">신청 내역</span>
+            <!-- 비밀번호 미설정 회원 요약 : 클릭 시 해당 회원만 필터 -->
+            <button type="button" class="pw-none-chip" id="statPwNone" hidden
+                    title="비밀번호가 없으면 회원이 로그인할 수 없습니다. 클릭하면 해당 회원만 표시합니다."></button>
+            <span class="stat" id="statTotal"></span>
+          </div>
+
+          <!-- 선택 시 노출되는 일괄 작업 툴바 -->
+          <div class="bulk-bar" id="bulkBar" role="region" aria-label="선택 항목 일괄 작업">
+            <span class="bulk-count"><b id="bulkCount">0</b>명 선택됨</span>
+            <button type="button" class="btn btn-primary btn-sm" id="btnBulkCommission">💰 수수료 일괄 입력</button>
+            <button type="button" class="btn btn-soft btn-sm" id="btnBulkLink">🔗 링크 일괄 배포</button>
+            <span style="flex:1;"></span>
+            <button type="button" class="btn btn-outline btn-sm" id="btnBulkClear">선택 해제</button>
+          </div>
+
+          <div class="table-wrap scrollable">
+            <table>
+              <thead>
+                <tr>
+                  <th class="check-cell">
+                    <input type="checkbox" class="check-all" id="checkAll" aria-label="현재 페이지 전체 선택" title="현재 페이지 전체 선택" />
+                  </th>
+                  <th>No.</th><th>신청일시</th><th>LFmall ID</th><th>활동명</th><th>이름</th><th>이메일</th><th>휴대폰</th>
+                  <th>사업자</th><th>수수료율</th><th>비밀번호</th><th>대표채널</th><th>SNS 채널</th><th>첨부</th><th>PLAS 거래선</th><th>관리 메모</th>
+                </tr>
+              </thead>
+              <tbody id="listBody"></tbody>
+            </table>
+            <div class="empty" id="emptyMsg" style="display:none;">조회된 신청 내역이 없습니다.</div>
+          </div>
+          <div class="pager">
+            <select class="page-size" id="appPageSize">
+              <option value="10">10개씩</option>
+              <option value="50">50개씩</option>
+              <option value="100">100개씩</option>
+            </select>
+            <button type="button" class="pg-btn" id="appPrev">◀ 이전</button>
+            <button type="button" class="pg-btn" id="appNext">다음 ▶</button>
+            <span class="pg-info" id="appPageInfo"></span>
+          </div>
+          <div class="privacy-note">
+            🔒 개인정보 보호를 위해 이름·이메일·휴대폰번호는 기본 마스킹 처리되어 표시됩니다.
+            업무상 필요한 경우에만 상단 [마스킹 해제]를 사용하세요. 모든 조회·수정·삭제 이력은 접근로그에 기록됩니다.
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 페이지 2: 초대 내역 ===== -->
+      <section id="viewInvites" style="display:none;">
+        <div class="stat-row">
+          <div class="stat-tile">
+            <div class="label">총 초대 인원</div>
+            <div class="value" id="tileInvTotal">0<small>명</small></div>
+          </div>
+          <div class="stat-tile">
+            <div class="label">총 가입 인원</div>
+            <div class="value" id="tileInvJoined">0<small>명</small></div>
+          </div>
+          <div class="stat-tile">
+            <div class="label">가입 전환율</div>
+            <div class="value" id="tileInvRate">0<small>%</small></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="margin-bottom:4px;">
+            <span class="section-title">인플루언서 초대</span>
+          </div>
+          <div class="invite-grid">
+            <div class="fld">
+              <label class="f-label">발송 계정</label>
+              <div class="at-input">
+                <input type="text" id="inviteSender" placeholder="lfmall_fashionclub" autocapitalize="none" autocorrect="off" spellcheck="false" />
+              </div>
+            </div>
+            <div class="fld">
+              <label class="f-label">초대할 인스타그램 계정</label>
+              <div class="at-input">
+                <input type="text" id="inviteInsta" placeholder="style_kim" autocapitalize="none" autocorrect="off" spellcheck="false" />
+              </div>
+            </div>
+            <div class="fld">
+              <label class="f-label">메모 (선택)</label>
+              <input type="text" id="inviteMemo" placeholder="예: 7월 뷰티 캠페인" />
+            </div>
+          </div>
+          <label class="f-label" style="margin-top:14px;">발송 메시지 <span style="font-weight:400;color:var(--muted);">(매 발송마다 수정 가능)</span></label>
+          <textarea id="inviteMessage" rows="3" placeholder="인플루언서에게 보낼 DM 내용을 입력하세요"></textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:12px;">
+            <button type="button" class="btn btn-primary" id="btnInvite">✉️ 초대하기</button>
+          </div>
+          <div class="dm-preview" id="dmGuide"></div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="margin-bottom:14px;">
+            <span class="section-title">초대 내역</span>
+            <input type="text" id="inviteSearch" style="max-width:240px;height:36px;font-size:13px;flex:0 0 auto;" placeholder="인스타 계정 검색" />
+            <button type="button" class="btn btn-outline btn-sm excel-btn" id="btnExcelInvites"
+                    title="현재 검색된 초대 내역 전체를 엑셀로 내려받습니다.">⬇ 엑셀 다운로드</button>
+            <span class="stat" id="statInvTotal"></span>
+          </div>
+          <div class="excel-na"></div>
+          <div class="table-wrap scrollable">
+            <table>
+              <thead>
+                <tr>
+                  <th>No.</th><th>초대번호</th><th>초대일시</th><th>인스타 계정</th><th>가입여부</th><th>메모</th><th>DM</th>
+                </tr>
+              </thead>
+              <tbody id="inviteBody"></tbody>
+            </table>
+            <div class="empty" id="inviteEmpty" style="display:none;">초대 내역이 없습니다.</div>
+          </div>
+          <div class="pager">
+            <select class="page-size" id="invPageSize">
+              <option value="10">10개씩</option>
+              <option value="50">50개씩</option>
+              <option value="100">100개씩</option>
+            </select>
+            <button type="button" class="pg-btn" id="invPrev">◀ 이전</button>
+            <button type="button" class="pg-btn" id="invNext">다음 ▶</button>
+            <span class="pg-info" id="invPageInfo"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 페이지 3: 링크 관리 ===== -->
+      <section id="viewLinks" style="display:none;">
+        <div class="stat-row">
+          <div class="stat-tile">
+            <div class="label">전체 링크</div>
+            <div class="value" id="tileLinkTotal">0<small>건</small></div>
+          </div>
+          <div class="stat-tile">
+            <div class="label">활성 링크</div>
+            <div class="value" id="tileLinkActive">0<small>건</small></div>
+          </div>
+          <div class="stat-tile">
+            <div class="label">종료 링크</div>
+            <div class="value" id="tileLinkClosed">0<small>건</small></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar">
+            <input type="text" id="linkMemberSearch" style="max-width:220px;flex:0 0 auto;"
+                   placeholder="인플루언서 검색 (활동명/이름)" aria-label="인플루언서 검색" />
+            <select id="linkMemberFilter" style="width:280px;flex:0 0 auto;" aria-label="인플루언서 선택">
+              <option value="">전체 보기</option>
+            </select>
+            <button type="button" class="btn btn-primary" id="btnLinkReload">🔍 조회</button>
+            <span style="flex:1;"></span>
+            <button type="button" class="btn btn-soft" id="btnLinkBulkFromLinks">📤 동일 링크 일괄 배포</button>
+            <button type="button" class="btn btn-soft" id="btnLinkAdd">+ 링크 추가</button>
+          </div>
+          <div class="toolbar" style="margin-top:10px;">
+            <button type="button" class="btn btn-outline excel-btn" id="btnLinkTemplate"
+                    title="링크 대량 등록용 엑셀 양식을 내려받습니다.">📄 양식 다운로드</button>
+            <button type="button" class="btn btn-outline excel-btn" id="btnLinkUpload"
+                    title="작성한 엑셀 양식으로 링크를 한 번에 등록합니다.">📥 엑셀 대량 업로드</button>
+            <span style="flex:1;"></span>
+            <button type="button" class="btn btn-outline excel-btn" id="btnExcelLinks"
+                    title="현재 조회된 링크 전체를 엑셀로 내려받습니다.">⬇ 엑셀 다운로드</button>
+          </div>
+          <div class="excel-na"></div>
+          <div class="privacy-note" style="margin-top:10px;">
+            📤 <b>동일 링크 일괄 배포</b>는 [신청 내역] 화면에서 체크박스로 선택한 인플루언서를 대상으로 합니다.
+            선택된 인원이 없으면 신청 내역 화면으로 이동합니다.
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="margin-bottom:14px;">
+            <span class="section-title">링크 목록</span>
+            <span class="stat" id="statLinkTotal"></span>
+          </div>
+          <div class="table-wrap scrollable">
+            <table class="table-plain">
+              <thead>
+                <tr>
+                  <th>No.</th><th>링크번호</th><th>인플루언서</th><th>링크명</th><th>URL</th>
+                  <th>등록일</th><th>유효기간</th><th>상태</th><th>관리</th>
+                </tr>
+              </thead>
+              <tbody id="linkBody"></tbody>
+            </table>
+            <div class="empty" id="linkEmpty" style="display:none;">등록된 링크가 없습니다.</div>
+          </div>
+          <div class="pager">
+            <select class="page-size" id="linkPageSize">
+              <option value="10">10개씩</option>
+              <option value="50">50개씩</option>
+              <option value="100">100개씩</option>
+            </select>
+            <button type="button" class="pg-btn" id="linkPrev">◀ 이전</button>
+            <button type="button" class="pg-btn" id="linkNext">다음 ▶</button>
+            <span class="pg-info" id="linkPageInfo"></span>
+          </div>
+          <div class="privacy-note">
+            🔗 유효종료일을 비워 두면 <b>무기한 활성</b> 링크로 등록됩니다.
+            상태(활성/예정/종료)는 유효기간을 기준으로 조회 시점에 자동 계산됩니다.
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 페이지 4: 수익 관리 ===== -->
+      <section id="viewRevenue" style="display:none;">
+        <div class="card">
+          <div class="toolbar">
+            <label class="f-label" for="revYm" style="margin:0 4px 0 0;">정산 연월</label>
+            <input type="month" id="revYm" style="width:190px;flex:0 0 auto;" />
+            <button type="button" class="btn btn-primary" id="btnRevLoad">🔍 조회</button>
+            <span style="flex:1;"></span>
+            <span class="progress-text" id="revProgress"></span>
+            <button type="button" class="btn btn-soft" id="btnRevSaveAll">💾 변경분 일괄 저장</button>
+          </div>
+          <div class="toolbar" style="margin-top:10px;">
+            <button type="button" class="btn btn-outline excel-btn" id="btnRevTemplate"
+                    title="월별 수익 대량 등록용 엑셀 양식을 내려받습니다.">📄 양식 다운로드</button>
+            <button type="button" class="btn btn-outline excel-btn" id="btnRevUpload"
+                    title="작성한 엑셀 양식으로 월별 수익을 한 번에 등록합니다.">📥 엑셀 대량 업로드</button>
+            <span style="flex:1;"></span>
+            <button type="button" class="btn btn-outline excel-btn" id="btnExcelRevenue"
+                    title="현재 조회된 월의 수익 그리드 전체를 엑셀로 내려받습니다.">⬇ 엑셀 다운로드</button>
+          </div>
+          <div class="excel-na"></div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="margin-bottom:14px;">
+            <span class="section-title">월별 수익 입력</span>
+            <span class="stat" id="statRevTotal"></span>
+          </div>
+          <div class="table-wrap scrollable">
+            <table class="table-plain">
+              <thead>
+                <tr>
+                  <th>No.</th><th>수익번호</th><th>인플루언서</th><th>활동명</th><th>수수료율</th>
+                  <th style="text-align:right;">해당 월 수익 (원)</th>
+                  <th style="text-align:right;">누적 총수익 (원)</th>
+                  <th>저장</th>
+                </tr>
+              </thead>
+              <tbody id="revBody"></tbody>
+            </table>
+            <div class="empty" id="revEmpty" style="display:none;">인플루언서가 없습니다.</div>
+          </div>
+          <div class="rev-summary">
+            <div class="box">
+              <div class="label">해당 월 총 지급액</div>
+              <div class="value" id="revSumAmount">0<small>원</small></div>
+            </div>
+            <div class="box">
+              <div class="label">입력 완료 인원</div>
+              <div class="value" id="revSumFilled">0<small>명</small></div>
+            </div>
+            <div class="box">
+              <div class="label">미입력 인원</div>
+              <div class="value" id="revSumEmpty">0<small>명</small></div>
+            </div>
+          </div>
+          <div class="privacy-note">
+            💰 금액은 <b>원 단위 정수</b>로 저장됩니다. 값을 수정한 행은 노란색으로 표시되며,
+            [저장] 또는 [변경분 일괄 저장]을 눌러야 반영됩니다.
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ===================== 초대 상세/수정 모달 ===================== -->
+<div class="modal-overlay" id="inviteModal" aria-hidden="true">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal__head">
+      <h3>초대 상세 / 수정</h3>
+      <button type="button" class="modal__close" data-close>✕</button>
+    </div>
+    <div class="modal__body">
+      <input type="hidden" id="iv-id" />
+      <label class="f-label" style="margin-top:0;">인스타그램 계정</label>
+      <input type="text" id="iv-insta" autocapitalize="none" />
+      <label class="f-label">메모</label>
+      <textarea id="iv-memo" rows="3" placeholder="내부 관리용 메모"></textarea>
+      <div style="font-size:12px;color:var(--muted);margin-top:8px;" id="iv-meta"></div>
+    </div>
+    <div class="modal__foot">
+      <button type="button" class="btn btn-danger" id="btnInvDelete">삭제</button>
+      <span style="flex:1;"></span>
+      <button type="button" class="btn btn-outline" data-close>취소</button>
+      <button type="button" class="btn btn-primary" id="btnInvSave">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 상세/수정/추가 모달 ===================== -->
+<div class="modal-overlay" id="detailModal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <h3 id="modalTitle">신청 상세</h3>
+      <button type="button" class="modal__close" data-close>✕</button>
+    </div>
+    <div class="modal__body">
+      <input type="hidden" id="f-id" />
+      <div class="grid2">
+        <div class="legacy" id="lfmallIdField">
+          <label class="f-label" style="margin-top:0;" for="f-lfmallId">LFmall ID (Legacy)</label>
+          <input type="text" id="f-lfmallId" readonly tabindex="-1" />
+          <span class="hint">v2.0부터 수집하지 않는 항목입니다. 기존 데이터 확인용.</span>
+        </div>
+        <div><label class="f-label" style="margin-top:0;" for="f-name">이름</label><input type="text" id="f-name" /></div>
+        <div><label class="f-label" for="f-nickname">활동명</label><input type="text" id="f-nickname" /></div>
+        <div><label class="f-label" for="f-email">이메일</label><input type="email" id="f-email" /></div>
+        <div><label class="f-label" for="f-phone">휴대폰번호</label><input type="text" id="f-phone" /></div>
+        <div><label class="f-label" for="f-bizStatus">사업자 유무</label>
+          <select id="f-bizStatus">
+            <option value="">선택 안 함</option>
+            <option value="사업자 있음">사업자 있음</option>
+            <option value="사업자 없음">사업자 없음</option>
+          </select>
+        </div>
+        <div><label class="f-label" for="f-categories">관심 카테고리</label><input type="text" id="f-categories" placeholder="예: 뷰티, 여성패션" /></div>
+        <div><label class="f-label" for="f-commissionRate">수수료율 (%)</label>
+          <input type="number" id="f-commissionRate" min="0" max="100" step="0.1" placeholder="예: 5" />
+          <span class="hint">0 ~ 100 사이의 숫자. 비워 두면 미설정으로 저장됩니다.</span>
+        </div>
+      </div>
+      <label class="f-label">SNS 채널 (유형별)</label>
+      <div class="sns-bytype" id="f-snsByType"></div>
+      <label class="f-label" for="f-snsText">SNS 채널 원본 (편집용)</label>
+      <textarea id="f-snsText" rows="3" placeholder="예) Instagram: https://www.instagram.com/..."></textarea>
+      <span class="hint">저장하면 서버가 이 원본을 유형별 컬럼(대표채널·Instagram·YouTube·X·TikTok·기타)으로 자동 분류합니다.</span>
+      <div id="fileArea">
+        <label class="f-label">첨부파일</label>
+        <div class="file-links" id="f-files"></div>
+      </div>
+      <div class="plas-box">
+        <label class="f-label">PLAS 거래선정보</label>
+        <input type="text" id="f-plasInfo" placeholder="PLAS에서 발급받은 거래선 코드/정보를 입력하세요" />
+      </div>
+      <label class="f-label" for="f-memo">관리 메모</label>
+      <textarea id="f-memo" rows="2" placeholder="내부 관리용 메모"></textarea>
+
+      <!-- ===== 로그인 비밀번호 (관리자 지정) ===== -->
+      <div class="pw-box" id="pwBox">
+        <div class="sec-title">🔑 로그인 비밀번호</div>
+        <div class="pw-state" id="pwState">-</div>
+        <div class="pw-warn" id="pwInsecure" style="display:none;"></div>
+        <div class="grid2">
+          <div>
+            <label class="f-label" for="f-pw1">새 비밀번호</label>
+            <div class="pw-input">
+              <input type="password" id="f-pw1" autocomplete="new-password" placeholder="8~20자, 2종 이상 조합" />
+              <button type="button" class="pw-toggle" data-pw="f-pw1" aria-label="새 비밀번호 표시">표시</button>
+            </div>
+          </div>
+          <div>
+            <label class="f-label" for="f-pw2">새 비밀번호 확인</label>
+            <div class="pw-input">
+              <input type="password" id="f-pw2" autocomplete="new-password" placeholder="다시 한 번 입력" />
+              <button type="button" class="pw-toggle" data-pw="f-pw2" aria-label="비밀번호 확인 표시">표시</button>
+            </div>
+          </div>
+        </div>
+        <div class="pw-meter"><i id="pwBar"></i></div>
+        <div class="pw-msg" id="pwMsg" aria-live="polite"></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+          <button type="button" class="btn btn-outline btn-sm" id="btnPwChange">비밀번호 변경</button>
+        </div>
+        <span class="hint">평문 비밀번호는 서버로 전송되지 않으며, 브라우저에서 암호화(PBKDF2)된 값만 전달됩니다.</span>
+      </div>
+
+      <div style="font-size:12px;color:var(--muted);margin-top:8px;" id="metaInfo"></div>
+    </div>
+    <div class="modal__foot">
+      <button type="button" class="btn btn-danger" id="btnDelete">삭제</button>
+      <span style="flex:1;"></span>
+      <button type="button" class="btn btn-outline" data-close>취소</button>
+      <button type="button" class="btn btn-primary" id="btnSave">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 삭제 확인 모달 ===================== -->
+<!-- 서버 배포 상태 안내 (헤더 뱃지 클릭) -->
+<div class="modal-overlay" id="serverModal" aria-hidden="true">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal__head"><h3>서버 배포 상태</h3><button type="button" class="modal__close" data-close>✕</button></div>
+    <div class="modal__body">
+      <p style="font-size:14px;line-height:1.8;white-space:pre-line;" id="serverModalMsg"></p>
+      <p style="margin-top:14px;font-size:13px;line-height:1.8;color:var(--muted);">
+        확인 방법<br />
+        ① 브라우저에서 웹앱 URL(/exec)에 접속해 <b>(v2.0)</b> 문구가 보이는지 확인<br />
+        ② Apps Script 편집기에서 apps-script.gs 최신본 반영 → <b>initServer()</b> 실행<br />
+        ③ <b>배포 관리 → 새 버전</b>으로 재배포 후 이 화면을 새로고침
+      </p>
+      <div class="xl-warn" style="margin-top:12px;">
+        ⚠️ <b>initServer() 실행 전 DB 스프레드시트를 반드시 백업하세요.</b>
+        1열 UUID → 순번 전환 · 헤더 개명 · 21~26열 백필은 되돌릴 수 없습니다.
+        구글 시트 [파일 → 사본 만들기] 로 백업본을 만들고 이름에 날짜를 남겨 주세요.
+        실행 후 반환 요약의 <code>errors</code> 가 비어 있고 <code>rowsBefore</code> 와
+        <code>rowsAfter</code> 가 같은지 확인합니다.
+      </div>
+    </div>
+    <div class="modal__foot">
+      <button type="button" class="btn btn-outline" data-close>닫기</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="confirmModal" aria-hidden="true">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal__head"><h3>삭제 확인</h3><button type="button" class="modal__close" data-close>✕</button></div>
+    <div class="modal__body">
+      <p style="font-size:14px;line-height:1.7;" id="confirmMsg">
+        이 신청 내역을 삭제할까요?<br/>
+        <b style="color:var(--danger);">DB의 데이터와 Drive에 보관된 첨부파일이 함께 파기되며, 되돌릴 수 없습니다.</b>
+      </p>
+    </div>
+    <div class="modal__foot">
+      <button type="button" class="btn btn-outline" data-close>취소</button>
+      <button type="button" class="btn btn-danger" id="btnDeleteConfirm">삭제(파기)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 수수료 일괄 입력 모달 ===================== -->
+<div class="modal-overlay" id="commissionModal" aria-hidden="true">
+  <div class="modal" style="max-width:420px;" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <h3>수수료 일괄 입력</h3>
+      <button type="button" class="modal__close" data-close>✕</button>
+    </div>
+    <div class="modal__body">
+      <p style="font-size:13.5px;line-height:1.7;color:var(--label-ink);" id="cm-target">선택된 인플루언서에게 동일한 수수료율을 적용합니다.</p>
+      <label class="f-label" for="cm-rate">수수료율 (%)</label>
+      <input type="number" id="cm-rate" min="0" max="100" step="0.1" placeholder="예: 5" />
+      <span class="hint">0 ~ 100 사이의 숫자로 입력하세요. (소수점 입력 가능)</span>
+    </div>
+    <div class="modal__foot">
+      <button type="button" class="btn btn-outline" data-close>취소</button>
+      <button type="button" class="btn btn-primary" id="btnCommissionApply">적용</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 링크 추가/수정 모달 ===================== -->
+<div class="modal-overlay" id="linkModal" aria-hidden="true">
+  <div class="modal" style="max-width:560px;" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <h3 id="linkModalTitle">링크 추가</h3>
+      <button type="button" class="modal__close" data-close>✕</button>
+    </div>
+    <div class="modal__body">
+      <input type="hidden" id="lk-id" />
+      <label class="f-label" style="margin-top:0;" for="lk-memberSearch">인플루언서 <span style="color:var(--danger);">*</span></label>
+      <input type="hidden" id="lk-member" />
+      <div class="ac-row">
+        <div class="ac" id="lk-memberAc">
+          <input type="text" id="lk-memberSearch" autocomplete="off" spellcheck="false"
+                 role="combobox" aria-expanded="false" aria-controls="lk-memberList" aria-autocomplete="list"
+                 placeholder="활동명 · 이름 · 이메일로 검색" />
+          <div class="ac-list" id="lk-memberList" role="listbox" aria-label="인플루언서 검색 결과"></div>
+        </div>
+        <button type="button" class="btn btn-outline" id="btnLkMemberAll"
+                title="등록된 인플루언서 전체 목록 펼치기">전체 목록</button>
+      </div>
+      <div id="lk-memberChip" style="margin-top:8px;display:none;"></div>
+      <span class="hint" id="lk-memberHint">활동명 / 이름 / 이메일 중 어느 것으로도 검색됩니다(부분 일치·대소문자 무시). ↑↓ 이동, Enter 선택.</span>
+      <label class="f-label" for="lk-name">링크명</label>
+      <input type="text" id="lk-name" placeholder="예: 2026 F/W 아우터 기획전" />
+      <label class="f-label" for="lk-url">링크 URL <span style="color:var(--danger);">*</span></label>
+      <input type="text" id="lk-url" placeholder="https://slink.im/..." />
+      <div class="grid2">
+        <div>
+          <label class="f-label" for="lk-start">유효시작일</label>
+          <input type="date" id="lk-start" />
+        </div>
+        <div>
+          <label class="f-label" for="lk-end">유효종료일</label>
+          <input type="date" id="lk-end" />
+          <span class="hint">비워 두면 무기한 활성 링크로 등록됩니다.</span>
+        </div>
+      </div>
+      <label class="f-label" for="lk-memo">메모</label>
+      <textarea id="lk-memo" rows="2" placeholder="내부 관리용 메모"></textarea>
+      <div style="font-size:12px;color:var(--muted);margin-top:8px;" id="lk-meta"></div>
+    </div>
+    <div class="modal__foot">
+      <button type="button" class="btn btn-danger" id="btnLinkDelete" style="display:none;">삭제</button>
+      <span style="flex:1;"></span>
+      <button type="button" class="btn btn-outline" data-close>취소</button>
+      <button type="button" class="btn btn-primary" id="btnLinkSave">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 링크 일괄 배포 모달 ===================== -->
+<div class="modal-overlay" id="linkBulkModal" aria-hidden="true">
+  <div class="modal" style="max-width:560px;" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <h3>링크 일괄 배포</h3>
+      <button type="button" class="modal__close" data-close>✕</button>
+    </div>
+    <div class="modal__body">
+      <p style="font-size:13.5px;line-height:1.7;color:var(--label-ink);" id="lb-target">선택된 인플루언서에게 동일한 링크를 배포합니다.</p>
+      <label class="f-label" for="lb-name">링크명</label>
+      <input type="text" id="lb-name" placeholder="예: 2026 F/W 아우터 기획전" />
+      <label class="f-label" for="lb-url">링크 URL <span style="color:var(--danger);">*</span></label>
+      <input type="text" id="lb-url" placeholder="https://slink.im/..." />
+      <div class="grid2">
+        <div>
+          <label class="f-label" for="lb-start">유효시작일</label>
+          <input type="date" id="lb-start" />
+        </div>
+        <div>
+          <label class="f-label" for="lb-end">유효종료일</label>
+          <input type="date" id="lb-end" />
+          <span class="hint">비워 두면 무기한 활성 링크로 등록됩니다.</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal__foot">
+      <button type="button" class="btn btn-outline" data-close>취소</button>
+      <button type="button" class="btn btn-primary" id="btnLinkBulkApply">일괄 배포</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 엑셀 대량 업로드 모달 (링크 · 수익 공용) ===================== -->
+<div class="modal-overlay" id="excelModal" aria-hidden="true">
+  <div class="modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="xlTitle">
+    <div class="modal__head">
+      <h3 id="xlTitle">엑셀 대량 업로드</h3>
+      <button type="button" class="modal__close" data-close>✕</button>
+    </div>
+    <div class="modal__body">
+
+      <!-- STEP 1 : 파일 선택 -->
+      <div id="xlStep1">
+        <p class="xl-note" id="xlIntro"></p>
+        <div class="xl-drop" style="margin-top:12px;">
+          <input type="file" id="xlFile"
+                 accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+                 aria-label="업로드할 엑셀 파일 선택" />
+          <div class="hint" style="margin-top:8px;">.xlsx / .xls / .csv 를 지원합니다. 파일의 <b>첫 번째 시트</b>를 읽습니다.</div>
+        </div>
+        <div class="xl-warn" id="xlSpeedNote"></div>
+      </div>
+
+      <!-- STEP 2 : 미리보기 · 검증 -->
+      <div id="xlStep2" style="display:none;">
+        <div class="xl-summary" id="xlSummary"></div>
+        <div class="xl-warn" id="xlDupWarn" style="display:none;"></div>
+        <div class="xl-warn" id="xlErrWarn" style="display:none;"></div>
+        <div class="table-wrap xl-preview-wrap">
+          <table class="table-plain">
+            <thead><tr id="xlHeadRow"></tr></thead>
+            <tbody id="xlBody"></tbody>
+          </table>
+        </div>
+        <div class="hint" id="xlPreviewHint" style="margin-top:8px;"></div>
+      </div>
+
+      <!-- STEP 3 : 진행률 · 결과 -->
+      <div id="xlStep3" style="display:none;">
+        <div class="xl-note" id="xlRunTitle"></div>
+        <div class="xl-bar"><i id="xlBar"></i></div>
+        <div class="progress-text" id="xlProgress" aria-live="polite">0 / 0</div>
+        <div class="xl-log" id="xlLog"></div>
+      </div>
+
+    </div>
+    <div class="modal__foot">
+      <button type="button" class="btn btn-danger" id="btnXlAbort" style="display:none;">■ 중단</button>
+      <span style="flex:1;"></span>
+      <button type="button" class="btn btn-outline" id="btnXlBack" style="display:none;">다시 선택</button>
+      <button type="button" class="btn btn-outline" data-close id="btnXlClose">닫기</button>
+      <button type="button" class="btn btn-primary" id="btnXlRun" style="display:none;">등록 실행</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 개인정보 포함 다운로드 확인 모달 ===================== -->
+<div class="modal-overlay" id="exportWarnModal" aria-hidden="true">
+  <div class="modal" style="max-width:500px;" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <h3>개인정보 포함 다운로드 확인</h3>
+      <button type="button" class="modal__close" data-close>✕</button>
+    </div>
+    <div class="modal__body">
+      <p style="font-size:14px;line-height:1.8;" id="exportWarnMsg"></p>
+      <div class="xl-warn" style="margin-top:12px;" id="exportWarnDetail"></div>
+    </div>
+    <div class="modal__foot">
+      <button type="button" class="btn btn-outline" data-close>취소</button>
+      <button type="button" class="btn btn-primary" id="btnExportConfirm">확인하고 다운로드</button>
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><p id="loadingMsg">처리 중…</p></div>
+<div class="toast" id="toast"></div>
+
+<script src="auth.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
