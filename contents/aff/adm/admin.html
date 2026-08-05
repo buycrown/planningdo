@@ -205,6 +205,17 @@
   .stat b { color: var(--primary); font-weight: 700; }
 
   /* ===================== 테이블 ===================== */
+  /* 수익 관리 그리드 헤더 : 제목 + 변경분 일괄 저장(우측 정렬) 을 카드 상단에 고정
+     (.app-topbar 가 sticky top:0 / height:64px 이므로 그 아래에 붙인다) */
+  .rev-grid-head { position: sticky; top: 64px; z-index: 6;
+    background: var(--surface); margin: -20px -20px 14px; padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+  .rev-grid-head .stat { margin-left: 0; }
+  .rev-head-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+  .rev-head-actions .btn { flex: 0 0 auto; }
+  .rev-head-actions .btn:disabled { opacity: .55; cursor: not-allowed; }
+
   .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
   .table-wrap.scrollable { max-height: 54vh; overflow: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
@@ -820,8 +831,6 @@
             <input type="month" id="revYm" style="width:190px;flex:0 0 auto;" />
             <button type="button" class="btn btn-primary" id="btnRevLoad">🔍 조회</button>
             <span style="flex:1;"></span>
-            <span class="progress-text" id="revProgress"></span>
-            <button type="button" class="btn btn-soft" id="btnRevSaveAll">💾 변경분 일괄 저장</button>
           </div>
           <div class="toolbar" style="margin-top:10px;">
             <button type="button" class="btn btn-outline excel-btn" id="btnRevTemplate"
@@ -836,9 +845,16 @@
         </div>
 
         <div class="card">
-          <div class="toolbar" style="margin-bottom:14px;">
+          <!-- [v2.2] 변경분 일괄 저장은 그리드 헤더 우측에 고정한다.
+               그리드를 스크롤해도 '몇 건이 변경됐는지' 와 저장 버튼이 함께 보여야 하기 때문. -->
+          <div class="toolbar rev-grid-head">
             <span class="section-title">월별 수익 입력</span>
             <span class="stat" id="statRevTotal"></span>
+            <span class="rev-head-actions">
+              <span class="progress-text" id="revProgress" aria-live="polite"></span>
+              <button type="button" class="btn btn-soft" id="btnRevSaveAll" disabled
+                      title="변경된 행이 없습니다. 금액을 수정하면 활성화됩니다.">변경사항 없음</button>
+            </span>
           </div>
           <div class="table-wrap scrollable">
             <table class="table-plain">
@@ -1209,9 +1225,47 @@
   </div>
 </div>
 
+<!-- ============ [v2.2] 회원ID(이메일) 변경 확인 ============ -->
+<div class="modal-overlay" id="memberIdModal" aria-hidden="true">
+  <div class="modal" style="max-width:480px;" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <h3>회원ID 변경 확인</h3>
+      <button type="button" class="modal__close" data-close>✕</button>
+    </div>
+    <div class="modal__body">
+      <p style="font-size:14px;line-height:1.8;font-weight:700;" id="memberIdMsg"></p>
+      <div class="xl-warn" style="margin-top:12px;white-space:pre-line;" id="memberIdDetail"></div>
+    </div>
+    <div class="modal__foot">
+      <button type="button" class="btn btn-outline" data-close>취소</button>
+      <button type="button" class="btn btn-primary" id="btnMemberIdConfirm">확인하고 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ [v2.2] 연쇄 갱신 실패(CASCADE_FAILED) 경고 ============ -->
+<div class="modal-overlay" id="cascadeModal" aria-hidden="true">
+  <div class="modal" style="max-width:540px;" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <h3 style="color:var(--danger);">⚠️ 데이터가 불완전할 수 있습니다</h3>
+      <button type="button" class="modal__close" data-close>✕</button>
+    </div>
+    <div class="modal__body">
+      <p style="font-size:14px;line-height:1.8;font-weight:700;color:var(--danger);" id="cascadeMsg"></p>
+      <div class="xl-warn" style="margin-top:12px;" id="cascadeDetail"></div>
+    </div>
+    <div class="modal__foot">
+      <span style="flex:1;"></span>
+      <button type="button" class="btn btn-danger" data-close>확인했습니다</button>
+    </div>
+  </div>
+</div>
+
 <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><p id="loadingMsg">처리 중…</p></div>
 <div class="toast" id="toast"></div>
 
+<!-- 로드 순서 : site-config.js(경로) → auth.js(세션) → admin.js -->
+<script src="site-config.js"></script>
 <script src="auth.js"></script>
 <script src="admin.js"></script>
 </body>

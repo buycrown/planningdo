@@ -116,6 +116,7 @@ let links = [];          // 링크 관리 뷰 (조회 결과 전체)
 let revRows = [];        // 수익 관리 뷰 행 [{id(회원id), name, nickname, rate, total, saved, amount}]
 let currentDetail = null; // 상세 모달에 열려 있는 신청 레코드
 const loadedView = { links: false, revenue: false }; // 뷰별 최초 진입 시 1회 로드
+let currentView = "applications";  // 현재 열려 있는 뷰 (회원ID 변경 후 재조회 판단용)
 
 /* 페이징 상태 (10/50/100) */
 const paging = {
@@ -193,6 +194,12 @@ function errorMessageFor(result) {
       return raw + "\n(신청내역 시트의 1~14열 순서를 원래대로 복구한 뒤 다시 시도하세요.)";
     case "LOCKED":
       return raw + " (10분 후 자동 해제됩니다.)";
+    case "EMAIL_REQUIRED":
+      return raw + "\n(이메일은 회원ID(기본키)이므로 비워 둘 수 없습니다.)";
+    case "INVALID_EMAIL":
+      return raw + "\n(예: name@example.com — 공백·연속 점(..) 은 사용할 수 없습니다.)";
+    case "CASCADE_FAILED":
+      return raw + "\n재시도하지 마시고 담당자에게 문의해 주세요.";
     case "UNKNOWN_ACTION":
       return (typeof window.LFAuth !== "undefined" && LFAuth.OUTDATED_MSG) || raw;
     default:
@@ -208,21 +215,48 @@ function maskName(v) {
   if (v.length === 2) return v[0] + "*";
   return v[0] + "*".repeat(v.length - 2) + v[v.length - 1];
 }
+/* [v2.2 통일] 서버 maskId() 와 **완전히 같은 규칙**을 쓴다 (SPEC §1-7).
+   · 별표 개수를 아이디 길이에 비례시키면 (1) 서버가 내려준 memberIdMasked 와
+     클라이언트 폴백이 서로 다른 문자열이 되어 같은 회원이 화면에서 두 모습으로 보이고
+     (예: 회원ID 변경 확인 모달의 "현재 → 변경 후"),
+     (2) '로컬파트 길이' 라는 정보가 마스킹본에서 그대로 새어나간다.
+     두 이유 모두 별표를 고정 3개로 둘 근거다. */
 function maskEmail(v) {
-  if (!v || v.indexOf("@") === -1) return v || "-";
-  const [id, domain] = v.split("@");
-  const shown = id.slice(0, Math.min(2, id.length));
-  return shown + "*".repeat(Math.max(1, id.length - shown.length)) + "@" + domain;
+  const s = String(v == null ? "" : v);
+  if (!s) return "-";
+  if (s.indexOf("@") === -1) return s;
+  const p = s.split("@");
+  return p[0].slice(0, 2) + "***@" + p[1];
 }
 function maskPhone(v) {
   if (!v) return "-";
   return v.replace(/^(\d{3})-(\d{3,4})-(\d{4})$/, "$1-****-$3");
 }
+/* [v2.2] 회원ID = 이메일(개인정보).
+   서버가 `memberIdMasked`(ab***@example.com) 를 함께 내려주므로 마스킹 상태에서는 그 값을 쓴다.
+   서버가 값을 주지 않는 경우(구버전 배포 · 로컬에서 새로 만든 행)를 대비해 폴백도 둔다.
+   ⚠️ 이 함수의 결과는 '표시 전용' 이다. 서버로 보내는 payload 에는 언제나 원본 id 를 넣는다. */
+function maskMemberId(rawId, maskedFromServer) {
+  const raw = String(rawId == null ? "" : rawId).trim();
+  if (!raw) return "-";
+  const fromServer = String(maskedFromServer == null ? "" : maskedFromServer).trim();
+  if (fromServer) return fromServer;
+  /* 이메일이면 이메일 규칙, 이메일이 없어 식별자를 유지 중인 회원은 앞 8자만 노출 */
+  return raw.indexOf("@") > 0 ? maskEmail(raw) : (raw.length > 8 ? raw.slice(0, 8) + "\u2026" : raw);
+}
 const disp = {
   name: (v) => (masked ? maskName(v) : v || "-"),
   email: (v) => (masked ? maskEmail(v) : v || "-"),
-  phone: (v) => (masked ? maskPhone(v) : v || "-")
+  phone: (v) => (masked ? maskPhone(v) : v || "-"),
+  /* 회원ID : 마스킹 ON → memberIdMasked / OFF → 원본 */
+  memberId: (rawId, maskedFromServer) => {
+    const raw = String(rawId == null ? "" : rawId).trim();
+    if (!masked) return raw || "-";
+    return maskMemberId(raw, maskedFromServer);
+  }
 };
+/* 이메일 정규화 — 서버(normalizeEmail)와 동일 규칙. 회원ID 비교에만 쓴다. */
+function normEmailKey(v) { return String(v == null ? "" : v).trim().toLowerCase(); }
 /* @pure:mask-end */
 
 /* ---------- v2.0 공통 포맷 유틸 ---------- */
@@ -257,12 +291,16 @@ function fmtPeriod(startAt, endAt) {
 function memberOf(id) {
   return allMembers.find((r) => r.id === id) || records.find((r) => r.id === id) || null;
 }
-/* 회원 표시명 (활동명 · 마스킹된 이름) */
-function memberLabel(id, fallbackName) {
+/* 회원 표시명 (활동명 · 마스킹된 이름)
+   [v2.2] 목록에 없는 회원은 서버가 준 memberName / memberIdMasked 로 표기한다.
+          memberName 은 원본 이름이므로 반드시 disp.name 을 통과시킨다. */
+function memberLabel(id, fallbackName, maskedId) {
   const m = memberOf(id);
-  if (!m) return fallbackName || "(삭제된 회원)";
-  const nick = m.nickname || "(활동명 없음)";
-  return nick + " · " + disp.name(m.name);
+  if (m) return (m.nickname || "(활동명 없음)") + " · " + disp.name(m.name);
+  const nm = String(fallbackName == null ? "" : fallbackName).trim();
+  /* 서버는 회원을 못 찾으면 memberName 에 "(삭제된 회원)" 을 넣는다 — 이름이 아니므로 마스킹 대상이 아니다 */
+  const head = (nm && nm.charAt(0) !== "(") ? disp.name(nm) : (nm || "(삭제된 회원)");
+  return head + " · " + disp.memberId(id, maskedId);
 }
 /* @pure:sns-start */
 /* http(s) URL 검증 */
@@ -569,6 +607,10 @@ $("#btnLogout").addEventListener("click", async () => {
   xlDupCheckbox = null; xlErrCheckbox = null;
   closeModal("#excelModal");
   closeModal("#exportWarnModal");
+  /* v2.2 : 회원ID 변경 확인 / 연쇄 갱신 경고도 함께 정리 */
+  pendingSave = null;
+  closeModal("#memberIdModal");
+  closeModal("#cascadeModal");
   switchView("applications");
   showLogin();
   showToast("로그아웃되었습니다.");
@@ -586,6 +628,9 @@ $("#btnMask").addEventListener("click", () => {
   if (loadedView.links) renderLinks();
   if (loadedView.revenue) renderRevenue();
   fillMemberSelects();
+  /* 상세 모달이 열려 있으면 회원ID 표기도 즉시 새 규칙으로 다시 그린다
+     (입력값은 건드리지 않는다 — 편집 중인 내용을 잃으면 안 되기 때문) */
+  if (currentDetail && $("#detailModal").classList.contains("show")) renderDetailMeta(currentDetail);
   showToast(masked ? "개인정보가 마스킹 처리되었습니다." : "개인정보가 표시됩니다. 업무 목적 외 열람에 유의하세요.");
 });
 
@@ -930,8 +975,16 @@ function fillForm(r) {
   } else {
     fileBox.innerHTML = '<span style="font-size:13px;color:#8A8A8A;">첨부파일 없음</span>';
   }
+  renderDetailMeta(r);
+}
+
+/* [v2.2] 상세 모달 메타 — 회원ID(=이메일)는 마스킹 상태를 따른다.
+   서버 호출에는 항상 #f-id 의 '원본' 값을 쓴다. */
+function renderDetailMeta(r) {
+  r = r || {};
   $("#metaInfo").textContent = r.id
-    ? "신청일시: " + fmtStamp(r.submittedAt) + (r.updatedAt ? " · 최근 수정: " + fmtStamp(r.updatedAt) : "")
+    ? "회원ID: " + disp.memberId(r.id, r.memberIdMasked) +
+      " · 신청일시: " + fmtStamp(r.submittedAt) + (r.updatedAt ? " · 최근 수정: " + fmtStamp(r.updatedAt) : "")
     : "";
 }
 
@@ -975,9 +1028,87 @@ $("#btnAdd").addEventListener("click", () => {
   openModal("#detailModal");
 });
 
+/* =========================================================
+ * [v2.2] 회원ID(=이메일) 변경 처리
+ * ---------------------------------------------------------
+ *  회원 PK 가 이메일이므로 상세 모달에서 이메일을 바꿔 저장하면 회원ID 자체가 바뀐다.
+ *  · 저장 전  : 확인 모달로 연쇄 갱신 사실을 알린다.
+ *  · 저장 후  : update 응답의 새 id 로 로컬 상태를 교체하고 목록을 재조회한다.
+ *               (교체하지 않으면 이후 링크/수익/삭제가 '대상을 찾을 수 없습니다' 가 된다)
+ * ========================================================= */
+
+/* 이메일을 이 값으로 저장하면 회원ID 가 바뀌는가?
+   (신규 등록은 대상이 아니고, 이메일을 비워 보내면 서버가 EMAIL_REQUIRED 로 판단한다) */
+function memberIdWillChange(id, email) {
+  const cur = normEmailKey(id);
+  const next = normEmailKey(email);
+  if (!cur || !next) return false;
+  return cur !== next;
+}
+
+/* 회원ID 가 바뀌었을 때 화면이 들고 있던 옛 id 를 전부 교체한다. */
+function replaceMemberIdLocally(oldId, newId) {
+  if (!oldId || !newId || oldId === newId) return;
+  if (selectedIds.has(oldId)) { selectedIds.delete(oldId); selectedIds.add(newId); }
+  const filter = $("#linkMemberFilter");
+  if (filter && filter.value === oldId) filter.value = newId;
+  const lkMember = $("#lk-member");
+  if (lkMember && lkMember.value === oldId) lkMember.value = newId;
+  /* 마스킹본은 옛 이메일 기준이므로 비워서 새 id 기준으로 다시 계산되게 한다 */
+  links.forEach((l) => { if (String(l.memberId) === oldId) { l.memberId = newId; l.memberIdMasked = ""; } });
+  revRows.forEach((r) => { if (String(r.id) === oldId) { r.id = newId; r.idMasked = ""; } });
+  loadedView.links = false;
+  loadedView.revenue = false;
+}
+
+/* 회원ID 가 바뀌면 링크/수익 뷰의 조회 결과도 옛 id 기준이므로 다시 받는다. */
+async function reloadViewsAfterMemberIdChange() {
+  if (currentView === "links") { loadedView.links = true; await loadLinks(); }
+  else if (currentView === "revenue") { loadedView.revenue = true; await loadRevenue(); }
+}
+
+/* CASCADE_FAILED : 부분 갱신이 남았을 수 있다 → 재시도 금지 + 담당자 확인 요청 */
+function showCascadeFailure(message) {
+  $("#cascadeMsg").textContent = message ||
+    "이메일 변경 중 오류가 발생했고 일부 데이터를 되돌리지 못했습니다.";
+  $("#cascadeDetail").textContent =
+    "신청내역·링크관리·수익내역의 회원ID 가 서로 다른 값으로 남아 있을 수 있습니다. " +
+    "데이터가 불완전할 수 있으니 같은 저장을 다시 시도하지 마시고, 반드시 담당자에게 확인을 요청해 주세요. " +
+    "(확인 전까지 해당 회원의 링크·수익 등록을 중단해 주세요.)";
+  openModal("#cascadeModal");
+}
+
+let pendingSave = null;   /* 회원ID 변경 확인 모달이 대기 중인 저장 작업 */
+
 /* 저장 (추가 or 수정) */
-$("#btnSave").addEventListener("click", async () => {
-  const id = $("#f-id").value;
+async function saveDetail(id, payload) {
+  setLoading(true, "저장 중…");
+  try {
+    const res = id ? await api("update", { id, ...payload }) : await api("create", payload);
+    closeModal("#detailModal");
+
+    /* 서버가 알려 준 '변경 후 회원ID' 를 신뢰한다 (memberIdChanged 는 서버 판정) */
+    const newId = res && res.id ? String(res.id) : "";
+    const idChanged = !!(id && newId && newId !== String(id));
+    if (idChanged) replaceMemberIdLocally(String(id), newId);
+
+    showToast(idChanged
+      ? "저장되었습니다. 회원ID가 변경되어 목록을 다시 불러옵니다."
+      : "저장되었습니다.");
+    currentDetail = null;
+    allMembers = []; /* 이름·활동명·수수료율·회원ID 변경 가능 → 전체 목록 캐시 무효화 */
+    await loadList();
+    if (idChanged) await reloadViewsAfterMemberIdChange();
+  } catch (err) {
+    if (err && err.code === "CASCADE_FAILED") showCascadeFailure(err.message);
+    else showToast(err.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+$("#btnSave").addEventListener("click", () => {
+  const id = $("#f-id").value;   /* ★ 언제나 '원본' 회원ID. 마스킹본을 담지 않는다 */
   const rateRaw = $("#f-commissionRate").value.trim();
   if (rateRaw !== "") {
     const rv = Number(rateRaw);
@@ -1000,19 +1131,31 @@ $("#btnSave").addEventListener("click", async () => {
   /* LFmall ID 는 Legacy(읽기 전용) — 기존 건 수정 시에만 원본 값을 그대로 유지 전송 */
   if (id) payload.lfmallId = $("#f-lfmallId").value.trim();
   if (!payload.nickname && !payload.name) { showToast("이름 또는 활동명을 입력해 주세요."); return; }
-  setLoading(true, "저장 중…");
-  try {
-    if (id) await api("update", { id, ...payload });
-    else await api("create", payload);
-    closeModal("#detailModal");
-    showToast("저장되었습니다.");
-    allMembers = []; /* 이름·활동명·수수료율 변경 가능 → 전체 목록 캐시 무효화 */
-    await loadList();
-  } catch (err) {
-    showToast(err.message);
-  } finally {
-    setLoading(false);
+
+  /* [v2.2] 이메일을 바꾸면 회원ID 가 바뀐다 — 저장 전에 반드시 확인받는다 */
+  if (id && memberIdWillChange(id, payload.email)) {
+    $("#memberIdMsg").textContent = "회원ID가 변경됩니다. 연결된 링크·수익 데이터도 함께 갱신됩니다.";
+    $("#memberIdDetail").textContent =
+      "현재 회원ID: " + disp.memberId(id, currentDetail && currentDetail.memberIdMasked) +
+      "  →  변경 후: " + disp.memberId(normEmailKey(payload.email)) + "\n" +
+      "변경 후 해당 회원은 다시 로그인해야 하며, 다른 창에 열려 있는 목록은 새로고침이 필요합니다.";
+    pendingSave = () => saveDetail(id, payload);
+    openModal("#memberIdModal");
+    return;
   }
+  saveDetail(id, payload);
+});
+
+/* 취소·오버레이 클릭으로 닫히면 대기 중인 저장 작업을 버린다 (입력값이 닫힌 모달에 남지 않도록) */
+$("#memberIdModal").addEventListener("click", (e) => {
+  if (e.target === e.currentTarget || (e.target.closest && e.target.closest("[data-close]"))) pendingSave = null;
+});
+
+$("#btnMemberIdConfirm").addEventListener("click", () => {
+  const run = pendingSave;
+  pendingSave = null;
+  closeModal("#memberIdModal");
+  if (typeof run === "function") run();
 });
 
 /* =========================================================
@@ -1214,6 +1357,7 @@ $("#btnDeleteConfirm").addEventListener("click", async () => {
  * 좌측 앵커 메뉴: 신청 내역 / 초대 내역 / 링크 관리 / 수익 관리 전환
  * ========================================================= */
 function switchView(view) {
+  currentView = view;
   $$(".nav-item").forEach((b) => b.classList.toggle("active", b.dataset.view === view));
   $("#viewApplications").style.display = view === "applications" ? "" : "none";
   $("#viewInvites").style.display = view === "invites" ? "" : "none";
@@ -1402,7 +1546,8 @@ function renderMemberChip() {
   const chip = document.createElement("span");
   chip.className = "chip";
   const label = document.createElement("span");
-  label.textContent = m ? (acLabel(m) + " · " + disp.email(m.email)) : ("회원 " + id + " (목록에 없음)");
+  /* [v2.2] id 는 이메일 원문이다. 목록에 없는 회원도 마스킹 규칙을 그대로 적용한다. */
+  label.textContent = m ? (acLabel(m) + " · " + disp.email(m.email)) : ("회원 " + disp.memberId(id) + " (목록에 없음)");
   chip.appendChild(label);
   if (!memberPickerLocked) {
     const x = document.createElement("button");
@@ -1534,7 +1679,7 @@ function renderLinks() {
     /* 인플루언서 (활동명 · 마스킹 규칙 적용된 이름) */
     const tdMember = document.createElement("td");
     tdMember.className = "member-cell";
-    tdMember.textContent = memberLabel(l.memberId, l.memberName);
+    tdMember.textContent = memberLabel(l.memberId, l.memberName, l.memberIdMasked);
     tr.appendChild(tdMember);
 
     const tdName = document.createElement("td");
@@ -1641,7 +1786,7 @@ function openLinkModal(l) {
   $("#lk-memo").value = isEdit ? (l.memo || "") : "";
   $("#btnLinkDelete").style.display = isEdit ? "" : "none";
   $("#lk-meta").textContent = isEdit
-    ? "등록일: " + (l.issuedAt || "-") + " · 인플루언서: " + memberLabel(l.memberId, l.memberName)
+    ? "등록일: " + (l.issuedAt || "-") + " · 인플루언서: " + memberLabel(l.memberId, l.memberName, l.memberIdMasked)
     : "";
   openModal("#linkModal");
 }
@@ -1774,6 +1919,8 @@ async function loadRevenue() {
       const hit = byMember[r.id];
       return {
         id: r.id,
+        /* v2.2 : 표시용 마스킹 회원ID (서버 호출에는 언제나 원본 id 를 쓴다) */
+        idMasked: r.memberIdMasked || (hit ? hit.memberIdMasked : "") || "",
         /* v2.1 : 수익내역 시트의 순번 PK (미입력 회원은 아직 행이 없으므로 빈 문자열) */
         revId: hit ? String(hit.id || "") : "",
         name: r.name || "",
@@ -1797,6 +1944,25 @@ function rowChanged(row) {
   const a = row.amount === null ? null : Number(row.amount);
   const b = row.saved === null ? null : Number(row.saved);
   return a !== b;
+}
+
+/* 일괄 저장 대상 = 변경된 행 중 금액이 입력된 행 (btnRevSaveAll 의 필터와 동일해야 한다) */
+function revChangedRows() {
+  return revRows.filter((r) => rowChanged(r) && r.amount !== null);
+}
+
+/* [변경분 일괄 저장] 버튼 활성/문구 갱신
+   · 변경 0건 → 비활성 + "변경사항 없음"
+   · 변경 N건 → 활성   + "변경분 일괄 저장 (N건)" */
+function updateRevSaveAllButton() {
+  const btn = $("#btnRevSaveAll");
+  if (!btn) return;
+  const n = revChangedRows().length;
+  btn.disabled = n === 0;
+  btn.textContent = n ? ("\uD83D\uDCBE 변경분 일괄 저장 (" + n + "건)") : "변경사항 없음";
+  btn.title = n
+    ? n + "건의 변경된 행을 순차 저장합니다."
+    : "변경된 행이 없습니다. 금액을 수정하면 활성화됩니다.";
 }
 
 function renderRevenue() {
@@ -1920,11 +2086,12 @@ function renderRevenueSummary() {
   $("#revSumAmount").innerHTML = fmtMoney(sum) + "<small>원</small>";
   $("#revSumFilled").innerHTML = filled + "<small>명</small>";
   $("#revSumEmpty").innerHTML = (revRows.length - filled) + "<small>명</small>";
+  updateRevSaveAllButton();
 }
 
 /* 변경분 일괄 저장 (순차 호출 + 진행률 표시) */
 $("#btnRevSaveAll").addEventListener("click", async () => {
-  const targets = revRows.filter((r) => rowChanged(r) && r.amount !== null);
+  const targets = revChangedRows();
   if (!targets.length) { showToast("변경된 내용이 없습니다."); return; }
 
   const progress = $("#revProgress");
@@ -1944,6 +2111,7 @@ $("#btnRevSaveAll").addEventListener("click", async () => {
       : done + "건의 수익 내역을 저장했습니다.");
   } finally {
     setLoading(false);
+    updateRevSaveAllButton();
     setTimeout(() => { progress.textContent = ""; }, 2500);
   }
 });
@@ -2295,15 +2463,16 @@ function showPiiNotice() {
 const EXPORTS = {
   applications: {
     label: "신청 내역", screen: "신청내역", sheet: "신청내역", pii: true,
-    headers: ["신청일시", "활동명", "이름", "이메일", "휴대폰", "관심카테고리", "사업자",
+    headers: ["신청일시", "회원ID", "활동명", "이름", "이메일", "휴대폰", "관심카테고리", "사업자",
               "대표채널", "Instagram", "YouTube", "X(Twitter)", "TikTok", "기타채널",
               "수수료율", "비밀번호설정여부", "링크수", "총수익", "회원상태", "PLAS", "메모"],
-    widths: [21, 18, 12, 28, 16, 22, 10, 12, 32, 32, 32, 32, 32, 10, 16, 8, 13, 10, 20, 28],
+    widths: [21, 28, 18, 12, 28, 16, 22, 10, 12, 32, 32, 32, 32, 32, 10, 16, 8, 13, 10, 20, 28],
     rows: () => visibleRecords().map((r) => {
       const g = snsGroupsOf(r);
       const pt = primaryTypeOf(r);
       return [
-        fmtStamp(r.submittedAt), r.nickname || "", disp.name(r.name), disp.email(r.email), disp.phone(r.phone),
+        fmtStamp(r.submittedAt), disp.memberId(r.id, r.memberIdMasked),
+        r.nickname || "", disp.name(r.name), disp.email(r.email), disp.phone(r.phone),
         r.categories || "", r.bizStatus || "",
         pt ? snsTypeLabel(pt) : "", g.instagram, g.youtube, g.x, g.tiktok, g.etc,
         (r.commissionRate === null || r.commissionRate === undefined) ? "" : Number(r.commissionRate),
@@ -2324,22 +2493,23 @@ const EXPORTS = {
   },
   links: {
     label: "링크 관리", screen: "링크관리", sheet: "링크관리", pii: true,
-    headers: ["링크번호", "인플루언서", "링크명", "URL", "등록일", "유효시작일", "유효종료일", "상태", "메모"],
-    widths: [10, 26, 30, 48, 13, 13, 13, 8, 32],
+    headers: ["링크번호", "인플루언서", "회원ID", "링크명", "URL", "등록일", "유효시작일", "유효종료일", "상태", "메모"],
+    widths: [10, 26, 28, 30, 48, 13, 13, 13, 8, 32],
     rows: () => links.map((l) => [
-      l.id || "", memberLabel(l.memberId, l.memberName), l.name || "", l.url || "",
+      l.id || "", memberLabel(l.memberId, l.memberName, l.memberIdMasked),
+      disp.memberId(l.memberId, l.memberIdMasked), l.name || "", l.url || "",
       l.issuedAt || "", l.startAt || "", l.endAt || "(무기한)",
       linkStatusOf(l.status).label, l.memo || ""
     ])
   },
   revenue: {
     label: "수익 관리", screen: "수익관리", sheet: "수익관리", pii: true,
-    headers: ["수익번호", "인플루언서", "활동명", "연월", "수익금액", "수수료율", "누적총수익"],
-    widths: [10, 16, 22, 11, 14, 10, 14],
+    headers: ["수익번호", "인플루언서", "활동명", "회원ID", "연월", "수익금액", "수수료율", "누적총수익"],
+    widths: [10, 16, 22, 28, 11, 14, 10, 14],
     rows: () => {
       const ym = $("#revYm").value || currentYm();
       return revRows.map((r) => [
-        r.revId || "", disp.name(r.name), r.nickname || "", ym,
+        r.revId || "", disp.name(r.name), r.nickname || "", disp.memberId(r.id, r.idMasked), ym,
         r.amount === null ? "" : Number(r.amount),
         (r.rate === null || r.rate === undefined) ? "" : Number(r.rate),
         Number(r.total || 0)
@@ -2376,8 +2546,9 @@ function exportView(key) {
   if (def.pii && !masked) {
     confirmPii(
       "[" + def.label + "] 현재 조회된 " + rows.length + "건을 엑셀 파일로 내려받습니다.",
-      "현재 마스킹이 해제된 상태입니다. 내려받는 파일에는 이름·이메일·휴대폰번호 원본이 " +
-      "그대로 포함됩니다. 업무 목적 외 보관·전달을 금지하며, 사용 후에는 즉시 파기해 주세요.",
+      "현재 마스킹이 해제된 상태입니다. 내려받는 파일에는 이름·이메일·휴대폰번호와 " +
+      "회원ID(=이메일) 원본이 그대로 포함됩니다. " +
+      "업무 목적 외 보관·전달을 금지하며, 사용 후에는 즉시 파기해 주세요.",
       function () { doExport(key); });
     return;
   }
@@ -2456,10 +2627,17 @@ async function ensureMembersForExcel() {
   finally { setLoading(false); }
 }
 
-const XL_TEMPLATE_PII_DETAIL =
-  "양식의 [인플루언서목록] 시트에는 업로드 시 인플루언서를 식별하는 키인 " +
-  "'이메일 원본' 이 포함됩니다. (이름은 현재 마스킹 규칙을 따르며, 휴대폰번호는 포함되지 않습니다.) " +
-  "업무 목적 외 보관·전달을 금지하며, 사용 후에는 즉시 파기해 주세요.";
+/* [v2.2] 이메일 = 회원ID(업로드 식별키) 이므로 양식에는 원본을 담을 수밖에 없다.
+   대신 마스킹 상태와 무관하게 confirmPii 를 반드시 거치며, 마스킹 ON 일 때는
+   '마스킹 중인데도 원본이 들어간다' 는 사실을 문구로 분명히 알린다. (SPEC §4-0) */
+function xlTemplatePiiDetail() {
+  return (masked
+      ? "⚠️ 현재 개인정보 마스킹이 켜져 있지만, 이 양식만은 예외입니다. "
+      : "") +
+    "양식의 [인플루언서목록] 시트에는 업로드 시 인플루언서를 식별하는 키인 " +
+    "'이메일 원본(=회원ID)' 이 포함됩니다. (이름은 현재 마스킹 규칙을 따르며, 휴대폰번호는 포함되지 않습니다.) " +
+    "업무 목적 외 보관·전달을 금지하며, 사용 후에는 즉시 파기해 주세요.";
+}
 
 /* 양식은 [인플루언서목록] 시트에 이메일 원본을 담으므로 마스킹 상태와 무관하게 항상 확인받는다.
    담을 개인정보가 하나도 없으면(등록 0명) 물을 이유가 없으므로 바로 만든다. */
@@ -2469,7 +2647,7 @@ async function downloadLinkTemplate() {
   if (!memberPool().length) { buildLinkTemplate(); return; }
   confirmPii(
     "[링크 대량등록 양식] 인플루언서 " + memberPool().length + "명의 목록 시트가 함께 포함됩니다.",
-    XL_TEMPLATE_PII_DETAIL, buildLinkTemplate);
+    xlTemplatePiiDetail(), buildLinkTemplate);
 }
 
 function buildLinkTemplate() {
@@ -2511,7 +2689,7 @@ async function downloadRevenueTemplate() {
   if (!memberPool().length) { buildRevenueTemplate(); return; }
   confirmPii(
     "[월별수익 대량등록 양식] 인플루언서 " + memberPool().length + "명의 목록 시트가 함께 포함됩니다.",
-    XL_TEMPLATE_PII_DETAIL, buildRevenueTemplate);
+    xlTemplatePiiDetail(), buildRevenueTemplate);
 }
 
 function buildRevenueTemplate() {
@@ -2693,8 +2871,11 @@ function resolveMember(pool, nicknameRaw, emailRaw) {
   if (email) {
     const hits = list.filter((r) => String(r.email || "").trim().toLowerCase() === email);
     if (hits.length === 1) return { member: hits[0] };
-    if (hits.length > 1) return { error: "이메일이 중복 등록되어 있습니다: " + email };
-    return { error: "이메일로 인플루언서를 찾을 수 없습니다: " + email };
+    /* [v2.2] 이메일 = 회원ID(개인정보). 사유 문구도 화면에 그대로 찍히므로 마스킹 규칙을 따른다.
+       (어느 행인지는 '엑셀 행' 번호와 이메일 컬럼으로 이미 특정할 수 있다) */
+    const shown = disp.email(email);
+    if (hits.length > 1) return { error: "이메일이 중복 등록되어 있습니다: " + shown };
+    return { error: "이메일로 인플루언서를 찾을 수 없습니다: " + shown };
   }
   if (nickname) {
     const lower = nickname.toLowerCase();
@@ -2794,6 +2975,18 @@ function isSampleRow(data) {
 /* =========================================================
  * 엑셀 대량 업로드 — 화면 흐름 (파일 선택 → 미리보기·검증 → 실행 → 결과)
  * ========================================================= */
+/* 업로드 미리보기·로그의 회원 표기 — 화면이므로 마스킹 규칙을 그대로 따른다.
+   (payload.memberId 는 서버로 보내는 원본 값이며 화면에 직접 찍지 않는다) */
+function xlEmailCell(v) {
+  const raw = String(v == null ? "" : v).trim();
+  return raw ? disp.email(raw) : "";
+}
+function xlRowMemberLabel(row) {
+  if (!row || !row.member) return "(미식별)";
+  const m = row.member;
+  return m.nickname || disp.name(m.name) || disp.memberId(m.id, m.memberIdMasked);
+}
+
 const XL_MODES = {
   link: {
     title: "🔗 링크 엑셀 대량 업로드",
@@ -2804,11 +2997,10 @@ const XL_MODES = {
            "활동명 또는 이메일로 인플루언서를 식별하며, 각 행은 linkCreate 로 1건씩 등록됩니다.",
     validate: (data, pool) => validateLinkRow(data, pool, todayYmd()),
     cells: (row) => [
-      row.data.nickname, row.data.email, row.payload.name, row.payload.url,
+      row.data.nickname, xlEmailCell(row.data.email), row.payload.name, row.payload.url,
       row.payload.startAt, row.payload.endAt || "(무기한)", row.payload.memo
     ],
-    rowLabel: (row) => (row.member ? (row.member.nickname || row.member.name || row.payload.memberId) : "(미식별)") +
-                       " · " + (row.payload.name || row.payload.url),
+    rowLabel: (row) => xlRowMemberLabel(row) + " · " + (row.payload.name || row.payload.url),
     after: async () => { await loadLinks(); await loadList(); }
   },
   revenue: {
@@ -2819,9 +3011,8 @@ const XL_MODES = {
     intro: "[📄 양식 다운로드] 로 받은 '수익등록' 시트에 맞춰 작성한 파일을 선택하세요. " +
            "각 행은 revenueUpsert 로 등록되며, 같은 (인플루언서, 연월) 이 이미 있으면 값을 갱신합니다.",
     validate: (data, pool) => validateRevenueRow(data, pool),
-    cells: (row) => [row.data.nickname, row.data.email, row.payload.ym, fmtMoney(row.payload.amount)],
-    rowLabel: (row) => (row.member ? (row.member.nickname || row.member.name || row.payload.memberId) : "(미식별)") +
-                       " · " + row.payload.ym,
+    cells: (row) => [row.data.nickname, xlEmailCell(row.data.email), row.payload.ym, fmtMoney(row.payload.amount)],
+    rowLabel: (row) => xlRowMemberLabel(row) + " · " + row.payload.ym,
     after: async () => { await loadRevenue(); await loadList(); }
   }
 };
