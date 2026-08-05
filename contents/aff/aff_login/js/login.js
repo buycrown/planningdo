@@ -8,15 +8,18 @@
  *  - 사용자 입력은 절대 innerHTML 로 넣지 않고 textContent 로만 출력한다. (XSS 방지)
  *  - 인증·통신·해싱은 전부 공용 모듈 window.LFAuth 가 담당한다.
  *    이 파일은 "화면 제어"만 책임진다.
+ *  - 화면 이동 경로는 전부 window.LFSite(site-config.js) 가 소유한다.
+ *    이 파일에 '../03_활동내역/...' 같은 경로를 다시 적지 않는다.
  *
- * [로드 순서] js/auth.js  →  js/login.js
+ * [로드 순서] js/site-config.js  →  js/auth.js  →  js/login.js
  * ========================================================= */
 (function (global) {
   'use strict';
 
   /* ---------------------------------------------------------
-   * 0. 공용 모듈 경로 설정
-   *    로그인 화면 기준의 상대경로를 LFAuth 에 주입한다.
+   * 0. 공용 모듈 확인
+   *    경로(loginUrl/homeUrl/applyUrl)는 auth.js 가 이미 LFSite 에서 가져왔다.
+   *    여기서 다시 주입하지 않는다. (하드코딩 재발 방지)
    * --------------------------------------------------------- */
   if (!global.LFAuth) {
     /* auth.js 로드 실패 시 조용히 죽지 않도록 콘솔에 남긴다. */
@@ -27,19 +30,16 @@
   }
 
   var LFAuth = global.LFAuth;
-
-  LFAuth.config({
-    loginUrl: 'login.html',
-    homeUrl: '../03_활동내역/affiliate.html',
-    applyUrl: '../01_신청화면/index.html'
-  });
+  var LFSite = global.LFSite || null;
 
   /* ---------------------------------------------------------
    * 1. 상수
    * --------------------------------------------------------- */
-  /* 활동내역 폴더 경로 (성공 시 이동 기준 디렉터리) */
-  var HOME_DIR = '../03_활동내역/';
-  /* 기본 진입 페이지 */
+  /* 활동내역 폴더 URL (성공 시 이동 기준 디렉터리). LFSite 가 환경에 맞춰 계산한다. */
+  var HOME_DIR = (LFSite && typeof LFSite.dir === 'function')
+    ? LFSite.dir('my')
+    : '../03_활동내역/';                /* LFSite 미로드 시 폴백 */
+  /* 기본 진입 페이지 (활동내역 폴더 안의 문서명) */
   var HOME_PAGE = 'affiliate.html';
   /*
    * ?next= 값 허용 패턴.

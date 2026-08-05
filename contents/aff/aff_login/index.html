@@ -1,134 +1,29 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="format-detection" content="telephone=no" />
-<meta name="robots" content="noindex, nofollow" />
-<meta name="theme-color" content="#FFFFFF" />
-<title>LFmall 어필리에이트 서비스 로그인</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LFmall 어필리에이트 로그인</title>
+<!--
+  이 문서는 '로컬에서 04_로그인 폴더를 index.html 로 열었을 때' 를 위한 리다이렉트 문서입니다.
 
-<!-- Apps Script 왕복(2~4초) 중 TLS 핸드셰이크 비용을 미리 치른다.
-     dns-prefetch 는 preconnect 미지원 브라우저용 폴백이다. -->
-<link rel="preconnect" href="https://script.google.com" crossorigin>
-<link rel="dns-prefetch" href="https://script.google.com">
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  [왜 필요한가]
+    배포(GitHub Pages) 에서는 04_로그인/login.html 이 /contents/aff/aff_login/index.html
+    으로 이름이 바뀌어 올라갑니다. 로컬에는 login.html 만 있어 index.html 로 접근하면
+    디렉터리 목록이나 404 가 떴습니다. 양쪽 어디로 들어와도 로그인 화면이 뜨도록
+    같은 폴더의 login.html 로 즉시 보냅니다.
 
-<!-- 폰트 : Pretendard Variable (CDN) -->
-<link rel="stylesheet" as="style" crossorigin
-      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
-
-<!-- 화면 스타일 -->
-<link rel="stylesheet" href="css/login.css" />
+  ⚠️ 배포 시 주의
+    aff_login/index.html 은 'login.html 의 내용' 으로 덮어써야 합니다.
+    (이 리다이렉트 문서를 그대로 올리면 login.html 이 없어 404 가 됩니다)
+    자세한 절차는 공용_서버_문서/QA_체크리스트.md 의 '배포 후 필수 확인' 참고.
+-->
+<meta http-equiv="refresh" content="0; url=login.html">
+<link rel="canonical" href="login.html">
+<script>location.replace('login.html');</script>
+<style>body{font-family:'Malgun Gothic',sans-serif;padding:24px;font-size:15px;color:#222}</style>
 </head>
 <body>
-
-<!-- ===== 상단 : LFmall 로고 (클릭 시 LFmall 모바일 홈 새 창) ===== -->
-<header class="header">
-  <div class="header__inner">
-    <a class="logo" href="https://m.lfmall.co.kr" target="_blank" rel="noopener noreferrer"
-       aria-label="LFmall 홈으로 이동 (새 창)">
-      <img src="lfmall-logo.png" alt="LFmall" class="logo__img" width="120" height="34" />
-    </a>
-  </div>
-</header>
-
-<!-- ===== 본문 : 로그인 카드 ===== -->
-<main class="page" id="page">
-  <div class="card" role="region" aria-labelledby="pageTitle">
-
-    <!-- 타이틀 -->
-    <div class="card__head">
-      <span class="badge-brand">AFFILIATE</span>
-      <h1 class="card__title" id="pageTitle">어필리에이트 서비스 로그인</h1>
-      <p class="card__desc">가입 시 등록한 이메일 또는 휴대폰번호로 로그인해 주세요.</p>
-    </div>
-
-    <!-- 보안 컨텍스트(HTTPS) 경고 배너 : 스크립트가 필요 시 노출 -->
-    <div class="notice-insecure" id="insecureBanner" role="alert" hidden></div>
-
-    <!-- 에러/잠금 안내 영역 : 토스트가 아니라 폼 상단에 남아 있는 영역 -->
-    <div class="form-alert" id="formAlert" role="alert" aria-live="polite" hidden></div>
-
-    <!-- 로그인 폼 -->
-    <form class="form" id="loginForm" novalidate autocomplete="on">
-
-      <!-- 아이디(이메일 또는 휴대폰번호) -->
-      <div class="field">
-        <div class="field__labelrow">
-          <label class="field__label" for="identifier">아이디</label>
-          <span class="id-badge" id="idBadge" hidden></span>
-        </div>
-        <input type="text"
-               id="identifier"
-               name="identifier"
-               class="input"
-               placeholder="이메일 또는 휴대폰번호"
-               inputmode="email"
-               autocomplete="username"
-               autocapitalize="off"
-               autocorrect="off"
-               spellcheck="false"
-               enterkeyhint="next"
-               maxlength="64"
-               aria-describedby="identifierHint" />
-        <p class="field__hint" id="identifierHint">
-          휴대폰번호는 숫자만 입력하면 하이픈(-)이 자동으로 입력됩니다.
-        </p>
-      </div>
-
-      <!-- 비밀번호 -->
-      <div class="field">
-        <label class="field__label" for="password">비밀번호</label>
-        <div class="input-wrap">
-          <input type="password"
-                 id="password"
-                 name="password"
-                 class="input input--pw"
-                 placeholder="비밀번호"
-                 autocomplete="current-password"
-                 autocapitalize="off"
-                 autocorrect="off"
-                 spellcheck="false"
-                 enterkeyhint="go"
-                 maxlength="20" />
-          <button type="button"
-                  class="pw-toggle"
-                  id="pwToggle"
-                  aria-pressed="false"
-                  aria-controls="password"
-                  aria-label="비밀번호 표시">
-            <span class="pw-toggle__icon" aria-hidden="true">👁</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- 액션 버튼 -->
-      <div class="actions">
-        <button type="submit" class="btn btn--solid" id="btnLogin">
-          <span class="btn__spinner" id="btnSpinner" aria-hidden="true" hidden></span>
-          <span class="btn__label" id="btnLoginLabel">로그인</span>
-        </button>
-        <a class="btn btn--outline" id="btnApply" href="../01_신청화면/index.html">
-          어필리에이트 서비스 가입 신청
-        </a>
-      </div>
-    </form>
-
-    <!-- 하단 안내 문구 (문안 고정) -->
-    <p class="foot-notice">
-      비밀번호 변경 및 초기화 요청은
-      '<a class="foot-notice__mail"
-          href="mailto:yr.kwon@lfcorp.com?subject=[LFmall 어필리에이트] 비밀번호 초기화 요청">yr.kwon@lfcorp.com</a>'
-      이메일로 신청해 주세요.
-    </p>
-  </div>
-
-  <p class="copyright">© LF Corp. All rights reserved.</p>
-</main>
-
-<!-- ===== 스크립트 : 공용 인증 모듈 → 화면 제어 순서로 로드 ===== -->
-<script src="js/auth.js"></script>
-<script src="js/login.js"></script>
+  로그인 화면으로 이동합니다. 자동으로 이동하지 않으면 <a href="login.html">여기를 눌러 주세요</a>.
 </body>
 </html>

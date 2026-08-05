@@ -109,7 +109,7 @@
           <span class="btn__spinner" id="btnSpinner" aria-hidden="true" hidden></span>
           <span class="btn__label" id="btnLoginLabel">로그인</span>
         </button>
-        <a class="btn btn--outline" id="btnApply" href="../01_신청화면/index.html">
+        <a class="btn btn--outline" id="btnApply" data-lf-link="apply">
           어필리에이트 서비스 가입 신청
         </a>
       </div>
@@ -127,7 +127,8 @@
   <p class="copyright">© LF Corp. All rights reserved.</p>
 </main>
 
-<!-- ===== 스크립트 : 공용 인증 모듈 → 화면 제어 순서로 로드 ===== -->
+<!-- ===== 스크립트 : 경로 설정(LFSite) → 공용 인증 모듈(LFAuth) → 화면 제어 순서로 로드 ===== -->
+<script src="js/site-config.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/login.js"></script>
 </body>
