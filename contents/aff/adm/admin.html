@@ -494,6 +494,60 @@
   .sns-bytype .pri { display: inline-block; margin-left: 6px; font-size: 11px; font-weight: 700;
     color: var(--primary); background: var(--primary-soft); border-radius: 5px; padding: 1px 6px; }
 
+  /* =========================================================
+   * v2.3 확장 : 관리자 다중 계정 · 등급 권한 · 계정 관리 화면
+   * ========================================================= */
+
+  /* ----- 헤더 : 현재 로그인 계정 + 등급 뱃지 ----- */
+  .admin-who { display: inline-flex; align-items: center; gap: 8px; margin-right: 2px;
+    font-size: 13px; color: var(--label-ink); white-space: nowrap; }
+  .admin-who[hidden] { display: none; }
+  .admin-who .who-name { font-weight: 600; color: var(--text-strong); }
+  .role-badge { display: inline-flex; align-items: center; height: 22px; padding: 0 9px;
+    border-radius: 999px; font-size: 11.5px; font-weight: 700; color: #fff; background: var(--muted); }
+  .role-badge.role-master { background: var(--danger); }   /* MASTER  : 빨강 */
+  .role-badge.role-oper   { background: var(--dark-btn); } /* 운영자   : 검정 */
+  .role-badge.role-viewer { background: var(--muted); }    /* 조회전용 : 회색 */
+
+  /* ----- 계정 관리 목록 뱃지 ----- */
+  .badge-pii-on   { background: var(--success-bg); color: var(--success); }
+  .badge-pii-off  { background: var(--danger-soft); color: var(--danger); }
+  .badge-inactive { background: var(--danger-soft); color: var(--danger); }
+  .badge-self     { background: var(--primary-soft); color: var(--primary); }
+  .badge-reserved { background: #F0F2F4; color: var(--label-ink); }
+  .acc-id-cell { display: flex; flex-direction: column; gap: 4px; }
+  .acc-id-cell .acc-flags { display: flex; gap: 4px; flex-wrap: wrap; }
+  td.pw-cell { white-space: nowrap; font-size: 12.5px; }
+  td.pw-cell .pw-temp { color: var(--danger); font-weight: 700; }
+
+  /* ----- 계정 추가/수정 모달 ----- */
+  .radio-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 6px; }
+  .radio-row label { display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13.5px; cursor: pointer; color: var(--text); }
+  .radio-row input { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+  .radio-row input:disabled + span, .radio-row input:disabled { opacity: .5; cursor: not-allowed; }
+  .switch-row { display: flex; align-items: center; gap: 9px; margin-top: 6px; font-size: 13.5px; }
+  .switch-row input { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+  .role-help { margin-top: 10px; font-size: 12px; color: var(--muted); line-height: 1.8;
+    background: #F7F9FB; border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; }
+
+  /* ----- 임시 비밀번호 1회 노출 모달 ----- */
+  .tp-warn { padding: 12px 14px; border-radius: var(--radius); background: var(--danger-soft);
+    border: 1px solid var(--danger-border); color: #9B2C2F; font-size: 13px; font-weight: 700; line-height: 1.75; }
+  .tp-value { margin-top: 14px; display: flex; align-items: center; gap: 8px; }
+  .tp-value code { flex: 1; min-width: 0; display: block; padding: 15px 16px; border-radius: var(--radius);
+    border: 1px dashed var(--border-strong); background: #F7F9FB; text-align: center;
+    font-family: "D2Coding", "Consolas", "Menlo", "Courier New", monospace;
+    font-size: 22px; font-weight: 700; letter-spacing: .06em; color: var(--text-strong); word-break: break-all; }
+  .tp-guide { margin-top: 12px; font-size: 12.5px; color: var(--label-ink); line-height: 1.8; }
+  .tp-ack { display: flex; align-items: center; gap: 8px; margin-top: 14px;
+    font-size: 13px; font-weight: 600; color: var(--text-strong); cursor: pointer; }
+  .tp-ack input { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+
+  /* ----- 강제 모달(임시 비밀번호 변경) 안내 ----- */
+  .forced-note { margin-bottom: 14px; padding: 11px 13px; border-radius: var(--radius);
+    background: #FFF7E6; border: 1px solid #F5D48A; font-size: 12.5px; color: #8A5A00; line-height: 1.75; }
+
   /* ----- 데스크톱 기준(1280px 이하는 가로 스크롤로 대응) ----- */
   @media (max-width: 1280px) {
     .app-content { max-width: 100%; }
@@ -510,8 +564,10 @@
     <div class="login-inner">
       <form id="loginForm">
         <div class="field">
-          <label class="f-label" for="loginId">아이디</label>
-          <input type="text" id="loginId" autocomplete="username" placeholder="아이디를 입력하세요" />
+          <label class="f-label" for="loginId">관리자 계정(사내 이메일)</label>
+          <input type="text" id="loginId" autocomplete="username"
+                 placeholder="예: kim@lfcorp.com"
+                 autocapitalize="none" autocorrect="off" spellcheck="false" />
         </div>
         <div class="field">
           <label class="f-label" for="loginPw">패스워드</label>
@@ -522,7 +578,8 @@
       <div class="login-notice">
         본 시스템은 개인정보를 처리하는 관리자 전용 화면입니다.
         모든 접속 및 처리 이력은 접근로그에 기록되며, 권한 없는 접근 시도는 차단됩니다.
-        <b>(로그인 5회 실패 시 10분간 잠금)</b>
+        <b>(로그인 5회 실패 시 10분간 잠금)</b><br />
+        계정 발급·등급 변경은 MASTER 관리자에게 요청해 주세요.
       </div>
     </div>
   </div>
@@ -571,7 +628,13 @@
         <!-- 서버 배포 상태 뱃지 : 구버전 배포를 헤더에서 즉시 알아채기 위한 자가 진단 표시 -->
         <button type="button" class="server-badge" id="serverBadge" hidden
                 title="서버 배포 상태">서버 확인 중…</button>
+        <!-- [v2.3] 지금 누구로 접속했는지 항상 보이게 한다 (이름 + 등급 뱃지) -->
+        <span class="admin-who" id="adminWho" hidden>
+          <span class="who-name" id="adminWhoName"></span>
+          <span class="role-badge" id="adminWhoRole"></span>
+        </span>
         <button type="button" class="btn btn-outline btn-sm" id="btnMask">🔒 마스킹 해제</button>
+        <button type="button" class="btn btn-outline btn-sm" id="btnMyPw">🔑 내 비밀번호 변경</button>
         <button type="button" class="btn btn-outline btn-sm" id="btnLogout">로그아웃</button>
       </div>
     </header>
@@ -607,7 +670,7 @@
             </select>
             <input type="text" id="searchInput" placeholder="검색어를 입력하세요 (LFmall ID / 활동명 / 이름 / 이메일 / 휴대폰번호)" />
             <button type="button" class="btn btn-primary" id="btnSearch">🔍 조회</button>
-            <button type="button" class="btn btn-soft" id="btnAdd">+ 신청 추가</button>
+            <button type="button" class="btn btn-soft" id="btnAdd" data-perm="write">+ 신청 추가</button>
             <button type="button" class="btn btn-outline excel-btn" id="btnExcelApps"
                     title="현재 조회·필터된 결과 전체를 엑셀로 내려받습니다. (페이징과 무관)">⬇ 엑셀 다운로드</button>
           </div>
@@ -626,8 +689,8 @@
           <!-- 선택 시 노출되는 일괄 작업 툴바 -->
           <div class="bulk-bar" id="bulkBar" role="region" aria-label="선택 항목 일괄 작업">
             <span class="bulk-count"><b id="bulkCount">0</b>명 선택됨</span>
-            <button type="button" class="btn btn-primary btn-sm" id="btnBulkCommission">💰 수수료 일괄 입력</button>
-            <button type="button" class="btn btn-soft btn-sm" id="btnBulkLink">🔗 링크 일괄 배포</button>
+            <button type="button" class="btn btn-primary btn-sm" id="btnBulkCommission" data-perm="write">💰 수수료 일괄 입력</button>
+            <button type="button" class="btn btn-soft btn-sm" id="btnBulkLink" data-perm="write">🔗 링크 일괄 배포</button>
             <span style="flex:1;"></span>
             <button type="button" class="btn btn-outline btn-sm" id="btnBulkClear">선택 해제</button>
           </div>
@@ -706,7 +769,7 @@
           <label class="f-label" style="margin-top:14px;">발송 메시지 <span style="font-weight:400;color:var(--muted);">(매 발송마다 수정 가능)</span></label>
           <textarea id="inviteMessage" rows="3" placeholder="인플루언서에게 보낼 DM 내용을 입력하세요"></textarea>
           <div style="display:flex;justify-content:flex-end;margin-top:12px;">
-            <button type="button" class="btn btn-primary" id="btnInvite">✉️ 초대하기</button>
+            <button type="button" class="btn btn-primary" id="btnInvite" data-perm="write">✉️ 초대하기</button>
           </div>
           <div class="dm-preview" id="dmGuide"></div>
         </div>
@@ -770,13 +833,13 @@
             </select>
             <button type="button" class="btn btn-primary" id="btnLinkReload">🔍 조회</button>
             <span style="flex:1;"></span>
-            <button type="button" class="btn btn-soft" id="btnLinkBulkFromLinks">📤 동일 링크 일괄 배포</button>
-            <button type="button" class="btn btn-soft" id="btnLinkAdd">+ 링크 추가</button>
+            <button type="button" class="btn btn-soft" id="btnLinkBulkFromLinks" data-perm="write">📤 동일 링크 일괄 배포</button>
+            <button type="button" class="btn btn-soft" id="btnLinkAdd" data-perm="write">+ 링크 추가</button>
           </div>
           <div class="toolbar" style="margin-top:10px;">
             <button type="button" class="btn btn-outline excel-btn" id="btnLinkTemplate"
                     title="링크 대량 등록용 엑셀 양식을 내려받습니다.">📄 양식 다운로드</button>
-            <button type="button" class="btn btn-outline excel-btn" id="btnLinkUpload"
+            <button type="button" class="btn btn-outline excel-btn" id="btnLinkUpload" data-perm="write"
                     title="작성한 엑셀 양식으로 링크를 한 번에 등록합니다.">📥 엑셀 대량 업로드</button>
             <span style="flex:1;"></span>
             <button type="button" class="btn btn-outline excel-btn" id="btnExcelLinks"
@@ -835,7 +898,7 @@
           <div class="toolbar" style="margin-top:10px;">
             <button type="button" class="btn btn-outline excel-btn" id="btnRevTemplate"
                     title="월별 수익 대량 등록용 엑셀 양식을 내려받습니다.">📄 양식 다운로드</button>
-            <button type="button" class="btn btn-outline excel-btn" id="btnRevUpload"
+            <button type="button" class="btn btn-outline excel-btn" id="btnRevUpload" data-perm="write"
                     title="작성한 엑셀 양식으로 월별 수익을 한 번에 등록합니다.">📥 엑셀 대량 업로드</button>
             <span style="flex:1;"></span>
             <button type="button" class="btn btn-outline excel-btn" id="btnExcelRevenue"
@@ -852,7 +915,7 @@
             <span class="stat" id="statRevTotal"></span>
             <span class="rev-head-actions">
               <span class="progress-text" id="revProgress" aria-live="polite"></span>
-              <button type="button" class="btn btn-soft" id="btnRevSaveAll" disabled
+              <button type="button" class="btn btn-soft" id="btnRevSaveAll" data-perm="write" disabled
                       title="변경된 행이 없습니다. 금액을 수정하면 활성화됩니다.">변경사항 없음</button>
             </span>
           </div>
@@ -891,6 +954,70 @@
         </div>
       </section>
 
+      <!-- ===== 페이지 5: 계정 관리 (MASTER 전용 · v2.3) =====
+           좌측 네비의 [👤 계정 관리] 항목은 admin.js 가 perms.account === true 일 때만
+           동적으로 렌더한다. 이 섹션 자체는 숨김 상태로 두고 switchView 로만 열린다. -->
+      <section id="viewAccounts" style="display:none;">
+        <div class="stat-row">
+          <div class="stat-tile">
+            <div class="label">전체 계정</div>
+            <div class="value" id="tileAccTotal">0<small>개</small></div>
+          </div>
+          <div class="stat-tile">
+            <div class="label">MASTER</div>
+            <div class="value" id="tileAccMaster">0<small>명</small></div>
+          </div>
+          <div class="stat-tile">
+            <div class="label">운영자</div>
+            <div class="value" id="tileAccOper">0<small>명</small></div>
+          </div>
+          <div class="stat-tile">
+            <div class="label">조회전용</div>
+            <div class="value" id="tileAccViewer">0<small>명</small></div>
+          </div>
+          <div class="stat-tile">
+            <div class="label">정지</div>
+            <div class="value" id="tileAccInactive">0<small>개</small></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar">
+            <span class="section-title">관리자 계정</span>
+            <span style="flex:1;"></span>
+            <button type="button" class="btn btn-outline" id="btnAccReload">🔍 새로고침</button>
+            <button type="button" class="btn btn-outline excel-btn" id="btnExcelAccounts"
+                    title="현재 조회된 관리자 계정을 엑셀로 내려받습니다. (비밀번호 관련 컬럼은 포함되지 않습니다)">⬇ 엑셀 다운로드</button>
+            <button type="button" class="btn btn-soft" id="btnAccAdd">+ 계정 추가</button>
+          </div>
+          <div class="excel-na"></div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="margin-bottom:14px;">
+            <span class="section-title">계정 목록</span>
+            <span class="stat" id="statAccTotal"></span>
+          </div>
+          <div class="table-wrap scrollable">
+            <table class="table-plain">
+              <thead>
+                <tr>
+                  <th>관리자ID</th><th>이름</th><th>등급</th><th>개인정보열람</th><th>상태</th>
+                  <th>최종로그인</th><th>비밀번호</th><th>생성일시</th><th>관리</th>
+                </tr>
+              </thead>
+              <tbody id="accBody"></tbody>
+            </table>
+            <div class="empty" id="accEmpty" style="display:none;">등록된 관리자 계정이 없습니다.</div>
+          </div>
+          <div class="privacy-note">
+            👤 <b>MASTER</b> 는 계정 관리까지, <b>운영자</b> 는 조회와 입력·수정·삭제까지,
+            <b>조회전용</b> 은 조회만 할 수 있습니다. <b>개인정보 열람</b> 은 등급과 별개로 계정마다 지정합니다.<br />
+            비밀번호는 서버에도 평문으로 남지 않으므로 <b>확인이 불가능</b>합니다. 분실 시 [비밀번호 초기화]로 재발급하세요.
+          </div>
+        </div>
+      </section>
+
     </main>
   </div>
 </div>
@@ -911,10 +1038,10 @@
       <div style="font-size:12px;color:var(--muted);margin-top:8px;" id="iv-meta"></div>
     </div>
     <div class="modal__foot">
-      <button type="button" class="btn btn-danger" id="btnInvDelete">삭제</button>
+      <button type="button" class="btn btn-danger" id="btnInvDelete" data-perm="write">삭제</button>
       <span style="flex:1;"></span>
       <button type="button" class="btn btn-outline" data-close>취소</button>
-      <button type="button" class="btn btn-primary" id="btnInvSave">저장</button>
+      <button type="button" class="btn btn-primary" id="btnInvSave" data-perm="write">저장</button>
     </div>
   </div>
 </div>
@@ -968,7 +1095,7 @@
       <textarea id="f-memo" rows="2" placeholder="내부 관리용 메모"></textarea>
 
       <!-- ===== 로그인 비밀번호 (관리자 지정) ===== -->
-      <div class="pw-box" id="pwBox">
+      <div class="pw-box" id="pwBox" data-perm="write">
         <div class="sec-title">🔑 로그인 비밀번호</div>
         <div class="pw-state" id="pwState">-</div>
         <div class="pw-warn" id="pwInsecure" style="display:none;"></div>
@@ -999,10 +1126,10 @@
       <div style="font-size:12px;color:var(--muted);margin-top:8px;" id="metaInfo"></div>
     </div>
     <div class="modal__foot">
-      <button type="button" class="btn btn-danger" id="btnDelete">삭제</button>
+      <button type="button" class="btn btn-danger" id="btnDelete" data-perm="write">삭제</button>
       <span style="flex:1;"></span>
       <button type="button" class="btn btn-outline" data-close>취소</button>
-      <button type="button" class="btn btn-primary" id="btnSave">저장</button>
+      <button type="button" class="btn btn-primary" id="btnSave" data-perm="write">저장</button>
     </div>
   </div>
 </div>
@@ -1065,7 +1192,7 @@
     </div>
     <div class="modal__foot">
       <button type="button" class="btn btn-outline" data-close>취소</button>
-      <button type="button" class="btn btn-primary" id="btnCommissionApply">적용</button>
+      <button type="button" class="btn btn-primary" id="btnCommissionApply" data-perm="write">적용</button>
     </div>
   </div>
 </div>
@@ -1113,10 +1240,10 @@
       <div style="font-size:12px;color:var(--muted);margin-top:8px;" id="lk-meta"></div>
     </div>
     <div class="modal__foot">
-      <button type="button" class="btn btn-danger" id="btnLinkDelete" style="display:none;">삭제</button>
+      <button type="button" class="btn btn-danger" id="btnLinkDelete" data-perm="write" style="display:none;">삭제</button>
       <span style="flex:1;"></span>
       <button type="button" class="btn btn-outline" data-close>취소</button>
-      <button type="button" class="btn btn-primary" id="btnLinkSave">저장</button>
+      <button type="button" class="btn btn-primary" id="btnLinkSave" data-perm="write">저장</button>
     </div>
   </div>
 </div>
@@ -1148,7 +1275,7 @@
     </div>
     <div class="modal__foot">
       <button type="button" class="btn btn-outline" data-close>취소</button>
-      <button type="button" class="btn btn-primary" id="btnLinkBulkApply">일괄 배포</button>
+      <button type="button" class="btn btn-primary" id="btnLinkBulkApply" data-perm="write">일괄 배포</button>
     </div>
   </div>
 </div>
@@ -1202,7 +1329,7 @@
       <span style="flex:1;"></span>
       <button type="button" class="btn btn-outline" id="btnXlBack" style="display:none;">다시 선택</button>
       <button type="button" class="btn btn-outline" data-close id="btnXlClose">닫기</button>
-      <button type="button" class="btn btn-primary" id="btnXlRun" style="display:none;">등록 실행</button>
+      <button type="button" class="btn btn-primary" id="btnXlRun" data-perm="write" style="display:none;">등록 실행</button>
     </div>
   </div>
 </div>
@@ -1257,6 +1384,153 @@
     <div class="modal__foot">
       <span style="flex:1;"></span>
       <button type="button" class="btn btn-danger" data-close>확인했습니다</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ [v2.3] 계정 추가 / 수정 ============ -->
+<div class="modal-overlay" id="adminFormModal" aria-hidden="true">
+  <div class="modal" style="max-width:560px;" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <h3 id="acModalTitle">계정 추가</h3>
+      <button type="button" class="modal__close" data-close>✕</button>
+    </div>
+    <div class="modal__body">
+      <label class="f-label" style="margin-top:0;" for="ac-id">관리자ID (사내 이메일) <span style="color:var(--danger);">*</span></label>
+      <input type="text" id="ac-id" placeholder="예: kim@lfcorp.com"
+             autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" />
+      <span class="hint" id="ac-idHint">사내 이메일 형식이어야 합니다. 생성 후에는 변경할 수 없습니다.</span>
+
+      <label class="f-label" for="ac-name">이름 <span style="color:var(--danger);">*</span></label>
+      <input type="text" id="ac-name" placeholder="예: 김담당" />
+
+      <label class="f-label">등급</label>
+      <div class="radio-row" id="ac-roleRow">
+        <label><input type="radio" name="ac-role" value="MASTER" /><span>MASTER</span></label>
+        <label><input type="radio" name="ac-role" value="운영자" checked /><span>운영자</span></label>
+        <label><input type="radio" name="ac-role" value="조회전용" /><span>조회전용</span></label>
+      </div>
+      <div class="role-help">
+        · <b>MASTER</b> — 조회 + 입력·수정·삭제 + 계정 관리<br />
+        · <b>운영자</b> — 조회 + 입력·수정·삭제<br />
+        · <b>조회전용</b> — 조회만 가능
+      </div>
+
+      <label class="f-label">개인정보 열람</label>
+      <div class="switch-row">
+        <input type="checkbox" id="ac-pii" />
+        <label for="ac-pii">이름·이메일·휴대폰번호 원본 열람을 허용합니다. (등급과 무관하게 계정별로 지정)</label>
+      </div>
+
+      <div id="ac-statusField" style="display:none;">
+        <label class="f-label" for="ac-status">상태</label>
+        <select id="ac-status">
+          <option value="활성">활성</option>
+          <option value="정지">정지</option>
+        </select>
+      </div>
+
+      <label class="f-label" for="ac-memo">메모</label>
+      <textarea id="ac-memo" rows="2" placeholder="내부 관리용 메모 (예: 마케팅팀 / 2026-08 합류)"></textarea>
+      <div style="font-size:12px;color:var(--muted);margin-top:8px;" id="ac-meta"></div>
+      <div class="pw-msg" id="ac-msg" aria-live="polite"></div>
+    </div>
+    <div class="modal__foot">
+      <span style="flex:1;"></span>
+      <button type="button" class="btn btn-outline" data-close>취소</button>
+      <button type="button" class="btn btn-primary" id="btnAccSave">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ [v2.3] 임시 비밀번호 1회 노출 ============
+     이 창을 닫으면 서버에도 평문이 남지 않아 다시 볼 수 없다.
+     '복사했습니다' 체크 전에는 닫기·배경클릭·ESC 로 빠져나갈 수 없다. -->
+<div class="modal-overlay" id="tempPwModal" aria-hidden="true">
+  <div class="modal" style="max-width:520px;" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <h3 id="tpTitle">임시 비밀번호</h3>
+    </div>
+    <div class="modal__body">
+      <div class="tp-warn" id="tp-warn">
+        ⚠️ 이 비밀번호는 지금 한 번만 표시됩니다.<br />
+        창을 닫으면 다시 볼 수 없으며, 재발급(비밀번호 초기화)만 가능합니다.
+      </div>
+      <div class="tp-value">
+        <code id="tp-value">-</code>
+        <button type="button" class="btn btn-outline" id="btnTpCopy" title="클립보드로 복사">📋 복사</button>
+      </div>
+      <div class="tp-guide" id="tp-guide">
+        본인에게 안전한 경로로 전달하고, 최초 로그인 시 변경하도록 안내해 주세요.
+      </div>
+      <label class="tp-ack" for="tp-ack">
+        <input type="checkbox" id="tp-ack" />
+        <span>복사했습니다</span>
+      </label>
+    </div>
+    <div class="modal__foot">
+      <span style="flex:1;"></span>
+      <button type="button" class="btn btn-primary" id="btnTpClose" disabled>닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ [v2.3] 계정 관리 확인 (초기화 / 삭제) ============ -->
+<div class="modal-overlay" id="adminConfirmModal" aria-hidden="true">
+  <div class="modal" style="max-width:440px;" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <h3 id="acConfirmTitle">확인</h3>
+      <button type="button" class="modal__close" data-close>✕</button>
+    </div>
+    <div class="modal__body">
+      <p style="font-size:14px;line-height:1.8;" id="acConfirmMsg"></p>
+      <div class="xl-warn" style="margin-top:12px;white-space:pre-line;" id="acConfirmDetail"></div>
+    </div>
+    <div class="modal__foot">
+      <button type="button" class="btn btn-outline" data-close>취소</button>
+      <button type="button" class="btn btn-danger" id="btnAccConfirm">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ [v2.3] 내 비밀번호 변경 (전 등급) ============
+     admin.tmp === true 로 로그인하면 '강제 모드' 로 열린다.
+     강제 모드에서는 ✕ · 취소 · 배경클릭 · ESC 가 모두 막히고 [로그아웃] 만 남는다. -->
+<div class="modal-overlay" id="myPwModal" aria-hidden="true">
+  <div class="modal" style="max-width:480px;" role="dialog" aria-modal="true">
+    <div class="modal__head">
+      <h3 id="mpTitle">내 비밀번호 변경</h3>
+      <button type="button" class="modal__close" id="mpClose" data-close>✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="forced-note" id="mp-forcedNote" style="display:none;">
+        임시 비밀번호로 로그인했습니다. <b>새 비밀번호로 변경해야 다른 작업을 할 수 있습니다.</b>
+        변경 전에는 이 창을 닫을 수 없습니다.
+      </div>
+      <div class="pw-warn" id="mpInsecure" style="display:none;"></div>
+      <div>
+        <label class="f-label" style="margin-top:0;" for="mp-pw1">새 비밀번호</label>
+        <div class="pw-input">
+          <input type="password" id="mp-pw1" autocomplete="new-password" placeholder="8~20자, 2종 이상 조합" />
+          <button type="button" class="pw-toggle" data-pw="mp-pw1" aria-label="새 비밀번호 표시">표시</button>
+        </div>
+      </div>
+      <div>
+        <label class="f-label" for="mp-pw2">새 비밀번호 확인</label>
+        <div class="pw-input">
+          <input type="password" id="mp-pw2" autocomplete="new-password" placeholder="다시 한 번 입력" />
+          <button type="button" class="pw-toggle" data-pw="mp-pw2" aria-label="비밀번호 확인 표시">표시</button>
+        </div>
+      </div>
+      <div class="pw-meter"><i id="mpBar"></i></div>
+      <div class="pw-msg" id="mpMsg" aria-live="polite"></div>
+      <span class="hint">평문 비밀번호는 서버로 전송되지 않으며, 브라우저에서 암호화(PBKDF2)된 값만 전달됩니다.</span>
+    </div>
+    <div class="modal__foot">
+      <button type="button" class="btn btn-outline" id="btnMyPwLogout" style="display:none;">로그아웃</button>
+      <span style="flex:1;"></span>
+      <button type="button" class="btn btn-outline" id="mpCancel" data-close>취소</button>
+      <button type="button" class="btn btn-primary" id="btnMyPwSave">변경</button>
     </div>
   </div>
 </div>

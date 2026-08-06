@@ -87,7 +87,7 @@
    *   **화면 진입 즉시** 구버전으로 판정하고 재배포 안내를 띄운다.
    *   ★ 반드시 서버(API_LEVEL=3) 를 먼저 재배포한 뒤 이 파일들을 올린다.
    */
-  var EXPECTED_API_LEVEL = 3;
+  var EXPECTED_API_LEVEL = 4;
 
   /* 구버전 서버가 배포돼 있을 때 화면에 그대로 노출할 안내 문구 */
   var OUTDATED_MSG =

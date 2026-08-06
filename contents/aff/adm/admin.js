@@ -1,5 +1,5 @@
 /* =========================================================
- * LFmall 인플루언서 신청 관리 ADMIN - admin.js  v2.1
+ * LFmall 인플루언서 신청 관리 ADMIN - admin.js  v2.3
  * =========================================================
  * [설정] APPS_SCRIPT_URL : 신청 화면(app.js)과 동일한 웹앱 URL을 사용합니다.
  * 인증 토큰은 브라우저 메모리(sessionStorage)에만 보관되며 탭을 닫으면 사라집니다.
@@ -19,6 +19,17 @@
  *   8) 엑셀          : 양식 다운로드 · 대량 업로드(링크/수익) · 조회 결과 다운로드(4개 화면)
  *                      ※ SheetJS(CDN) 미로드 시 엑셀 버튼만 비활성화되고 나머지는 정상 동작
  *   9) 링크 추가 모달 : 인플루언서 셀렉트 → 텍스트 검색 자동완성 + 전체 목록 펼치기
+ *
+ * [v2.3 추가 기능]
+ *  10) 2단계 관리자 로그인 : adminAuthChallenge → (legacy | pbkdf2 | temp) → login
+ *                            평문 비밀번호는 legacy 경로에서만 전송된다.
+ *  11) 등급 권한(MASTER / 운영자 / 조회전용) : 진입·새로고침마다 adminMe 로 확정하고
+ *                            perms.write === false 면 쓰기 UI 를 DOM 에서 아예 떼어낸다.
+ *  12) 계정 관리 뷰(MASTER 전용) : adminList/Create/Update/ResetPassword/Delete
+ *                            임시 비밀번호는 생성·초기화 응답에서 1회만 노출된다.
+ *  13) 내 비밀번호 변경(전 등급) : adminChangeOwnPassword
+ *                            admin.tmp === true 면 강제 모달(닫기 불가)로 띄운다.
+ *  14) piiMasked : 서버가 이미 가린 값이면 화면에서 중복 마스킹하지 않는다.
  *
  * [의존] auth.js (window.LFAuth) — 비밀번호 자격증명 생성 전용으로만 사용합니다.
  *        관리자 세션은 기존 api() + sessionStorage['lf_admin_token'] 방식을 유지합니다.
@@ -115,7 +126,7 @@ const selectedIds = new Set(); // 신청 내역 다중 선택 (페이지 이동�
 let links = [];          // 링크 관리 뷰 (조회 결과 전체)
 let revRows = [];        // 수익 관리 뷰 행 [{id(회원id), name, nickname, rate, total, saved, amount}]
 let currentDetail = null; // 상세 모달에 열려 있는 신청 레코드
-const loadedView = { links: false, revenue: false }; // 뷰별 최초 진입 시 1회 로드
+const loadedView = { links: false, revenue: false, accounts: false }; // 뷰별 최초 진입 시 1회 로드
 let currentView = "applications";  // 현재 열려 있는 뷰 (회원ID 변경 후 재조회 판단용)
 
 /* 페이징 상태 (10/50/100) */
@@ -172,6 +183,19 @@ async function api(action, payload = {}) {
       sessionStorage.removeItem("lf_admin_token");
       showLogin();
     }
+    /* [v2.3] 등급 권한 관련 코드는 '문구' 가 아니라 '코드' 로 분기한다. */
+    if (result.code === "FORBIDDEN" && action !== "adminMe") {
+      /* 애초에 버튼이 보이면 안 되는 상태다 → 재시도를 유도하지 않고 UI 를 서버 기준으로 재동기화 */
+      syncPermsAfterForbidden();
+    }
+    if (result.code === "PW_CHANGE_REQUIRED") {
+      openMyPwModal(true);
+    }
+    if (result.code === "INACTIVE" && action !== "login") {
+      sessionStorage.removeItem("lf_admin_token");
+      sessionStorage.removeItem(ADMIN_PROFILE_KEY);
+      showLogin();
+    }
     const err = new Error(errorMessageFor(result));
     /* 구버전 서버는 v2 액션을 'UNKNOWN_ACTION' 으로 거절한다.
        auth.js(_request)와 동일하게 'OUTDATED_SERVER' 로 정규화해
@@ -202,6 +226,19 @@ function errorMessageFor(result) {
       return raw + "\n재시도하지 마시고 담당자에게 문의해 주세요.";
     case "UNKNOWN_ACTION":
       return (typeof window.LFAuth !== "undefined" && LFAuth.OUTDATED_MSG) || raw;
+    /* ---- [v2.3] 관리자 등급 권한 ---- */
+    case "FORBIDDEN":
+      return "권한이 없습니다. 화면을 새로고침합니다.";
+    case "PW_CHANGE_REQUIRED":
+      return "임시 비밀번호 상태입니다. 새 비밀번호로 먼저 변경해 주세요.";
+    case "INACTIVE":
+      return "정지된 계정입니다. MASTER에게 문의해 주세요.";
+    case "SELF_DEMOTE":
+      return "본인의 등급·상태는 변경할 수 없습니다. 다른 MASTER에게 요청해 주세요.";
+    case "LAST_MASTER":
+      return "마지막 MASTER 계정입니다. 다른 MASTER를 먼저 지정해 주세요.";
+    case "RESERVED_ID":
+      return "시스템 예약 계정은 삭제할 수 없습니다.";
     default:
       return raw;
   }
@@ -244,12 +281,29 @@ function maskMemberId(rawId, maskedFromServer) {
   /* 이메일이면 이메일 규칙, 이메일이 없어 식별자를 유지 중인 회원은 앞 8자만 노출 */
   return raw.indexOf("@") > 0 ? maskEmail(raw) : (raw.length > 8 ? raw.slice(0, 8) + "\u2026" : raw);
 }
+/* [v2.3] 서버가 이미 마스킹해 보낸 응답(piiMasked:true)이면 화면에서 다시 가리지 않는다.
+   두 번 가리면 "ㅎ***ㅗ***" 처럼 값이 뭉개지고, 이미 가려진 값을 또 가려도 얻는 게 없다.
+   현재 서버는 항상 false 를 내려주므로 동작 변화는 없다(스위치 대비 코드). */
+let serverPiiMasked = false;
+function maskOn() { return masked && !serverPiiMasked; }
+function notePiiMasked(result) {
+  if (result && Object.prototype.hasOwnProperty.call(result, "piiMasked")) {
+    const next = !!result.piiMasked;
+    if (next !== serverPiiMasked) { serverPiiMasked = next; updateMaskButton(); }
+  }
+}
 const disp = {
-  name: (v) => (masked ? maskName(v) : v || "-"),
-  email: (v) => (masked ? maskEmail(v) : v || "-"),
-  phone: (v) => (masked ? maskPhone(v) : v || "-"),
+  name: (v) => (maskOn() ? maskName(v) : v || "-"),
+  email: (v) => (maskOn() ? maskEmail(v) : v || "-"),
+  phone: (v) => (maskOn() ? maskPhone(v) : v || "-"),
   /* 회원ID : 마스킹 ON → memberIdMasked / OFF → 원본 */
   memberId: (rawId, maskedFromServer) => {
+    const raw = String(rawId == null ? "" : rawId).trim();
+    if (!maskOn()) return raw || "-";
+    return maskMemberId(raw, maskedFromServer);
+  },
+  /* 관리자ID(사내 이메일) — 회원ID 와 같은 규칙 */
+  adminId: (rawId, maskedFromServer) => {
     const raw = String(rawId == null ? "" : rawId).trim();
     if (!masked) return raw || "-";
     return maskMemberId(raw, maskedFromServer);
@@ -553,22 +607,245 @@ function showAdmin() {
   $("#headerActions").style.display = "flex";
 }
 
+/* =========================================================
+ * [v2.3] 관리자 신원 · 등급 권한 (SPEC §3-2-a ~ §3-2-d, §4-4 ★v2.3)
+ * ---------------------------------------------------------
+ *  · 화면의 숨김/표시는 '편의' 일 뿐이고 최종 방어는 언제나 서버다.
+ *    그래서 서버가 FORBIDDEN 을 주면 재시도를 유도하지 않고 adminMe 로 UI 를 다시 맞춘다.
+ *  · perms.write === false 는 '비활성' 이 아니라 'DOM 에서 제거' 로 구현한다.
+ *    비활성(disabled)만으로는 개발자도구로 되살릴 수 있다는 오해를 주고,
+ *    조회전용 사용자에게 눌러 봐야 실패하는 버튼을 계속 보여 주게 된다.
+ * ========================================================= */
+const ADMIN_PROFILE_KEY = "lf_admin_profile";
+
+/** 로그인한 관리자 { id, idMasked, name, role, pii, tmp } */
+let adminSession = null;
+/** 서버가 확정해 준 권한. adminMe 이전에는 기존(v2.2) 동작과 동일한 기본값을 쓴다. */
+let perms = { read: true, write: true, account: false, self: true };
+let permSyncing = false;
+
+function canWrite() { return perms.write !== false; }
+function canAccount() { return perms.account === true; }
+
+function saveAdminProfile(a) {
+  try {
+    if (a) sessionStorage.setItem(ADMIN_PROFILE_KEY, JSON.stringify(a));
+    else sessionStorage.removeItem(ADMIN_PROFILE_KEY);
+  } catch (e) { /* 무시 */ }
+}
+function readAdminProfile() {
+  try {
+    const raw = sessionStorage.getItem(ADMIN_PROFILE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+/* ---------- SHA-256 hex (임시 비밀번호 proof 계산 전용) ----------
+   auth.js 에는 PBKDF2(derive)만 있고 단순 SHA-256 헬퍼가 없다.
+   서버가 발급한 임시 비밀번호는 PBKDF2 가 아니라 SHA-256(csalt|pw) 로 증명하므로
+   여기서 WebCrypto 로 직접 계산한다. 평문은 이 브라우저를 벗어나지 않는다. */
+async function sha256Hex(text) {
+  const c = (typeof window !== "undefined" && window.crypto) || null;
+  if (!c || !c.subtle || typeof TextEncoder === "undefined") {
+    const e = new Error("보안 연결(HTTPS) 환경에서만 로그인할 수 있습니다.");
+    e.code = "INSECURE_CONTEXT";
+    throw e;
+  }
+  const buf = await c.subtle.digest("SHA-256", new TextEncoder().encode(String(text)));
+  const bytes = new Uint8Array(buf);
+  let out = "";
+  for (let i = 0; i < bytes.length; i++) out += ("0" + bytes[i].toString(16)).slice(-2);
+  return out;
+}
+
+/* ---------- 등급 뱃지 ---------- */
+const ROLE_BADGE_CLASS = { "MASTER": "role-master", "운영자": "role-oper", "조회전용": "role-viewer" };
+function roleBadgeClass(role) {
+  const k = String(role == null ? "" : role);
+  return hasKey(ROLE_BADGE_CLASS, k) ? ROLE_BADGE_CLASS[k] : "role-viewer";
+}
+
+/** 헤더의 "김담당 (운영자)" + 등급 뱃지 */
+function renderAdminWho() {
+  const box = $("#adminWho");
+  if (!box) return;
+  if (!adminSession) { box.hidden = true; return; }
+  box.hidden = false;
+  const role = String(adminSession.role || "");
+  $("#adminWhoName").textContent =
+    (adminSession.name || adminSession.id || "관리자") + (role ? " (" + role + ")" : "");
+  const badge = $("#adminWhoRole");
+  badge.className = "role-badge " + roleBadgeClass(role);
+  badge.textContent = role || "-";
+}
+
+/* ---------- 쓰기 UI 게이트 ----------
+   data-perm="write" 요소를 자리표시자(span.perm-slot)와 짝지어 두고
+   조회전용일 때는 DOM 에서 떼어낸다. 권한이 다시 생기면 원래 자리로 되돌린다.
+   (이벤트 리스너는 요소에 붙어 있으므로 떼었다 붙여도 그대로 유지된다) */
+const writeGate = [];
+function captureWriteGate() {
+  if (writeGate.length) return;
+  $$("[data-perm]").forEach((el) => {
+    if (String(el.dataset && el.dataset.perm) !== "write") return;
+    const parent = el.parentNode;
+    if (!parent) return;
+    const slot = document.createElement("span");
+    slot.className = "perm-slot";
+    slot.hidden = true;
+    parent.insertBefore(slot, el);
+    writeGate.push({ el: el, slot: slot });
+  });
+}
+function applyWriteGate(on) {
+  writeGate.forEach((g) => {
+    const attached = !!g.el.parentNode;
+    if (on && !attached) {
+      if (g.slot.parentNode) g.slot.parentNode.insertBefore(g.el, g.slot.nextSibling || null);
+    } else if (!on && attached) {
+      g.el.remove();
+    }
+  });
+}
+
+/* ---------- 좌측 네비 [👤 계정 관리] (MASTER 전용) ----------
+   perms.account === false 이면 '비활성' 이 아니라 아예 렌더하지 않는다.
+   그래서 HTML 에 두지 않고 여기서 만든다. */
+let accountNavEl = null;
+let accountNavCntEl = null;
+function ensureAccountNav() {
+  const nav = $(".side-nav");
+  if (!nav) return;
+  if (canAccount()) {
+    if (accountNavEl && accountNavEl.parentNode) return;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "nav-item";
+    b.setAttribute("id", "navAccounts");
+    b.setAttribute("data-view", "accounts");
+    b.appendChild(document.createTextNode("👤 계정 관리 "));
+    const cnt = document.createElement("span");
+    cnt.className = "cnt";
+    cnt.setAttribute("id", "navAccCnt");
+    b.appendChild(cnt);
+    b.addEventListener("click", () => switchView("accounts"));
+    nav.appendChild(b);
+    accountNavEl = b;
+    accountNavCntEl = cnt;
+  } else if (accountNavEl) {
+    accountNavEl.remove();
+    accountNavEl = null;
+    accountNavCntEl = null;
+    if (currentView === "accounts") switchView("applications");
+  }
+}
+
+/** 권한이 확정될 때마다 화면 전체를 다시 맞춘다. */
+function applyPerms() {
+  captureWriteGate();
+  applyWriteGate(canWrite());
+  ensureAccountNav();
+  renderAdminWho();
+  updateMaskButton();
+  /* 이미 그려진 목록의 행 단위 쓰기 버튼도 함께 다시 그린다 */
+  if (loadedView.links) renderLinks();
+  if (loadedView.revenue) renderRevenue();
+}
+
+/** 진입·새로고침 시 서버에서 권한을 확정한다 (세션에 저장된 값은 신뢰하지 않는다). */
+async function loadAdminMe() {
+  try {
+    const res = await api("adminMe");
+    adminSession = res.admin || adminSession;
+    const p = res.perms || {};
+    perms = {
+      read: p.read !== false,
+      write: !!p.write,
+      account: !!p.account,
+      self: p.self !== false
+    };
+    if (Object.prototype.hasOwnProperty.call(res, "serverSidePiiMasking")) {
+      /* 서버가 마스킹 스위치를 켰는지 미리 알아 둔다 (실제 판정은 목록 응답의 piiMasked) */
+      notePiiMasked({ piiMasked: !!res.serverSidePiiMasking && adminSession && adminSession.pii === false });
+    }
+    saveAdminProfile(adminSession);
+    applyPerms();
+    return res;
+  } catch (err) {
+    /* 구버전 서버에는 adminMe 가 없다 → 기존(v2.2) 동작을 그대로 유지한다.
+       UI 숨김은 편의일 뿐이고 권한 판정의 최종 책임은 서버에 있다. */
+    if (err && (err.code === "OUTDATED_SERVER" || err.code === "UNKNOWN_ACTION")) {
+      perms = { read: true, write: true, account: false, self: true };
+      applyPerms();
+      return null;
+    }
+    throw err;
+  }
+}
+
+/** FORBIDDEN 수신 → 안내 후 adminMe 재조회로 UI 동기화 (재시도 유도 금지) */
+function syncPermsAfterForbidden() {
+  if (permSyncing) return;
+  permSyncing = true;
+  Promise.resolve()
+    .then(() => loadAdminMe())
+    .catch(() => { /* 동기화 실패는 조용히 넘긴다 — 서버가 이미 막고 있다 */ })
+    .then(() => { permSyncing = false; });
+}
+
+/** 로그인 직후 · 새로고침 직후 공통 진입 절차 */
+async function enterAdmin() {
+  await loadAdminMe().catch(() => { /* 실패해도 화면은 뜬다 */ });
+  /* 임시 비밀번호 상태면 다른 화면으로 진입시키지 않고 변경 모달을 강제한다 */
+  if (adminSession && adminSession.tmp === true) { openMyPwModal(true); return; }
+  await loadList();
+  await loadInvites();
+}
+
 /* ---------- 로그인 / 로그아웃 ---------- */
 $("#loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const id = $("#loginId").value.trim();
   const pw = $("#loginPw").value;
-  if (!id || !pw) { showToast("아이디와 패스워드를 입력해 주세요."); return; }
+  if (!id || !pw) { showToast("관리자 계정과 패스워드를 입력해 주세요."); return; }
   setLoading(true, "로그인 중…");
   try {
-    const result = await api("login", { id, pw });
+    /* [v2.3] ① 챌린지 — csalt / proof 계산 방식을 받아온다 (무인증 액션)
+       ※ 계약서(§3-2-a)는 `id`, 액션 표는 `adminId` 로 적혀 있어 둘 다 담아 보낸다.
+          서버는 자기가 읽는 키만 쓰고 나머지는 무시하므로 어느 쪽이든 안전하다. */
+    let ch = null;
+    try {
+      ch = await api("adminAuthChallenge", { adminId: id, id: id });
+    } catch (e) {
+      /* 구버전 서버에는 챌린지 액션이 없다 → 기존 방식으로 폴백한다 */
+      if (e && e.code === "OUTDATED_SERVER") ch = { legacy: true };
+      else throw e;
+    }
+
+    let result;
+    if (ch && ch.legacy) {
+      /* 예약 계정 ADMIN 이 아직 새 자격증명을 갖지 못한 상태 — 기존 방식 그대로.
+         이 분기를 없애면 기존 ADMIN 계정으로 로그인할 방법이 사라진다. */
+      result = await api("login", { id, pw });
+    } else if (ch && ch.mode === "temp") {
+      /* 서버가 발급한 임시 비밀번호 : SHA-256(csalt + "|" + pw) */
+      const clientHash = await sha256Hex(String(ch.csalt || "") + "|" + pw);
+      result = await api("login", { id, clientHash });
+    } else {
+      /* 본인이 정한 비밀번호 : PBKDF2 (회원 로그인과 동일) */
+      if (!authReady()) throw new Error("인증 모듈(auth.js)을 불러오지 못했습니다.");
+      const clientHash = await LFAuth.derive(pw, String((ch && ch.csalt) || ""));
+      result = await api("login", { id, clientHash });
+    }
+
     sessionStorage.setItem("lf_admin_token", result.token);
+    adminSession = result.admin || null;
+    saveAdminProfile(adminSession);
     $("#loginPw").value = "";
     showAdmin();
     /* 서버 배포 버전 확인 (비동기 · 실패해도 목록 조회를 막지 않음) */
     checkServerVersion();
-    await loadList();
-    await loadInvites();
+    await enterAdmin();
   } catch (err) {
     /* 구버전 서버(v1)에는 v2 액션이 없어 api() 가 'OUTDATED_SERVER' 로 정규화해 던진다.
        원인이 코드가 아니라 '재배포 누락' 임을 헤더 뱃지로도 즉시 드러낸다. */
@@ -588,7 +865,9 @@ $("#loginForm").addEventListener("submit", async (e) => {
 $("#btnLogout").addEventListener("click", async () => {
   try { await api("logout"); } catch (e) { /* 무시 */ }
   sessionStorage.removeItem("lf_admin_token");
+  sessionStorage.removeItem(ADMIN_PROFILE_KEY);
   masked = true;
+  serverPiiMasked = false;
   updateMaskButton();
   /* 화면에 남은 개인정보·선택 상태를 모두 비운다 */
   records = []; allMembers = []; links = []; revRows = [];
@@ -611,16 +890,46 @@ $("#btnLogout").addEventListener("click", async () => {
   pendingSave = null;
   closeModal("#memberIdModal");
   closeModal("#cascadeModal");
+  /* [v2.3] 관리자 신원·권한·계정 목록·강제 모달 상태를 모두 초기화한다 */
+  adminSession = null;
+  perms = { read: true, write: true, account: false, self: true };
+  accounts = [];
+  loadedView.accounts = false;
+  pendingAccAction = null;
+  accForm = { mode: "create", adminId: "" };
+  myPwForced = false;
+  lockedModals.clear();
+  clearTempPwView();
+  closeModal("#tempPwModal");
+  closeModal("#myPwModal");
+  closeModal("#adminFormModal");
+  closeModal("#adminConfirmModal");
   switchView("applications");
+  applyPerms();
   showLogin();
   showToast("로그아웃되었습니다.");
 });
 
 /* ---------- 마스킹 토글 ---------- */
 function updateMaskButton() {
-  $("#btnMask").textContent = masked ? "🔒 마스킹 해제" : "🔓 마스킹 적용";
+  const btn = $("#btnMask");
+  if (!btn) return;
+  /* [v2.3] 서버가 이미 가려 보낸 상태에서는 화면 토글이 의미가 없다(원본이 오지 않는다) */
+  if (serverPiiMasked) {
+    btn.textContent = "🔒 서버 마스킹 적용중";
+    btn.disabled = true;
+    btn.title = "개인정보 열람 권한이 없어 서버가 이미 마스킹한 값입니다. 화면에서 중복 마스킹하지 않습니다.";
+    return;
+  }
+  btn.disabled = false;
+  btn.title = "";
+  btn.textContent = masked ? "🔒 마스킹 해제" : "🔓 마스킹 적용";
 }
 $("#btnMask").addEventListener("click", () => {
+  if (serverPiiMasked) {
+    showToast("개인정보 열람 권한이 없어 서버가 마스킹한 값입니다. 화면에서 해제할 수 없습니다.");
+    return;
+  }
   masked = !masked;
   updateMaskButton();
   renderList();
@@ -631,6 +940,7 @@ $("#btnMask").addEventListener("click", () => {
   /* 상세 모달이 열려 있으면 회원ID 표기도 즉시 새 규칙으로 다시 그린다
      (입력값은 건드리지 않는다 — 편집 중인 내용을 잃으면 안 되기 때문) */
   if (currentDetail && $("#detailModal").classList.contains("show")) renderDetailMeta(currentDetail);
+  if (loadedView.accounts) renderAccounts();
   showToast(masked ? "개인정보가 마스킹 처리되었습니다." : "개인정보가 표시됩니다. 업무 목적 외 열람에 유의하세요.");
 });
 
@@ -640,6 +950,7 @@ async function loadList() {
   try {
     const q = $("#searchInput").value.trim();
     const result = await api("list", { q, field: $("#searchField").value });
+    notePiiMasked(result);   /* [v2.3] 서버가 이미 가렸으면 화면에서 중복 마스킹하지 않는다 */
     records = result.records || [];
     /* 검색어가 없는 조회 = 전체 목록이므로 링크·수익 뷰의 기준 데이터로 재사용 */
     if (!q) allMembers = [...records];
@@ -934,9 +1245,23 @@ $("#searchInput").addEventListener("keydown", (e) => { if (e.key === "Enter") lo
 /* ---------- 상세 / 수정 / 추가 모달 ---------- */
 function openModal(id) { const m = $(id); m.classList.add("show"); m.setAttribute("aria-hidden", "false"); }
 function closeModal(id) { const m = $(id); m.classList.remove("show"); m.setAttribute("aria-hidden", "true"); }
+/* [v2.3] '강제 모달' 집합 — 배경클릭·[data-close]·ESC 어느 쪽으로도 닫히지 않는다.
+   (ESC 로 모달을 닫는 동작은 원래 없다. 여기서 새로 만들지도 않는다.) */
+const lockedModals = new Set();
+function setModalLocked(id, on) { if (on) lockedModals.add(id); else lockedModals.delete(id); }
+function isModalLocked(id) { return lockedModals.has(id); }
+const LOCK_NOTICE = {
+  "#myPwModal": "임시 비밀번호를 새 비밀번호로 변경해야 계속할 수 있습니다.",
+  "#tempPwModal": "임시 비밀번호를 복사한 뒤 [복사했습니다] 를 체크해 주세요."
+};
 $$(".modal-overlay").forEach((overlay) => {
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay || e.target.closest("[data-close]")) {
+      const key = "#" + overlay.id;
+      if (isModalLocked(key)) {
+        showToast(hasKey(LOCK_NOTICE, key) ? LOCK_NOTICE[key] : "먼저 이 창의 작업을 끝내 주세요.");
+        return;
+      }
       overlay.classList.remove("show");
       overlay.setAttribute("aria-hidden", "true");
     }
@@ -1013,7 +1338,8 @@ function openDetail(id) {
   if (!r) return;
   currentDetail = r;
   $("#modalTitle").textContent = "신청 상세 / 수정";
-  $("#btnDelete").style.display = "";
+  /* [v2.3] 조회전용은 저장·삭제 버튼이 DOM 에서 제거되어 있다 */
+  if ($("#btnDelete")) $("#btnDelete").style.display = "";
   fillForm(r);
   setupPasswordSection(r);
   openModal("#detailModal");
@@ -1022,7 +1348,7 @@ function openDetail(id) {
 $("#btnAdd").addEventListener("click", () => {
   currentDetail = null;
   $("#modalTitle").textContent = "신청 추가 (관리자 등록)";
-  $("#btnDelete").style.display = "none";
+  if ($("#btnDelete")) $("#btnDelete").style.display = "none";
   fillForm({});
   setupPasswordSection(null);
   openModal("#detailModal");
@@ -1204,6 +1530,7 @@ function fmtStamp(raw) {
 
 function renderPwState(r) {
   const el = $("#pwState");
+  if (!el) return;
   el.textContent = "";
   const badge = document.createElement("span");
   badge.className = "badge " + (r.hasPassword ? "badge-yes" : "badge-no");
@@ -1226,6 +1553,7 @@ function resetPwToggles() {
 }
 
 function updatePwMeter() {
+  if (!$("#f-pw1") || !$("#f-pw2")) return;
   const pw = $("#f-pw1").value;
   const pw2 = $("#f-pw2").value;
   const bar = $("#pwBar");
@@ -1246,6 +1574,8 @@ function updatePwMeter() {
 /* 상세 모달을 열 때마다 비밀번호 섹션 초기화 */
 function setupPasswordSection(r) {
   const box = $("#pwBox");
+  /* [v2.3] 조회전용은 회원 비밀번호 변경 섹션 자체가 DOM 에 없다 */
+  if (!box) return;
   $("#f-pw1").value = "";
   $("#f-pw2").value = "";
   resetPwToggles();
@@ -1357,16 +1687,20 @@ $("#btnDeleteConfirm").addEventListener("click", async () => {
  * 좌측 앵커 메뉴: 신청 내역 / 초대 내역 / 링크 관리 / 수익 관리 전환
  * ========================================================= */
 function switchView(view) {
+  /* [v2.3] 계정 관리는 MASTER 전용 — 권한이 없으면 진입 자체를 막는다 */
+  if (view === "accounts" && !canAccount()) view = "applications";
   currentView = view;
   $$(".nav-item").forEach((b) => b.classList.toggle("active", b.dataset.view === view));
   $("#viewApplications").style.display = view === "applications" ? "" : "none";
   $("#viewInvites").style.display = view === "invites" ? "" : "none";
   $("#viewLinks").style.display = view === "links" ? "" : "none";
   $("#viewRevenue").style.display = view === "revenue" ? "" : "none";
+  $("#viewAccounts").style.display = view === "accounts" ? "" : "none";
 
   /* 신규 뷰는 최초 진입 시 1회 자동 로드 */
   if (view === "links" && !loadedView.links) { loadedView.links = true; loadLinks(); }
   if (view === "revenue" && !loadedView.revenue) { loadedView.revenue = true; loadRevenue(); }
+  if (view === "accounts" && !loadedView.accounts) { loadedView.accounts = true; loadAccounts(); }
 }
 $$(".nav-item").forEach((b) =>
   b.addEventListener("click", () => switchView(b.dataset.view))
@@ -1617,6 +1951,7 @@ async function loadLinks() {
     await ensureMembers();
     const memberId = $("#linkMemberFilter").value;
     const result = await api("linkList", memberId ? { memberId } : {});
+    notePiiMasked(result);
     links = result.links || [];
     paging.link.page = 1;
     renderLinks();
@@ -1739,35 +2074,42 @@ function renderLinks() {
     tr.appendChild(tdStatus);
 
     const tdAct = document.createElement("td");
-    const acts = document.createElement("span");
-    acts.className = "row-actions";
-    const editBtn = document.createElement("button");
-    editBtn.type = "button";
-    editBtn.className = "icon-btn";
-    editBtn.textContent = "수정";
-    editBtn.addEventListener("click", () => openLinkModal(l));
-    const delBtn = document.createElement("button");
-    delBtn.type = "button";
-    delBtn.className = "icon-btn danger";
-    delBtn.textContent = "삭제";
-    delBtn.addEventListener("click", () => askLinkDelete(l));
-    acts.appendChild(editBtn);
-    acts.appendChild(delBtn);
-    tdAct.appendChild(acts);
+    /* [v2.3] 조회전용은 행 단위 수정·삭제 버튼을 아예 만들지 않는다 */
+    if (canWrite()) {
+      const acts = document.createElement("span");
+      acts.className = "row-actions";
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "icon-btn";
+      editBtn.textContent = "수정";
+      editBtn.addEventListener("click", () => openLinkModal(l));
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "icon-btn danger";
+      delBtn.textContent = "삭제";
+      delBtn.addEventListener("click", () => askLinkDelete(l));
+      acts.appendChild(editBtn);
+      acts.appendChild(delBtn);
+      tdAct.appendChild(acts);
+    } else {
+      tdAct.textContent = "-";
+    }
     tr.appendChild(tdAct);
 
     tbody.appendChild(tr);
   });
 }
 
-function copyText(text) {
+function copyText(text, okMsg) {
+  const done = okMsg || "링크가 복사되었습니다.";
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text)
-      .then(() => showToast("링크가 복사되었습니다."))
-      .catch(() => showToast("복사에 실패했습니다. 링크를 직접 선택해 주세요."));
-    return;
+      .then(() => showToast(done))
+      .catch(() => showToast("복사에 실패했습니다. 값을 직접 선택해 복사해 주세요."));
+    return true;
   }
-  showToast("이 브라우저에서는 자동 복사를 지원하지 않습니다.");
+  showToast("이 브라우저에서는 자동 복사를 지원하지 않습니다. 값을 직접 선택해 복사해 주세요.");
+  return false;
 }
 
 /* ---------- 링크 추가/수정 모달 ---------- */
@@ -1784,7 +2126,7 @@ function openLinkModal(l) {
   $("#lk-start").value = isEdit ? (l.startAt || "") : todayYmd();
   $("#lk-end").value = isEdit ? (l.endAt || "") : "";
   $("#lk-memo").value = isEdit ? (l.memo || "") : "";
-  $("#btnLinkDelete").style.display = isEdit ? "" : "none";
+  if ($("#btnLinkDelete")) $("#btnLinkDelete").style.display = isEdit ? "" : "none";
   $("#lk-meta").textContent = isEdit
     ? "등록일: " + (l.issuedAt || "-") + " · 인플루언서: " + memberLabel(l.memberId, l.memberName, l.memberIdMasked)
     : "";
@@ -1912,6 +2254,7 @@ async function loadRevenue() {
   try {
     const members = await ensureMembers();
     const result = await api("revenueList", { ym });
+    notePiiMasked(result);
     const byMember = {};
     (result.revenue || []).forEach((r) => { byMember[r.memberId] = r; });
 
@@ -2008,7 +2351,26 @@ function renderRevenue() {
     tdRate.textContent = fmtRate(row.rate);
     tr.appendChild(tdRate);
 
-    /* 금액 입력 (숫자만 · 3자리 콤마) */
+    /* 금액 입력 (숫자만 · 3자리 콤마)
+       [v2.3] 조회전용은 입력칸·저장 버튼 없이 '읽기 전용 금액' 으로만 표시한다 */
+    if (!canWrite()) {
+      const tdRead = document.createElement("td");
+      tdRead.className = "money-cell";
+      tdRead.textContent = row.amount === null ? "-" : fmtMoney(row.amount);
+      tr.appendChild(tdRead);
+
+      const tdTotalRo = document.createElement("td");
+      tdTotalRo.className = "money-cell";
+      tdTotalRo.textContent = fmtMoney(row.total);
+      tr.appendChild(tdTotalRo);
+
+      const tdSaveRo = document.createElement("td");
+      tdSaveRo.textContent = "-";
+      tr.appendChild(tdSaveRo);
+
+      tbody.appendChild(tr);
+      return;
+    }
     const tdInput = document.createElement("td");
     tdInput.className = "money-cell";
     const input = document.createElement("input");
@@ -2275,7 +2637,7 @@ $("#btnInvite").addEventListener("click", async () => {
     setLoading(false);
   }
 });
-$("#inviteInsta").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#btnInvite").click(); });
+$("#inviteInsta").addEventListener("keydown", (e) => { if (e.key === "Enter" && $("#btnInvite")) $("#btnInvite").click(); });
 /* 발송 계정 변경 시 안내 문구 실시간 갱신 */
 $("#inviteSender").addEventListener("input", updateDmGuide);
 
@@ -2515,6 +2877,17 @@ const EXPORTS = {
         Number(r.total || 0)
       ]);
     }
+  },
+  /* [v2.3] 계정 관리 — 비밀번호 관련 컬럼(해시·salt·설정여부·변경일시)은 넣지 않는다. */
+  accounts: {
+    label: "계정 관리", screen: "계정관리", sheet: "관리자계정", pii: true,
+    headers: ["관리자ID", "이름", "등급", "개인정보열람", "상태", "최종로그인", "생성일시", "생성자", "메모"],
+    widths: [30, 14, 12, 14, 10, 21, 21, 24, 32],
+    rows: () => accounts.map((a) => [
+      disp.adminId(a.adminId, a.adminIdMasked), a.name || "", a.role || "",
+      a.pii ? "허용" : "차단", a.status || "", fmtStamp(a.lastLoginAt),
+      fmtStamp(a.createdAt), a.createdBy || "", a.memo || ""
+    ])
   }
 };
 
@@ -2575,6 +2948,7 @@ $("#btnExcelApps").addEventListener("click", () => exportView("applications"));
 $("#btnExcelInvites").addEventListener("click", () => exportView("invites"));
 $("#btnExcelLinks").addEventListener("click", () => exportView("links"));
 $("#btnExcelRevenue").addEventListener("click", () => exportView("revenue"));
+$("#btnExcelAccounts").addEventListener("click", () => exportView("accounts"));
 $("#btnExportConfirm").addEventListener("click", () => {
   const run = pendingDownload;
   pendingDownload = null;
@@ -3027,7 +3401,8 @@ function showXlStep(n) {
   $("#xlStep1").style.display = n === 1 ? "" : "none";
   $("#xlStep2").style.display = n === 2 ? "" : "none";
   $("#xlStep3").style.display = n === 3 ? "" : "none";
-  $("#btnXlRun").style.display = n === 2 ? "" : "none";
+  /* [v2.3] 조회전용은 업로드 실행 버튼이 DOM 에 없다 (업로드 진입점 자체가 없어 도달하지 않지만 방어) */
+  if ($("#btnXlRun")) $("#btnXlRun").style.display = n === 2 ? "" : "none";
   $("#btnXlBack").style.display = n === 2 ? "" : "none";
   $("#btnXlAbort").style.display = (n === 3 && xlState.running) ? "" : "none";
 }
@@ -3238,6 +3613,7 @@ function xlTargets() {
 
 function updateXlRunButton() {
   const btn = $("#btnXlRun");
+  if (!btn) return;
   const n = xlTargets().length;
   const errBlocked = !!(xlErrCheckbox && !xlErrCheckbox.checked);
   btn.disabled = (n === 0) || errBlocked;
@@ -3336,11 +3712,500 @@ $("#excelModal").addEventListener("click", (e) => {
   }
 }, true);
 
+/* =========================================================
+ * [v2.3] 내 비밀번호 변경 (adminChangeOwnPassword · 전 등급)
+ * ---------------------------------------------------------
+ *  · 평문은 절대 서버로 보내지 않는다 → LFAuth.makeCredential(pw) 의 { csalt, clientHash } 만 전송.
+ *  · admin.tmp === true 로 진입하면 '강제 모드' 로 열린다.
+ *    강제 모드에서는 ✕ · 취소 · 배경클릭 · ESC 가 전부 막히고 [로그아웃] 만 남는다.
+ * ========================================================= */
+let myPwForced = false;
+
+function myPwCtx() {
+  return adminSession && adminSession.id ? { email: adminSession.id } : {};
+}
+
+function updateMyPwMeter() {
+  if (!$("#mp-pw1") || !$("#mp-pw2")) return;
+  const pw = $("#mp-pw1").value;
+  const pw2 = $("#mp-pw2").value;
+  const bar = $("#mpBar");
+  const msg = $("#mpMsg");
+  bar.className = "";
+  if (!pw) { msg.className = "pw-msg"; msg.textContent = ""; return; }
+  if (!authReady()) { msg.className = "pw-msg"; msg.textContent = "인증 모듈(auth.js)을 불러오지 못했습니다."; return; }
+  const v = LFAuth.validatePassword(pw, myPwCtx());
+  if (!v.ok) { msg.className = "pw-msg"; msg.textContent = v.messages[0]; return; }
+  bar.className = "lv" + v.level;
+  if (pw2 && pw !== pw2) { msg.className = "pw-msg"; msg.textContent = "비밀번호가 일치하지 않습니다."; return; }
+  msg.className = "pw-msg ok";
+  msg.textContent = "사용 가능한 비밀번호입니다. (강도: " + LFAuth.strengthLabel(v.level) + ")";
+}
+
+function openMyPwModal(forced) {
+  if (!$("#myPwModal")) return;
+  /* 이미 강제 모드로 떠 있으면 일반 모드로 낮추지 않는다 */
+  myPwForced = !!forced || myPwForced;
+  $("#mp-pw1").value = "";
+  $("#mp-pw2").value = "";
+  resetPwToggles();
+  updateMyPwMeter();
+  $("#mp-forcedNote").style.display = myPwForced ? "" : "none";
+  $("#mpClose").style.display = myPwForced ? "none" : "";
+  $("#mpCancel").style.display = myPwForced ? "none" : "";
+  $("#btnMyPwLogout").style.display = myPwForced ? "" : "none";
+
+  const secure = pwSecureOk();
+  const warn = $("#mpInsecure");
+  warn.style.display = secure ? "none" : "";
+  warn.textContent = secure
+    ? ""
+    : (authReady() ? LFAuth.INSECURE_MSG : "인증 모듈(auth.js)을 불러오지 못해 비밀번호를 변경할 수 없습니다.");
+  $("#btnMyPwSave").disabled = !secure;
+
+  setModalLocked("#myPwModal", myPwForced);
+  openModal("#myPwModal");
+}
+
+$("#btnMyPw").addEventListener("click", () => openMyPwModal(false));
+$("#mp-pw1").addEventListener("input", updateMyPwMeter);
+$("#mp-pw2").addEventListener("input", updateMyPwMeter);
+$("#btnMyPwLogout").addEventListener("click", () => {
+  myPwForced = false;
+  setModalLocked("#myPwModal", false);
+  closeModal("#myPwModal");
+  $("#btnLogout").click();
+});
+
+$("#btnMyPwSave").addEventListener("click", async () => {
+  if (!pwSecureOk()) { showToast("보안 연결(HTTPS) 환경에서만 비밀번호를 변경할 수 있습니다."); return; }
+  const pw = $("#mp-pw1").value;
+  const pw2 = $("#mp-pw2").value;
+  if (!pw || !pw2) { showToast("새 비밀번호를 두 칸 모두 입력해 주세요."); return; }
+  if (pw !== pw2) { showToast("비밀번호가 일치하지 않습니다."); $("#mp-pw2").focus(); return; }
+  const v = LFAuth.validatePassword(pw, myPwCtx());
+  if (!v.ok) { showToast(v.messages[0]); $("#mp-pw1").focus(); return; }
+
+  setLoading(true, "비밀번호를 변경하는 중…");
+  try {
+    /* PBKDF2-SHA256 — 평문은 이 브라우저를 벗어나지 않는다 */
+    const cred = await LFAuth.makeCredential(pw);
+    await api("adminChangeOwnPassword", { csalt: cred.csalt, clientHash: cred.clientHash });
+    const wasForced = myPwForced;
+    myPwForced = false;
+    setModalLocked("#myPwModal", false);
+    $("#mp-pw1").value = "";
+    $("#mp-pw2").value = "";
+    resetPwToggles();
+    updateMyPwMeter();
+    closeModal("#myPwModal");
+    showToast("임시 비밀번호 상태가 해제되었습니다.");
+    if (adminSession) { adminSession.tmp = false; saveAdminProfile(adminSession); }
+    /* 서버 기준으로 신원·권한을 다시 확정한다 */
+    await loadAdminMe().catch(() => {});
+    if (wasForced) { await loadList(); await loadInvites(); }
+  } catch (err) {
+    showToast(err.message);
+  } finally {
+    setLoading(false);
+  }
+});
+
+/* =========================================================
+ * [v2.3] 임시 비밀번호 1회 노출 모달
+ * ---------------------------------------------------------
+ *  서버도 평문을 보관하지 않으므로 이 응답이 유일한 노출 지점이다.
+ *  '복사했습니다' 를 체크하기 전에는 어떤 방법으로도 닫히지 않는다.
+ * ========================================================= */
+let tempPwPlain = "";
+
+function clearTempPwView() {
+  tempPwPlain = "";
+  if ($("#tp-value")) $("#tp-value").textContent = "";
+  if ($("#tp-ack")) $("#tp-ack").checked = false;
+  if ($("#btnTpClose")) $("#btnTpClose").disabled = true;
+}
+
+function openTempPwModal(title, pw, adminId) {
+  tempPwPlain = String(pw == null ? "" : pw);
+  $("#tpTitle").textContent = title || "임시 비밀번호";
+  /* 서버 문자열은 textContent 로만 넣는다 (innerHTML 금지) */
+  $("#tp-value").textContent = tempPwPlain;
+  $("#tp-guide").textContent =
+    (adminId ? disp.adminId(adminId, "") + " 계정의 임시 비밀번호입니다. " : "") +
+    "본인에게 안전한 경로로 전달하고, 최초 로그인 시 변경하도록 안내해 주세요.";
+  $("#tp-ack").checked = false;
+  $("#btnTpClose").disabled = true;
+  setModalLocked("#tempPwModal", true);
+  openModal("#tempPwModal");
+}
+
+$("#tp-ack").addEventListener("change", () => {
+  $("#btnTpClose").disabled = !$("#tp-ack").checked;
+});
+$("#btnTpCopy").addEventListener("click", () => {
+  if (!tempPwPlain) { showToast("복사할 임시 비밀번호가 없습니다."); return; }
+  copyText(tempPwPlain, "임시 비밀번호가 복사되었습니다.");
+});
+$("#btnTpClose").addEventListener("click", () => {
+  if (!$("#tp-ack").checked) { showToast("임시 비밀번호를 복사한 뒤 [복사했습니다] 를 체크해 주세요."); return; }
+  clearTempPwView();
+  setModalLocked("#tempPwModal", false);
+  closeModal("#tempPwModal");
+});
+
+/* =========================================================
+ * [v2.3] 👤 계정 관리 (MASTER 전용)
+ *   adminList / adminCreate / adminUpdate / adminResetPassword / adminDelete
+ * ========================================================= */
+let accounts = [];
+let accForm = { mode: "create", adminId: "", self: false, reserved: false };
+let pendingAccAction = null;   /* { type:'reset'|'delete', adminId, name } */
+
+async function loadAccounts() {
+  if (!canAccount()) return;
+  setLoading(true, "관리자 계정을 불러오는 중…");
+  try {
+    const res = await api("adminList");
+    accounts = res.admins || [];
+    renderAccounts();
+  } catch (err) {
+    showToast(err.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function mkBadge(text, cls) {
+  const b = document.createElement("span");
+  b.className = "badge " + cls;
+  b.textContent = text;
+  return b;
+}
+
+/** "2026-08-05 10:00:00" → "2026-08-05" */
+function ymdOf(raw) {
+  const s = String(raw == null ? "" : raw).trim();
+  const m = s.match(/(\d{4})-(\d{2})-(\d{2})/);
+  return m ? m[0] : (s ? fmtStamp(s).slice(0, 10) : "");
+}
+
+function renderAccounts() {
+  const tbody = $("#accBody");
+  if (!tbody) return;
+  tbody.textContent = "";
+
+  const total = accounts.length;
+  const nMaster = accounts.filter((a) => a.role === "MASTER").length;
+  const nOper = accounts.filter((a) => a.role === "운영자").length;
+  const nViewer = accounts.filter((a) => a.role === "조회전용").length;
+  const nOff = accounts.filter((a) => String(a.status || "활성") !== "활성").length;
+  $("#tileAccTotal").innerHTML = total + "<small>개</small>";
+  $("#tileAccMaster").innerHTML = nMaster + "<small>명</small>";
+  $("#tileAccOper").innerHTML = nOper + "<small>명</small>";
+  $("#tileAccViewer").innerHTML = nViewer + "<small>명</small>";
+  $("#tileAccInactive").innerHTML = nOff + "<small>개</small>";
+
+  const stat = $("#statAccTotal");
+  stat.textContent = "";
+  const b = document.createElement("b");
+  b.textContent = total;
+  stat.appendChild(document.createTextNode("총 "));
+  stat.appendChild(b);
+  stat.appendChild(document.createTextNode("개"));
+  if (accountNavCntEl) accountNavCntEl.textContent = total;
+  $("#accEmpty").style.display = total ? "none" : "";
+
+  accounts.forEach((a) => {
+    const tr = document.createElement("tr");
+
+    /* 관리자ID (+ 시스템 계정 / 본인 뱃지) */
+    const tdId = document.createElement("td");
+    const idWrap = document.createElement("span");
+    idWrap.className = "acc-id-cell";
+    const idText = document.createElement("b");
+    idText.textContent = disp.adminId(a.adminId, a.adminIdMasked);
+    idWrap.appendChild(idText);
+    const flags = document.createElement("span");
+    flags.className = "acc-flags";
+    if (a.reserved) flags.appendChild(mkBadge("시스템 계정", "badge-reserved"));
+    if (a.self) flags.appendChild(mkBadge("본인", "badge-self"));
+    if (flags.childNodes.length) idWrap.appendChild(flags);
+    tdId.appendChild(idWrap);
+    tr.appendChild(tdId);
+
+    const tdName = document.createElement("td");
+    tdName.textContent = a.name || "-";
+    tr.appendChild(tdName);
+
+    const tdRole = document.createElement("td");
+    const roleBadge = document.createElement("span");
+    roleBadge.className = "role-badge " + roleBadgeClass(a.role);
+    roleBadge.textContent = a.role || "-";
+    tdRole.appendChild(roleBadge);
+    tr.appendChild(tdRole);
+
+    const tdPii = document.createElement("td");
+    tdPii.appendChild(a.pii ? mkBadge("허용", "badge-pii-on") : mkBadge("차단", "badge-pii-off"));
+    tr.appendChild(tdPii);
+
+    const tdStatus = document.createElement("td");
+    const active = String(a.status || "활성") === "활성";
+    tdStatus.appendChild(active ? mkBadge("활성", "badge-yes") : mkBadge(a.status || "정지", "badge-inactive"));
+    tr.appendChild(tdStatus);
+
+    const tdLogin = document.createElement("td");
+    tdLogin.className = "dt";
+    tdLogin.textContent = a.lastLoginAt ? fmtStamp(a.lastLoginAt) : "-";
+    tr.appendChild(tdLogin);
+
+    /* 비밀번호 : 임시(변경 필요) 를 강조 — 값 자체는 서버도 보관하지 않는다 */
+    const tdPw = document.createElement("td");
+    tdPw.className = "pw-cell";
+    if (a.tmp) {
+      const em = document.createElement("span");
+      em.className = "pw-temp";
+      em.textContent = "임시 (변경 필요)";
+      tdPw.appendChild(em);
+    } else if (a.hasPassword) {
+      const ymd = ymdOf(a.pwUpdatedAt);
+      tdPw.textContent = ymd ? "설정됨 (" + ymd + ")" : "설정됨";
+    } else {
+      tdPw.textContent = "미설정";
+    }
+    tr.appendChild(tdPw);
+
+    const tdCreated = document.createElement("td");
+    tdCreated.className = "dt";
+    tdCreated.textContent = a.createdAt ? fmtStamp(a.createdAt) : "-";
+    tr.appendChild(tdCreated);
+
+    /* 관리 : 수정 / 비밀번호 초기화 / 삭제(예약 계정은 삭제 버튼 자체를 만들지 않는다) */
+    const tdAct = document.createElement("td");
+    const acts = document.createElement("span");
+    acts.className = "row-actions";
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "icon-btn";
+    editBtn.textContent = "수정";
+    editBtn.addEventListener("click", () => openAccModal(a));
+    acts.appendChild(editBtn);
+
+    const resetBtn = document.createElement("button");
+    resetBtn.type = "button";
+    resetBtn.className = "icon-btn";
+    resetBtn.textContent = "비밀번호 초기화";
+    resetBtn.addEventListener("click", () => askAccReset(a));
+    acts.appendChild(resetBtn);
+
+    if (!a.reserved) {
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "icon-btn danger";
+      delBtn.textContent = "삭제";
+      delBtn.addEventListener("click", () => askAccDelete(a));
+      acts.appendChild(delBtn);
+    }
+    tdAct.appendChild(acts);
+    tr.appendChild(tdAct);
+
+    tbody.appendChild(tr);
+  });
+}
+
+$("#btnAccReload").addEventListener("click", loadAccounts);
+
+/* ---------- 계정 추가 / 수정 모달 ---------- */
+function accRoleInputs() { return [...$$("#ac-roleRow input")]; }
+function setAccRole(role) {
+  accRoleInputs().forEach((i) => { i.checked = i.getAttribute("value") === String(role); });
+}
+function getAccRole() {
+  const hit = accRoleInputs().filter((i) => i.checked)[0];
+  return hit ? hit.getAttribute("value") : "운영자";
+}
+function setAccRoleDisabled(off) {
+  accRoleInputs().forEach((i) => { i.disabled = !!off; });
+}
+function setReadOnly(el, on) {
+  if (!el) return;
+  el.readOnly = !!on;
+  if (on) el.setAttribute("readonly", "readonly");
+  else el.removeAttribute("readonly");
+}
+
+function openAccModal(a) {
+  const isEdit = !!(a && a.adminId);
+  accForm = {
+    mode: isEdit ? "edit" : "create",
+    adminId: isEdit ? String(a.adminId) : "",
+    self: !!(a && a.self),
+    reserved: !!(a && a.reserved)
+  };
+  $("#acModalTitle").textContent = isEdit ? "계정 수정" : "계정 추가";
+  $("#ac-msg").className = "pw-msg";
+  $("#ac-msg").textContent = "";
+  $("#ac-id").value = isEdit ? disp.adminId(a.adminId, a.adminIdMasked) : "";
+  setReadOnly($("#ac-id"), isEdit);
+  $("#ac-idHint").textContent = isEdit
+    ? "관리자ID 는 변경할 수 없습니다. 다른 아이디가 필요하면 새 계정을 만들어 주세요."
+    : "사내 이메일 형식이어야 합니다. 생성 후에는 변경할 수 없습니다.";
+  $("#ac-name").value = isEdit ? (a.name || "") : "";
+  setAccRole(isEdit ? (a.role || "운영자") : "운영자");
+  $("#ac-pii").checked = isEdit ? !!a.pii : false;
+  $("#ac-memo").value = isEdit ? (a.memo || "") : "";
+  $("#ac-statusField").style.display = isEdit ? "" : "none";
+  $("#ac-status").value = isEdit ? (String(a.status || "활성")) : "활성";
+
+  /* 본인 행은 등급·상태를 스스로 바꿀 수 없다 (서버도 SELF_DEMOTE 로 막지만
+     누를 수 있게 두면 사용자가 왜 실패하는지 알 수 없다) */
+  const selfLock = isEdit && accForm.self;
+  setAccRoleDisabled(selfLock);
+  $("#ac-status").disabled = selfLock;
+  $("#ac-meta").textContent = !isEdit ? "" :
+    ("생성 " + (a.createdAt ? fmtStamp(a.createdAt) : "-") +
+     (a.createdBy ? " · 생성자 " + a.createdBy : "") +
+     (selfLock ? " · 본인 계정이라 등급·상태는 변경할 수 없습니다." : "") +
+     (a.reserved ? " · 시스템 예약 계정입니다." : ""));
+
+  openModal("#adminFormModal");
+}
+
+$("#btnAccAdd").addEventListener("click", () => openAccModal(null));
+
+function isEmailLike(v) {
+  if (authReady() && LFAuth.isEmail) return LFAuth.isEmail(v);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(v || "").trim());
+}
+
+$("#btnAccSave").addEventListener("click", async () => {
+  const msg = $("#ac-msg");
+  msg.className = "pw-msg";
+  msg.textContent = "";
+  const name = $("#ac-name").value.trim();
+  const role = getAccRole();
+  const pii = !!$("#ac-pii").checked;
+  const memo = $("#ac-memo").value.trim();
+  if (!name) { msg.textContent = "이름을 입력해 주세요."; $("#ac-name").focus(); return; }
+
+  if (accForm.mode === "create") {
+    const adminId = $("#ac-id").value.trim();
+    if (!adminId) { msg.textContent = "관리자ID(사내 이메일)를 입력해 주세요."; $("#ac-id").focus(); return; }
+    if (!isEmailLike(adminId)) {
+      msg.textContent = "사내 이메일 형식으로 입력해 주세요. (예: kim@lfcorp.com)";
+      $("#ac-id").focus();
+      return;
+    }
+    setLoading(true, "계정을 만드는 중…");
+    try {
+      const res = await api("adminCreate", { adminId, name, role, pii, memo });
+      closeModal("#adminFormModal");
+      await loadAccounts();
+      const tempPw = res && res.tempPassword;
+      if (tempPw) openTempPwModal("임시 비밀번호 발급", tempPw, adminId);
+      else showToast("계정이 생성되었습니다.");
+    } catch (err) {
+      /* RESERVED_ID 는 생성과 삭제에서 뜻이 다르다 — 생성 경로에서는 따로 안내한다 */
+      msg.textContent = (err && err.code === "RESERVED_ID")
+        ? "ADMIN 은 시스템 예약 계정이라 새로 만들 수 없습니다. 다른 아이디를 사용해 주세요."
+        : (err && err.message) || "계정을 만들지 못했습니다.";
+    } finally {
+      setLoading(false);
+    }
+    return;
+  }
+
+  /* ---- 수정 ---- */
+  const payload = { adminId: accForm.adminId, name, pii, memo };
+  if (!accForm.self) {
+    payload.role = role;
+    payload.status = $("#ac-status").value;
+  }
+  setLoading(true, "계정 정보를 저장하는 중…");
+  try {
+    await api("adminUpdate", payload);
+    closeModal("#adminFormModal");
+    showToast("계정 정보가 수정되었습니다.");
+    await loadAccounts();
+    /* 내 등급이 바뀌었을 수 있으므로 권한을 다시 확정한다 */
+    await loadAdminMe().catch(() => {});
+  } catch (err) {
+    const code = err && err.code;
+    if (code === "SELF_DEMOTE" || code === "LAST_MASTER") {
+      /* 안내 후 목록 새로고침 — 서버 상태가 화면보다 최신이다 */
+      msg.textContent = err.message;
+      showToast(err.message);
+      await loadAccounts();
+    } else {
+      msg.textContent = (err && err.message) || "계정 정보를 저장하지 못했습니다.";
+    }
+  } finally {
+    setLoading(false);
+  }
+});
+
+/* ---------- 비밀번호 초기화 / 삭제 확인 ---------- */
+function askAccReset(a) {
+  pendingAccAction = { type: "reset", adminId: a.adminId, name: a.name || a.adminId };
+  $("#acConfirmTitle").textContent = "비밀번호 초기화";
+  $("#acConfirmMsg").textContent =
+    (a.name || disp.adminId(a.adminId, a.adminIdMasked)) + " 님의 비밀번호를 초기화할까요?";
+  $("#acConfirmDetail").textContent =
+    "새 임시 비밀번호가 발급되고 기존 비밀번호는 즉시 사용할 수 없게 됩니다.\n" +
+    "임시 비밀번호는 발급 직후 한 번만 표시되며, 창을 닫으면 다시 볼 수 없습니다.";
+  $("#btnAccConfirm").textContent = "초기화";
+  openModal("#adminConfirmModal");
+}
+
+function askAccDelete(a) {
+  pendingAccAction = { type: "delete", adminId: a.adminId, name: a.name || a.adminId };
+  $("#acConfirmTitle").textContent = "계정 삭제";
+  $("#acConfirmMsg").textContent =
+    (a.name || disp.adminId(a.adminId, a.adminIdMasked)) + " 계정을 삭제할까요?";
+  $("#acConfirmDetail").textContent =
+    "삭제하면 이 계정으로는 더 이상 로그인할 수 없습니다. 되돌릴 수 없습니다.\n" +
+    "(접근로그에 남은 과거 기록은 그대로 보존됩니다.)";
+  $("#btnAccConfirm").textContent = "삭제";
+  openModal("#adminConfirmModal");
+}
+
+$("#btnAccConfirm").addEventListener("click", async () => {
+  const job = pendingAccAction;
+  if (!job) return;
+  pendingAccAction = null;
+  closeModal("#adminConfirmModal");
+  setLoading(true, job.type === "reset" ? "비밀번호를 초기화하는 중…" : "계정을 삭제하는 중…");
+  try {
+    if (job.type === "reset") {
+      const res = await api("adminResetPassword", { adminId: job.adminId });
+      await loadAccounts();
+      const tempPw = res && res.tempPassword;
+      if (tempPw) openTempPwModal("임시 비밀번호 재발급", tempPw, job.adminId);
+      else showToast("비밀번호가 초기화되었습니다.");
+    } else {
+      await api("adminDelete", { adminId: job.adminId });
+      showToast("계정이 삭제되었습니다.");
+      await loadAccounts();
+    }
+  } catch (err) {
+    showToast(err.message);
+    /* SELF_DEMOTE / LAST_MASTER / RESERVED_ID → 안내 후 목록 새로고침 */
+    const code = err && err.code;
+    if (code === "SELF_DEMOTE" || code === "LAST_MASTER" || code === "RESERVED_ID" || code === "NOT_FOUND") {
+      await loadAccounts();
+    }
+  } finally {
+    setLoading(false);
+  }
+});
+
 /* ---------- 초기화: 세션 토큰이 있으면 자동 진입 ---------- */
 (async function init() {
   updateMaskButton();
   /* SheetJS 로드 여부 확인 → 실패 시 엑셀 버튼만 비활성 + 안내 (다른 기능은 그대로) */
   applyXlsxAvailability();
+  /* [v2.3] 쓰기 UI 자리표시자 확보 — 권한 확정 전에 한 번만 잡아 둔다 */
+  captureWriteGate();
   /* 발송 계정·메시지 기본값 채우고 안내 문구 초기화 */
   if ($("#inviteSender") && !$("#inviteSender").value) $("#inviteSender").value = DEFAULT_SENDER;
   if ($("#inviteMessage") && !$("#inviteMessage").value) $("#inviteMessage").value = DEFAULT_MESSAGE;
@@ -3350,10 +4215,13 @@ $("#excelModal").addEventListener("click", (e) => {
   /* 링크 추가 모달 유효시작일 기본값 = 오늘 */
   if ($("#lk-start") && !$("#lk-start").value) $("#lk-start").value = todayYmd();
   if (sessionStorage.getItem("lf_admin_token")) {
+    /* 세션에 저장된 신원은 '표시용 초기값' 일 뿐이다. 권한은 adminMe 로 다시 확정한다. */
+    adminSession = readAdminProfile();
     showAdmin();
-    try { await loadList(); await loadInvites(); }
+    try { await enterAdmin(); }
     catch (e) { showLogin(); }
   } else {
+    applyPerms();
     showLogin();
   }
 })();
