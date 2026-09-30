@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -856,10 +856,12 @@ $('#tabbar').onclick = e => {
 };
 
 /* ---------------- theme ---------------- */
-function applyTheme(t){ if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; $('#themeLbl').textContent = t==='dark'?'다크':t==='light'?'라이트':'자동'; }
-let theme = null; try { theme = localStorage.getItem('os-theme'); } catch(e){}
+// 진입 시 항상 라이트 모드로 시작 (OS 다크 설정·이전 선택과 무관). 버튼으로 라이트 ↔ 다크 전환.
+function applyTheme(t){ document.documentElement.dataset.theme = t; $('#themeLbl').textContent = t==='dark'?'다크':'라이트'; }
+let theme = 'light';
+try { localStorage.removeItem('os-theme'); } catch(e){}
 applyTheme(theme);
-$('#themeBtn').onclick = () => { theme = theme===null ? 'dark' : theme==='dark' ? 'light' : null; applyTheme(theme); try { theme ? localStorage.setItem('os-theme', theme) : localStorage.removeItem('os-theme'); } catch(e){} };
+$('#themeBtn').onclick = () => { theme = theme==='dark' ? 'light' : 'dark'; applyTheme(theme); };
 
 /* =====================================================================
    1. 직무 가이드
