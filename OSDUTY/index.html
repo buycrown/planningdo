@@ -208,8 +208,8 @@ table.mx tr.hidden{display:none}
 
 /* guide */
 .guide{display:flex;flex-direction:column;gap:18px}
-.rail{position:sticky;top:112px;max-height:calc(100vh - 130px);overflow:auto}
-.picker .pk-row{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:start;padding:10px 18px;border-top:1px solid var(--line2)}
+.rail{position:sticky;top:72px;max-height:calc(100vh - 130px);overflow:auto}
+.picker .pk-row{display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:start;padding:10px 18px;border-top:1px solid var(--line2)}
 .picker .pk-row:first-of-type{border-top:0}
 .picker .pk-lbl{font-size:12px;font-weight:700;color:var(--ink2);padding-top:9px}
 .picker .pk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
@@ -347,20 +347,179 @@ table.hm th.gsep{border-left:2px solid var(--line)}
 .panel-h .seg.lv button[data-v="1"].on{background:#93c5fd;color:#0b2a66}
 .panel-h .seg.lv button[data-v="2"].on{background:#6ee7b7;color:#033d2c}
 .panel-h .seg.lv button[data-v="3"].on{background:#fdba74;color:#6b2308}
+
+/* ======================= OneSphere design system ======================= */
+:root{
+  --os-primary:#2163f2; --os-primary-h:#1a54d4; --os-ink:#1f2224; --os-ink2:#53575a; --os-ink3:#6e7375; --os-ink4:#898d8f;
+  --os-line:#dadde2; --os-line2:#c1c4c6; --os-label:#ecf0f8; --os-bg:#ffffff; --os-page:#f2f4f7; --os-snb:#171717; --os-snb-ink:#f4f6f7; --os-snb-act:#2a2f3a; --os-snb-sub:#1f1f1f; --os-chip:#f4f6f7;
+  --bg:#ffffff; --panel:#ffffff; --panel2:#f7f8fa; --line:#dadde2; --line2:#e9ebee;
+  --ink:#1f2224; --ink2:#3a3e41; --ink3:#6e7375;
+  --brand:#2163f2; --brand2:#2163f2; --focus:#2163f2; --accent:#e5484d;
+  --hdr-bg:#ecf0f8; --hdr-ink:#181d1f; --hdr-sub:#53575a; --hdr-bar:#2163f2; --hdr-on:#2163f2;
+  --tint:#ecf0f8; --tint-line:#dadde2; --th-bg:#ecf0f8;
+  --heat:33,99,242; --heat-ink:#ffffff;
+  --shadow:none; --shadow-sm:none; --shadow-hover:0 4px 14px rgba(33,99,242,.14);
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --os-ink:#eef1f5; --os-ink2:#c9ced5; --os-ink3:#a3a9b2; --os-line:#343a44; --os-line2:#454c57; --os-label:#1f2733; --os-bg:#15181d; --os-page:#0f1115; --os-chip:#232830; --os-primary:#4c8dff;
+  --bg:#15181d; --panel:#15181d; --panel2:#1b1f26; --line:#343a44; --line2:#262b33; --ink:#eef1f5; --ink2:#d0d5dc; --ink3:#a3a9b2;
+  --brand:#4c8dff; --brand2:#4c8dff; --focus:#4c8dff;
+  --hdr-bg:#1f2733; --hdr-ink:#eef1f5; --hdr-sub:#b3b9c2; --hdr-bar:#4c8dff; --hdr-on:#4c8dff;
+  --tint:#1f2733; --tint-line:#343a44; --th-bg:#1f2733; --heat:76,141,255; --heat-ink:#0f1115; }}
+:root[data-theme="dark"]{
+  --os-ink:#eef1f5; --os-ink2:#c9ced5; --os-ink3:#a3a9b2; --os-line:#343a44; --os-line2:#454c57; --os-label:#1f2733; --os-bg:#15181d; --os-page:#0f1115; --os-chip:#232830; --os-primary:#4c8dff;
+  --bg:#15181d; --panel:#15181d; --panel2:#1b1f26; --line:#343a44; --line2:#262b33; --ink:#eef1f5; --ink2:#d0d5dc; --ink3:#a3a9b2;
+  --brand:#4c8dff; --brand2:#4c8dff; --focus:#4c8dff;
+  --hdr-bg:#1f2733; --hdr-ink:#eef1f5; --hdr-sub:#b3b9c2; --hdr-bar:#4c8dff; --hdr-on:#4c8dff;
+  --tint:#1f2733; --tint-line:#343a44; --th-bg:#1f2733; --heat:76,141,255; --heat-ink:#0f1115; }
+body{font-family:Pretendard,"Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:14px;font-weight:400;color:var(--os-ink);background:var(--os-bg)}
+/* layout */
+.app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh}
+.snb{position:sticky;top:0;height:100vh;overflow:auto;background:var(--os-snb);color:var(--os-snb-ink);display:flex;flex-direction:column}
+.snb-logo{height:56px;display:flex;align-items:center;justify-content:center;padding:0 16px}
+.snb-logo-img{height:24px;width:auto;filter:brightness(0) invert(1)}
+.snb-logo-txt{display:none;align-items:center;gap:8px;font-size:19px;color:#fff;letter-spacing:-.2px}
+.snb-logo-txt svg{width:22px;height:22px}
+.snb-sub{margin:4px 12px 10px;background:#1f2224;border-radius:8px;height:32px;display:flex;align-items:center;justify-content:center;font-size:13.5px;color:#fff}
+.snb-grp{padding:14px 16px 8px;font-size:14px;color:var(--os-snb-ink);border-top:1px solid #2c2f33;display:flex;justify-content:space-between}
+.snb .tabs{display:flex;flex-direction:column;padding:0 0 12px;gap:1px;overflow:visible}
+.snb .tab{position:relative;display:flex;align-items:center;gap:10px;width:100%;padding:9px 16px 9px 20px;border:0;border-left:3px solid transparent;border-radius:0;background:transparent;color:var(--os-snb-ink);font-size:14px;font-weight:400;text-align:left;cursor:pointer}
+.snb .tab svg{width:17px;height:17px;flex:none;opacity:.85}
+.snb .tab:hover{background:#22252b}
+.snb .tab.on{background:var(--os-snb-act);border-left-color:#2163f2;color:#fff;font-weight:600}
+.snb .tab .cnt{margin-left:auto;background:#2c3038;border:0;color:#c3c7cc;font-size:11.5px;padding:0 7px;border-radius:10px}
+.snb-foot{margin-top:auto;padding:14px 16px;font-size:12px;color:#8a8f96;border-top:1px solid #2c2f33}
+.wrap{display:flex;flex-direction:column;min-width:0;background:var(--os-bg)}
+.top{position:sticky;top:0;z-index:40;background:var(--os-bg);border-bottom:1px solid var(--os-line);box-shadow:none}
+.top-inner{height:56px;padding:0 28px;display:flex;align-items:center;gap:18px}
+.toplink{display:inline-flex;align-items:center;gap:5px;color:var(--os-ink);text-decoration:none;font-size:13.5px;white-space:nowrap}
+.toplink:hover{color:var(--os-primary)}
+.gsearch{position:relative;flex:0 1 420px;margin:0 auto;max-width:420px}
+.gsearch input{height:36px;border-radius:999px;border:1px solid var(--os-line2);background:var(--os-bg);padding:0 64px 0 16px;font-size:14px}
+.gsearch input:focus{border-color:var(--os-primary);box-shadow:0 0 0 3px rgba(33,99,242,.15)}
+.gsearch .ico{left:auto;right:14px;top:9px;color:var(--os-ink2)}
+.gsearch kbd{right:40px;top:9px;border-radius:5px}
+.gresults{top:42px;border-radius:8px;border-color:var(--os-line2)}
+main{padding:24px 28px 40px;flex:1}
+.tabbar{position:sticky;bottom:0;z-index:30;height:32px;background:var(--os-chip);border-top:1px solid var(--os-line);display:flex;align-items:center;gap:6px;padding:0 28px;overflow-x:auto}
+.tabbar .tchip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;border:0;background:transparent;color:var(--os-ink2);font-size:13px;cursor:pointer;white-space:nowrap}
+.tabbar .tchip.on{background:#000;color:#fff}
+:root[data-theme="dark"] .tabbar .tchip.on{background:#eef1f5;color:#0f1115}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tabbar .tchip.on{background:#eef1f5;color:#0f1115}}
+.tabbar .tchip .x{opacity:.7}
+/* page head */
+.intro{background:transparent;border:0;border-left:0;box-shadow:none;padding:0;margin-bottom:18px;display:block;border-radius:0}
+.intro>div{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:16px}
+.intro h2{font-size:24px;font-weight:600;letter-spacing:-.3px;margin:0;color:var(--os-ink)}
+.intro p{grid-column:1 / -1;margin:8px 0 0;color:var(--os-ink3);font-size:13.5px;max-width:none}
+.crumb{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--os-ink4);white-space:nowrap}
+.crumb svg{width:13px;height:13px}
+/* panels & section titles */
+.panel{border:1px solid var(--os-line);border-radius:8px;box-shadow:none;background:var(--os-bg)}
+.panel-h{background:var(--os-label);border-bottom:1px solid var(--os-line);color:#181d1f;border-radius:7px 7px 0 0;padding:11px 16px;min-height:52px}
+.panel-h h2,.panel-h h3{font-size:16px;font-weight:600;color:var(--hdr-ink);padding-left:12px}
+.panel-h h2::before,.panel-h h3::before{top:50%;bottom:auto;width:5px;height:5px;border-radius:50%;transform:translateY(-50%);background:var(--os-primary)}
+.panel-h .muted,.panel-h .small{color:var(--hdr-sub)}
+.panel-h .tag{background:var(--os-bg);border-color:var(--os-line2);color:var(--os-ink2)}
+.panel-h .seg,.panel-h .input,.panel-h .iconbtn,.panel-h select{background:var(--os-bg);color:var(--os-ink);border-color:var(--os-line2)}
+.panel-h label{color:var(--hdr-ink)}
+.panel-h.legend{background:var(--os-bg)}
+/* buttons / inputs */
+.iconbtn{height:32px;border-radius:8px;border:1px solid var(--os-line2);background:var(--os-bg);color:var(--os-ink);font-size:14px;padding:0 12px}
+.iconbtn:hover{border-color:var(--os-ink3);background:var(--os-bg)}
+.input{height:32px;border-radius:8px;border:1px solid var(--os-line2);background:var(--os-bg);color:var(--os-ink);font-size:14px}
+.input:focus{border-color:var(--os-primary)}
+.input::placeholder{color:#a4a8ab}
+.seg{border:1px solid var(--os-line2);border-radius:8px;background:var(--os-bg)}
+.seg button{height:30px;padding:0 13px;font-size:14px;color:var(--os-ink);border-right:1px solid var(--os-line2)}
+.seg button.on,.panel-h .seg button.on{background:var(--os-primary);color:#fff}
+.panel-h .seg button{color:var(--os-ink);border-right-color:var(--os-line2)}
+.panel-h .seg.lv{border:0;background:transparent}
+.panel-h .seg.lv button{height:32px;border:1px solid var(--os-line2);border-radius:8px}
+.panel-h .seg.lv button.on{box-shadow:0 0 0 2px var(--os-primary)}
+/* chips */
+.chip{border-radius:999px;background:var(--os-chip);border:1px solid transparent;color:var(--os-ink2);font-size:13px;padding:3px 11px}
+.chip:hover{border-color:var(--os-line2)}
+.chip.on{background:#000;border-color:#000;color:#fff}
+:root[data-theme="dark"] .chip.on{background:#eef1f5;color:#0f1115;border-color:#eef1f5}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip.on{background:#eef1f5;color:#0f1115;border-color:#eef1f5}}
+/* cards */
+.kpi,.stat{background:var(--os-bg);border:1px solid var(--os-line2);border-radius:12px;box-shadow:none;border-top:1px solid var(--os-line2)}
+.kpi .v,.stat .v{font-weight:700}
+.kpi .l,.stat .l{font-size:14px;color:var(--os-ink)}
+.ccard{border:1px solid var(--os-line2);border-radius:12px;box-shadow:none}
+.ccard:hover{border-color:var(--os-primary);box-shadow:var(--shadow-hover);transform:none}
+.ccard .hd{background:var(--os-label);border-bottom:1px solid var(--os-line)}
+.acc{border:1px solid var(--os-line);border-radius:8px;box-shadow:none}
+.acc:not(.closed){box-shadow:none}
+.acc:not(.closed)>.acc-h{background:var(--os-label);border-bottom:1px solid var(--os-line)}
+.callout{border:1px solid var(--os-line2);border-left:3px solid var(--os-primary);box-shadow:none;border-radius:8px}
+.note{background:#f7f8fa;border-color:var(--os-line)}
+:root[data-theme="dark"] .note{background:var(--panel2)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .note{background:var(--panel2)}}
+/* duty picker tiles */
+.picker .pk-row{border-top:1px solid var(--os-line)}
+.picker .pk-lbl{color:var(--os-ink);font-weight:600;font-size:14px}
+.duty-item{border:1px solid var(--os-line2);border-radius:8px;box-shadow:none;background:var(--os-bg)}
+.duty-item:hover{border-color:var(--os-primary);box-shadow:none;transform:none}
+.duty-item.on{background:#eef4ff;border-color:var(--os-primary);box-shadow:0 0 0 1px var(--os-primary)}
+:root[data-theme="dark"] .duty-item.on{background:#1b2a44}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .duty-item.on{background:#1b2a44}}
+.duty-item .box{border-radius:3px;border-color:var(--os-line2)}
+.duty-item.on .box{background:var(--os-primary);border-color:var(--os-primary)}
+.duty-item.on .box::after{border-color:#fff}
+.duty-item .nm{font-weight:500}
+/* tables */
+table.t th,table.t td{border-bottom:1px solid var(--os-line)}
+table.t thead th{background:var(--os-label);color:#181d1f;font-weight:500;font-size:14px;border-bottom:1px solid var(--os-line);height:44px}
+:root[data-theme="dark"] table.t thead th,:root[data-theme="dark"] table.mx thead th{color:var(--os-ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) table.t thead th,:root:not([data-theme="light"]) table.mx thead th{color:var(--os-ink)}}
+table.t td{font-size:14px}
+table.mx thead th{background:var(--os-label);color:#181d1f;font-weight:500}
+table.mx tr.secrow td{background:#f4f6f9}
+:root[data-theme="dark"] table.mx tr.secrow td{background:var(--panel2)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) table.mx tr.secrow td{background:var(--panel2)}}
+.tbl-wrap{border-top:0}
+.tag{border-radius:4px}
+.tag.role{border-color:var(--os-line2);color:var(--os-ink2)}
+.kind.prod{background:#2163f2}.kind.promo{background:#f07a27}
+.rate span{background:var(--os-primary)}
+.hl{background:#fff3b0}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .snb{position:static;height:auto}
+  .snb .tabs{flex-direction:row;overflow-x:auto;padding:0 8px 8px}
+  .snb .tab{width:auto;white-space:nowrap;border-left:0;border-bottom:3px solid transparent}
+  .snb .tab.on{border-bottom-color:#2163f2}
+  .snb-grp,.snb-foot,.snb-sub{display:none}
+  .top-inner{padding:0 16px;gap:10px}.toplink{display:none}
+  main{padding:16px}.tabbar{padding:0 16px}
+  .intro>div{grid-template-columns:1fr}.crumb{display:none}
+  .panel-h{flex-wrap:wrap}.panel-h h2,.panel-h h3{white-space:nowrap}
+  .top-inner{height:auto;padding:10px 16px;flex-wrap:wrap}.gsearch{order:3;flex:1 1 100%;max-width:none}
+}
 </style>
 </head>
 <body>
+<div class="app">
+<aside class="snb">
+  <div class="snb-logo">
+    <img class="snb-logo-img" src="https://test-nimg.lfmall.co.kr/v2/real/origin/onesphere/general/logo_color.svg" alt="LF Onesphere" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <div class="snb-logo-txt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="12" rx="9" ry="6" transform="rotate(-30 12 12)"/><circle cx="12" cy="12" r="7.5"/></svg>LF Onesphere</div>
+  </div>
+  <div class="snb-sub">관리자 권한 가이드</div>
+  <div class="snb-grp">권한 가이드</div>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="snb-foot">원본 기준일 2026-09-07</div>
+</aside>
+<div class="wrap">
 <header class="top">
   <div class="top-inner">
-    <div class="brand">
-      <img class="logo-img" src="https://test-nimg.lfmall.co.kr/v2/real/origin/onesphere/general/logo_color.svg" alt="OneSphere" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18M3.5 9h17M3.5 15h17"/></svg></div>
-      <div style="min-width:0">
-        <h1>원스피어 관리자 권한 가이드</h1>
-      </div>
-    </div>
+    <a class="toplink" href="https://onesphere.lfmall.co.kr/" target="_blank" rel="noopener"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>원스피어 바로가기</a>
     <div class="gsearch">
+      <input id="gq" placeholder="페이지·코드·컴포넌트·직무·사용자 통합 검색" autocomplete="off">
       <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="gq" placeholder="페이지·페이지코드·컴포넌트·직무·사용자 ID/이름 통합 검색" autocomplete="off">
       <kbd>Ctrl K</kbd>
       <div class="gresults" id="gres"></div>
     </div>
@@ -368,12 +527,15 @@ table.hm th.gsep{border-left:2px solid var(--line)}
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span id="themeLbl">테마</span>
     </button>
   </div>
-  <nav class="tabs" id="tabs"></nav>
 </header>
 
 <main>
   <!-- 1. 직무 가이드 -->
   <section class="view" id="v-guide">
+    <div class="intro"><div>
+      <h2>직무 가이드</h2>
+      <p>신규 계정에 부여할 직무를 선택하면 접근 가능한 화면, 함께 고민해야 할 UI 컴포넌트, 함께 부여된 직무를 한 번에 확인할 수 있습니다.</p>
+    </div></div>
     <div class="guide">
       <section class="panel picker" id="dutyRail"></section>
       <div class="gmain" id="guideMain"></div>
@@ -476,6 +638,9 @@ table.hm th.gsep{border-left:2px solid var(--line)}
 
   <div class="foot">원본 기준일 2026-09-07(파일명 260907). 이 페이지는 엑셀 원본을 가공 없이 옮긴 값과, 명단을 바탕으로 계산한 분석 값(상관분석·추천 등급)을 구분해 표시합니다.</div>
 </main>
+<footer class="tabbar" id="tabbar"></footer>
+</div>
+</div>
 
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer"><div class="dh"><h3 id="drTitle"></h3><span class="spacer"></span><button class="iconbtn" id="drClose">닫기</button></div><div class="db" id="drBody"></div></aside>
@@ -665,14 +830,30 @@ const TABS = [
   ['guide','직무 가이드', ''], ['matrix','권한 매트릭스', PAGES.length], ['comp','UI 컴포넌트', prodActive.length + PROMO.length],
   ['corr','직무×컴포넌트 분석', ''], ['nbos','NBOS → 원스피어', ''], ['users','사용자 명단', ''], ['qa','검수 리포트', '']
 ];
-$('#tabs').innerHTML = TABS.map(([k,l,c]) => `<button class="tab" data-tab="${k}">${l}${c!==''?`<span class="cnt">${c}</span>`:''}</button>`).join('');
+const TICON = {"guide": "<path d=\"M4 5h16M4 12h16M4 19h10\"/>", "matrix": "<rect x=\"3\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\"/>", "comp": "<path d=\"M12 3l9 5-9 5-9-5 9-5z\"/><path d=\"M3 13l9 5 9-5\"/>", "corr": "<path d=\"M4 20V10M10 20V4M16 20v-7M22 20H2\"/>", "nbos": "<path d=\"M4 7h13l-3-3M20 17H7l3 3\"/>", "users": "<circle cx=\"9\" cy=\"8\" r=\"4\"/><path d=\"M2 21c0-4 3-6 7-6s7 2 7 6M17 11a3 3 0 1 0 0-6M22 21c0-3-2-5-4-5\"/>", "qa": "<path d=\"M9 12l2 2 4-4\"/><path d=\"M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z\"/>"};
+$('#tabs').innerHTML = TABS.map(([k,l,c]) => `<button class="tab" data-tab="${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${TICON[k]}</svg><span>${l}</span>${c!==''?`<span class="cnt">${c}</span>`:''}</button>`).join('');
+// breadcrumb on each page head
+TABS.forEach(([k,l]) => { const d = document.querySelector('#v-'+k+' .intro > div'); if (d) { const h = d.querySelector('h2'); const c = document.createElement('div'); c.className = 'crumb'; c.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>권한 가이드 &gt; ${l}`; h.after(c); } });
+let visited = [];
+function renderTabbar(cur){
+  $('#tabbar').innerHTML = visited.map(k => { const l = TABS.find(t=>t[0]===k)[1]; return `<button class="tchip ${k===cur?'on':''}" data-tab="${k}">${l}<span class="x" data-close="${k}">✕</span></button>`; }).join('');
+}
+let curTab = 'guide';
 function go(tab){
+  curTab = tab;
   $$('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
   $$('.view').forEach(v => v.classList.toggle('on', v.id === 'v-'+tab));
+  if (!visited.includes(tab)) visited.push(tab);
+  renderTabbar(tab);
   window.scrollTo({top:0});
   try { localStorage.setItem('os-tab', tab); } catch(e){}
 }
 $('#tabs').onclick = e => { const b = e.target.closest('.tab'); if (b) go(b.dataset.tab); };
+$('#tabbar').onclick = e => {
+  const x = e.target.closest('[data-close]');
+  if (x) { const k = x.dataset.close; if (visited.length > 1) { visited = visited.filter(v => v !== k); go(k === curTab ? visited[visited.length-1] : curTab); } return; }
+  const b = e.target.closest('.tchip'); if (b) go(b.dataset.tab);
+};
 
 /* ---------------- theme ---------------- */
 function applyTheme(t){ if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; $('#themeLbl').textContent = t==='dark'?'다크':t==='light'?'라이트':'자동'; }
@@ -968,7 +1149,7 @@ function renderCorr(){
     const e = ev(c.key, d, corrSingle);
     if (!e.N) return `<td class="na">–</td>`;
     const a = e.rate; const alpha = e.k ? 0.12 + a*0.78 : 0;
-    const ink = a > 0.55 ? 'var(--heat-ink)' : 'var(--ink)';
+    const ink = a > 0.72 ? 'var(--heat-ink)' : 'var(--ink)';
     return `<td class="h" data-ck="${esc(c.key)}" data-d="${esc(d)}" style="background:rgba(var(--heat),${alpha.toFixed(3)});color:${ink}" data-tip="<b>${esc(d)}</b> × <b>${esc(c.name)}</b><br>${corrSingle?'단일 직무 ':''}보유자 ${e.N}명 중 ${e.k}명 (${pct(a)})"><div class="p">${e.k?pct(a):'0'}</div><div class="n">${e.k}/${e.N}</div></td>`;
   };
   let h = `<div class="panel" style="margin-bottom:18px"><div class="panel-h toolbar"><h2>히트맵</h2>
@@ -1029,7 +1210,7 @@ function renderNbos(){
   const list = nbosTok[nbosSel] || [];
   const rawDuty = u => { const d = String(u.duty||'').split(',').map(norm).filter(Boolean); return d; };
   let h = `<div class="kpis"><div class="kpi"><div class="v">${nbosPop.length.toLocaleString()}</div><div class="l">NBOS 권한 확인 가능 계정</div></div><div class="kpi"><div class="v">${Object.keys(nbosTok).length}</div><div class="l">NBOS 권한 종류</div></div><div class="kpi"><div class="v">${nbosPop.filter(u=>dutyTokens(u.duty).length).length}</div><div class="l">원스피어 직무 매핑됨</div></div><div class="kpi"><div class="v">${nbosPop.filter(u=>!dutyTokens(u.duty).length).length.toLocaleString()}</div><div class="l">원스피어 직무 없음 (x/X)</div></div></div>
-  <div class="three"><div class="panel rail" style="top:112px"><div class="panel-h"><input class="input" id="nbq" placeholder="NBOS 권한 검색" value="${esc(nbosQ)}" style="min-width:0;width:100%"></div>
+  <div class="three"><div class="panel rail" style="top:72px"><div class="panel-h"><input class="input" id="nbq" placeholder="NBOS 권한 검색" value="${esc(nbosQ)}" style="min-width:0;width:100%"></div>
     ${toks.map(([t,us])=>`<div class="list-item ${t===nbosSel?'on':''}" data-nb="${esc(t)}"><span>${esc(t)}</span><span class="small muted">${us.length}</span></div>`).join('')}
     ${nbosNone.length?`<div class="small muted" style="padding:8px 14px">nbos 권한 공란 ${nbosNone.length}명은 목록에서 제외</div>`:''}</div>
   <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
